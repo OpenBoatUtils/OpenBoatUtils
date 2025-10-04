@@ -1,5 +1,6 @@
 package dev.o7moon.openboatutils.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,10 +18,24 @@ public class ServerPlayNetworkHandlerMixin {
     }
 
     // Force the flag that triggers moved wrongly to false
+
+    //? <1.21.6 {
     @ModifyVariable(method = "onVehicleMove", at = @At("STORE"), ordinal = 2)
     private boolean onVehicleMove_WronglyFlag(boolean original) {
         return false;
     }
+    //?}
+
+    //? >=1.21.6 {
+    /*@ModifyVariable(
+            method = "onVehicleMove",
+            at = @At("STORE"),
+            ordinal = 0
+    )
+    private boolean preventMovedWrongly(boolean bl2) {
+        return false;
+    }
+    *///?}
 
     // Skip the "moved "wrongly" warn. also skips "moved too quickly"
     @Redirect(method = "onVehicleMove", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;[Ljava/lang/Object;)V"))
