@@ -18,7 +18,7 @@
     ]
   },
   "mixins": [
-    "openboatutils.mixins.json"
+    "openboatutils.mixins.json5"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
