@@ -1,6 +1,5 @@
 package dev.o7moon.openboatutils.mixin;
 
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
