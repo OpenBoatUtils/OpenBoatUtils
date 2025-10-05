@@ -28,6 +28,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,8 +156,16 @@ public class OpenBoatUtils implements ModInitializer {
                 for (int s = k; s < l; ++s) {
                     if (r > 0 && (s == k || s == l - 1)) continue;
                     mutable.set(p, s, q);
-                    BlockState blockState = instance.getWorld().getBlockState(mutable);
-                    if (blockState.getBlock() instanceof LilyPadBlock || !VoxelShapes.matchesAnywhere(blockState.getCollisionShape(instance.getWorld(), mutable).offset(p, s, q), voxelShape, BooleanBiFunction.AND)) continue;
+
+                    //? if >=1.21.9 {
+                    /*World world = instance.getEntityWorld();
+                    *///?} else {
+                    World world = instance.getWorld();
+                    //?}
+
+                    BlockState blockState = world.getBlockState(mutable);
+
+                    if (blockState.getBlock() instanceof LilyPadBlock || !VoxelShapes.matchesAnywhere(blockState.getCollisionShape(world, mutable).offset(p, s, q), voxelShape, BooleanBiFunction.AND)) continue;
                     f += getPerBlockForBlock(setting, Registries.BLOCK.getId(blockState.getBlock()).toString());
                     ++o;
                 }
