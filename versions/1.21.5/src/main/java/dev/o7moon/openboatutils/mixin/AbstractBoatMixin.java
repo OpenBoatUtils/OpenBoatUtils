@@ -189,7 +189,7 @@ public abstract class AbstractBoatMixin implements GetStepHeight {
             at = @At("HEAD")
     )
     private void hookPositionInterpolator(CallbackInfo ci) {
-        if (OpenBoatUtils.enabled && OpenBoatUtils.interpolationCompat) {
+        if (OpenBoatUtils.interpolationCompat) {
             interpolator.setLerpDuration(10);
             return;
         }
