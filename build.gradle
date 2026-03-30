@@ -98,6 +98,10 @@ loom {
     }
 }
 
-stonecutter.swap("boat") {
-    stonecutter.compare(stonecutter.current.version, "1.21.3") < 0 ? "BoatEntity" : "AbstractBoatEntity"
+stonecutter {
+    replacements.string(
+            current.parsed.matches('>=1.21.3')
+    ) {
+        replace 'BoatEntity', 'AbstractBoatEntity'
+    }
 }

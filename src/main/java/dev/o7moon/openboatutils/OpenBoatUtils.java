@@ -2,7 +2,6 @@ package dev.o7moon.openboatutils;
 
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -10,15 +9,14 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LilyPadBlock;
 //? >=1.21.3 {
-/*import net.minecraft.entity.vehicle.AbstractBoatEntity;
-*///?}
+import net.minecraft.entity.vehicle.AbstractBoatEntity;
+//?}
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
 //? >=1.21 {
-/*import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
-*///?}
+//?}
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -128,15 +126,8 @@ public class OpenBoatUtils implements ModInitializer {
     public static float getPerBlockForBlock(PerBlockSettingType setting, String blockid){
         return settingHasPerBlock(setting) && perBlockSettings.get(setting.ordinal()).containsKey(blockid) ? perBlockSettings.get(setting.ordinal()).get(blockid): defaultPerBlock(setting);
     }
-
-    // i LOVE how intellij formats this
-    //? >=1.21.3 {
-    /*public static float getNearbySetting(AbstractBoatEntity instance, PerBlockSettingType setting) {
-        *///?}
-    //? <=1.21 {
         
-    public static float getNearbySetting(BoatEntity instance, PerBlockSettingType setting) {
-        //?}
+    public static float getNearbySetting(AbstractBoatEntity instance, PerBlockSettingType setting) {
         Box box = instance.getBoundingBox();
         Box box2 = new Box(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
         int i = MathHelper.floor(box2.minX) - 1;
@@ -158,10 +149,10 @@ public class OpenBoatUtils implements ModInitializer {
                     mutable.set(p, s, q);
 
                     //? if >=1.21.9 {
-                    /*World world = instance.getEntityWorld();
-                    *///?} else {
-                    World world = instance.getWorld();
-                    //?}
+                    World world = instance.getEntityWorld();
+                    //?} else {
+                    /*World world = instance.getWorld();
+                    *///?}
 
                     BlockState blockState = world.getBlockState(mutable);
 
@@ -277,7 +268,7 @@ public class OpenBoatUtils implements ModInitializer {
     }
 
     //? >=1.21 {
-    /*public record BytePayload(ByteBuf data) implements CustomPayload {
+    public record BytePayload(ByteBuf data) implements CustomPayload {
         public static final PacketCodec<PacketByteBuf, BytePayload> CODEC = CustomPayload.codecOf(BytePayload::write, BytePayload::new);
         public static final Id<BytePayload> ID = new Id<>(settingsChannel);
 
@@ -295,26 +286,16 @@ public class OpenBoatUtils implements ModInitializer {
             return ID;
         }
     }
-    *///?}
+    //?}
 
-    public static void sendPacketC2S(PacketByteBuf packet){
-        //? <=1.20.4 {
-        assert settingsChannel != null;
-        ClientPlayNetworking.send(settingsChannel, packet);
-        //?} else {
-        /*BytePayload payload = new BytePayload(packet);
+    public static void sendPacketC2S(PacketByteBuf packet) {
+        BytePayload payload = new BytePayload(packet);
         ClientPlayNetworking.send(payload);
-        *///?}
     }
 
     public static void sendPacketS2C(ServerPlayerEntity player, PacketByteBuf packet){
-        //? <=1.20.4 {
-        assert settingsChannel != null;
-        ServerPlayNetworking.send(player, settingsChannel, packet);
-        //?} else {
-        /*BytePayload payload = new BytePayload(packet);
+        BytePayload payload = new BytePayload(packet);
         ServerPlayNetworking.send(player, payload);
-        *///?}
     }
 
     public static void setGravityForce(double g){
@@ -372,15 +353,11 @@ public class OpenBoatUtils implements ModInitializer {
     }
     public static void breakSlimePlease() {
         enabled = true;
-        if (getSlipperinessMap().containsKey("minecraft:slime_block")) {
-            getSlipperinessMap().remove("minecraft:slime_block");
-        }
+        getSlipperinessMap().remove("minecraft:slime_block");
     }
     public static void removeBlockSlipperiness(String block) {
         enabled = true;
-        if (getSlipperinessMap().containsKey(block)) {
-            getSlipperinessMap().remove(block);
-        }
+        getSlipperinessMap().remove(block);
     }
     public static void removeBlocksSlipperiness(List<String> blocks) {
         enabled = true;
@@ -393,53 +370,27 @@ public class OpenBoatUtils implements ModInitializer {
         slipperinessMap = new HashMap<>();
     }
 
-    //? >=1.21.3 {
-    /*public static float GetJumpForce(AbstractBoatEntity boat) {
-        *///?}
-    //? <=1.21 {
-    public static float GetJumpForce(BoatEntity boat) {
-     
-    //?}
+    public static float GetJumpForce(AbstractBoatEntity boat) {
         if (!settingHasPerBlock(PerBlockSettingType.jumpForce)) return jumpForce;
         else return getNearbySetting(boat, PerBlockSettingType.jumpForce);
     }
 
-    //? >=1.21.3 {
-    /*public static float GetYawAccel(AbstractBoatEntity boat) {
-        *///?}
-    //? <=1.21 {
-    public static float GetYawAccel(BoatEntity boat) {
-    //?}
+    public static float GetYawAccel(AbstractBoatEntity boat) {
         if (!settingHasPerBlock(PerBlockSettingType.yawAccel)) return yawAcceleration;
         else return getNearbySetting(boat, PerBlockSettingType.yawAccel);
     }
 
-    //? >=1.21.3 {
-    /*public static float GetForwardAccel(AbstractBoatEntity boat) {
-        *///?}
-    //? <=1.21 {
-    public static float GetForwardAccel(BoatEntity boat) {
-    //?}
+    public static float GetForwardAccel(AbstractBoatEntity boat) {
         if (!settingHasPerBlock(PerBlockSettingType.forwardsAccel)) return forwardsAcceleration;
         else return getNearbySetting(boat, PerBlockSettingType.forwardsAccel);
     }
 
-    //? >=1.21.3 {
-    /*public static float GetBackwardAccel(AbstractBoatEntity boat) {
-    *///?}
-    //? <=1.21 {
-    public static float GetBackwardAccel(BoatEntity boat) {
-    //?}
+    public static float GetBackwardAccel(AbstractBoatEntity boat) {
         if (!settingHasPerBlock(PerBlockSettingType.backwardsAccel)) return backwardsAcceleration;
         else return getNearbySetting(boat, PerBlockSettingType.backwardsAccel);
     }
 
-    //? >=1.21.3 {
-    /*public static float GetTurnForwardAccel(AbstractBoatEntity boat) {
-    *///?}
-    //? <=1.21 {
-    public static float GetTurnForwardAccel(BoatEntity boat) {
-    //?}
+    public static float GetTurnForwardAccel(AbstractBoatEntity boat) {
         if (!settingHasPerBlock(PerBlockSettingType.turnForwardsAccel)) return turningForwardsAcceleration;
         else return getNearbySetting(boat, PerBlockSettingType.turnForwardsAccel);
     }

@@ -6,79 +6,71 @@ import dev.o7moon.openboatutils.OpenBoatUtils;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MovementType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.entity.vehicle.AbstractBoatEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.World;
+//? >= 1.21.5 {
+import net.minecraft.entity.PositionInterpolator;
+//? }
 import org.objectweb.asm.Opcodes;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import java.util.function.Supplier;
 
-@Mixin(BoatEntity.class)
+@Mixin(AbstractBoatEntity.class)
 public abstract class BoatMixin implements GetStepHeight {
-    @Shadow
-    abstract boolean checkBoatInWater();
+    //? < 1.21.5 {
+    /*@Shadow float velocityDecay;
+    *///? }
+    @Shadow private float nearbySlipperiness;
+    @Shadow private double waterLevel;
+    @Shadow private float yawVelocity;
+    @Shadow private boolean pressingForward;
+    @Shadow private boolean pressingBack;
 
-    @Shadow
-    @Nullable
-    abstract BoatEntity.Location getUnderWaterLocation();
+    //? >=1.21.5 {
+    @Shadow @Final private PositionInterpolator interpolator;
+    @Unique private int openboatutils$defaultInterpolation;
+    //? }
 
-    @Shadow
-    abstract BoatEntity.Location checkLocation();
-    @Shadow
-    BoatEntity.Location location;
-    @Shadow
-    float velocityDecay;
-    @Shadow
-    float nearbySlipperiness;
-    @Shadow
-    double waterLevel;
+    @Shadow protected abstract boolean checkBoatInWater();
+    @Shadow protected abstract AbstractBoatEntity.Location checkLocation();
 
-    @Shadow
-    float yawVelocity;
-    @Shadow
-    boolean pressingForward;
-    @Shadow
-    boolean pressingBack;
-
-    //? >=1.21 {
-    /*float openboatutils_step_height;
-    public float getStepHeight() {
-        return openboatutils_step_height;
+    @Unique float openboatutils$stepHeight;
+    public float openBoatUtils$getStepHeight() {
+        return openboatutils$stepHeight;
     }
-    *///?}
 
     @Unique
-    public void set_step_height(float f) {
-        //? >=1.21 {
-        /*openboatutils_step_height = f;
-        *///?}
-        //? <=1.20.4 {
-        ((BoatEntity) (Object) this).setStepHeight(f);
-        //?}
+    public void setStepHeight(float f) {
+        openboatutils$stepHeight = f;
     }
 
 
-    void oncePerTick(BoatEntity instance, BoatEntity.Location loc, MinecraftClient minecraft) {
-        if ((loc ==  BoatEntity.Location.UNDER_FLOWING_WATER || loc == BoatEntity.Location.UNDER_WATER) && minecraft.options.jumpKey.isPressed() && OpenBoatUtils.swimForce != 0.0f) {
+    @Unique
+    void oncePerTick(AbstractBoatEntity instance, AbstractBoatEntity.Location loc, MinecraftClient minecraft) {
+        if ((loc ==  AbstractBoatEntity.Location.UNDER_FLOWING_WATER || loc == AbstractBoatEntity.Location.UNDER_WATER) && minecraft.options.jumpKey.isPressed() && OpenBoatUtils.swimForce != 0.0f) {
             Vec3d velocity = instance.getVelocity();
             instance.setVelocity(velocity.x, velocity.y + OpenBoatUtils.swimForce, velocity.z);
         }
 
-        if (loc == BoatEntity.Location.ON_LAND || (OpenBoatUtils.waterJumping && loc == BoatEntity.Location.IN_WATER)) {
+        if (loc == AbstractBoatEntity.Location.ON_LAND || (OpenBoatUtils.waterJumping && loc == AbstractBoatEntity.Location.IN_WATER)) {
             OpenBoatUtils.coyoteTimer = OpenBoatUtils.coyoteTime;
         } else {
             OpenBoatUtils.coyoteTimer--;
         }
 
-        float jumpForce = OpenBoatUtils.GetJumpForce((BoatEntity)(Object)this);
+        float jumpForce = OpenBoatUtils.GetJumpForce((AbstractBoatEntity)(Object)this);
 
         if (OpenBoatUtils.coyoteTimer >= 0 && jumpForce > 0f && minecraft.options.jumpKey.isPressed()) {
             Vec3d velocity = instance.getVelocity();
@@ -87,42 +79,69 @@ public abstract class BoatMixin implements GetStepHeight {
         }
     }
 
-    @Redirect(method = {"getPaddleSoundEvent"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/BoatEntity$Location;"))
-    BoatEntity.Location paddleHook(BoatEntity instance) {
+    //? >= 1.21.5 {
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void hookConstructor(EntityType<?> type, World world, Supplier<?> itemSupplier, CallbackInfo ci) {
+        openboatutils$defaultInterpolation = ((PositionInterpolatorAccessor) interpolator).getLerpDuration();
+    }
+
+    @Inject(
+            method = "tick",
+            at = @At("HEAD")
+    )
+    private void hookPositionInterpolator(CallbackInfo ci) {
+        if (OpenBoatUtils.interpolationCompat) {
+            interpolator.setLerpDuration(10);
+            return;
+        }
+
+        interpolator.setLerpDuration(openboatutils$defaultInterpolation);
+    }
+    //? }
+
+    //? if >=1.21.3 {
+    @Redirect(method = "getPaddleSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/AbstractBoatEntity$Location;"))
+    //?} else {
+    /*@Redirect(method = "getPaddleSoundEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/AbstractBoatEntity$Location;"))*/
+    //?}
+    AbstractBoatEntity.Location paddleHook(AbstractBoatEntity instance) {
         return hookCheckLocation(instance, false);
     }
-    @Redirect(method = {"tick"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/BoatEntity$Location;"))
-    BoatEntity.Location tickHook(BoatEntity instance) {
+
+    @Redirect(method = {"tick"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/AbstractBoatEntity$Location;"))
+    AbstractBoatEntity.Location tickHook(AbstractBoatEntity instance) {
         return hookCheckLocation(instance, true);
     }
 
-    BoatEntity.Location hookCheckLocation(BoatEntity instance, boolean is_tick) {
+    @Unique
+    AbstractBoatEntity.Location hookCheckLocation(AbstractBoatEntity instance, boolean is_tick) {
         BoatMixin mixedInstance = (BoatMixin) (Object) instance;
-        mixedInstance.set_step_height(0f);
 
-        BoatEntity.Location loc = this.checkLocation();
-        BoatEntity.Location original_loc = loc;
+        assert mixedInstance != null;
+        mixedInstance.setStepHeight(0f);
+
+        AbstractBoatEntity.Location loc = this.checkLocation();
+        AbstractBoatEntity.Location original_loc = loc;
         if (!OpenBoatUtils.enabled) return loc;
         MinecraftClient minecraft = MinecraftClient.getInstance();
         if (minecraft == null) return loc;
         PlayerEntity player = minecraft.player;
         if (player == null) return loc;
         Entity vehicle = player.getVehicle();
-        if (!(vehicle instanceof BoatEntity)) return loc;
-        BoatEntity boat = (BoatEntity)vehicle;
+        if (!(vehicle instanceof AbstractBoatEntity boat)) return loc;
 
         if (!boat.equals(instance)) return loc;
         if (is_tick) oncePerTick(instance, loc, minecraft);
 
-        mixedInstance.set_step_height(OpenBoatUtils.getStepSize());
+        mixedInstance.setStepHeight(OpenBoatUtils.getStepSize());
 
-        if (loc == BoatEntity.Location.UNDER_WATER || loc == BoatEntity.Location.UNDER_FLOWING_WATER) {
+        if (loc == AbstractBoatEntity.Location.UNDER_WATER || loc == AbstractBoatEntity.Location.UNDER_FLOWING_WATER) {
             if (OpenBoatUtils.waterElevation) {
                 instance.setPosition(instance.getX(), this.waterLevel += 1.0, instance.getZ());
                 Vec3d velocity = instance.getVelocity();
                 instance.setVelocity(velocity.x, 0f, velocity.z);// parity with old boatutils, but maybe in the future
                 // there should be an implementation with different y velocities here.
-                return BoatEntity.Location.IN_WATER;
+                return AbstractBoatEntity.Location.IN_WATER;
             }
             return loc;
         }
@@ -132,12 +151,12 @@ public abstract class BoatMixin implements GetStepHeight {
                 Vec3d velocity = instance.getVelocity();
                 instance.setVelocity(velocity.x, 0.0, velocity.z);
             }
-            loc = BoatEntity.Location.IN_WATER;
+            loc = AbstractBoatEntity.Location.IN_WATER;
         }
 
-        if (original_loc == BoatEntity.Location.IN_AIR && OpenBoatUtils.airControl) {
+        if (original_loc == AbstractBoatEntity.Location.IN_AIR && OpenBoatUtils.airControl) {
             this.nearbySlipperiness = OpenBoatUtils.getBlockSlipperiness("minecraft:air");
-            loc = BoatEntity.Location.ON_LAND;
+            loc = AbstractBoatEntity.Location.ON_LAND;
         }
 
         return loc;
@@ -154,7 +173,7 @@ public abstract class BoatMixin implements GetStepHeight {
         if (!OpenBoatUtils.enabled) return;
         CollisionMode mode = OpenBoatUtils.getCollisionMode();
         if (mode == CollisionMode.VANILLA) return;
-        if ((mode == CollisionMode.NO_BOATS_OR_PLAYERS || mode == CollisionMode.NO_BOATS_OR_PLAYERS_PLUS_FILTER) && (other instanceof BoatEntity || other instanceof PlayerEntity)) {
+        if ((mode == CollisionMode.NO_BOATS_OR_PLAYERS || mode == CollisionMode.NO_BOATS_OR_PLAYERS_PLUS_FILTER) && (other instanceof AbstractBoatEntity || other instanceof PlayerEntity)) {
             ci.setReturnValue(false);
             ci.cancel();
             return;
@@ -176,26 +195,16 @@ public abstract class BoatMixin implements GetStepHeight {
         if (!OpenBoatUtils.fallDamage) ci.cancel();
     }
 
-    //? <=1.20.4 {
-    @ModifyVariable(method = "updateVelocity", at = @At(value = "STORE"), ordinal = 1)
-    private double updateVelocityHook(double e){
-        if (!OpenBoatUtils.enabled) return e;
-
-        return OpenBoatUtils.gravityForce;
-    }
-    //?}
-    //? >=1.21 {
-    /*@Inject(method = "getGravity", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getGravity", at = @At("HEAD"), cancellable = true)
     public void onGetGravity(CallbackInfoReturnable<Double> cir) {
         if (!OpenBoatUtils.enabled) return;
 
         cir.setReturnValue(-OpenBoatUtils.gravityForce);
         cir.cancel();
     }
-    *///?}
 
-    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;yawVelocity:F", opcode = Opcodes.PUTFIELD))
-    private void redirectYawVelocityIncrement(BoatEntity boat, float yawVelocity) {
+    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;yawVelocity:F", opcode = Opcodes.PUTFIELD))
+    private void redirectYawVelocityIncrement(AbstractBoatEntity boat, float yawVelocity) {
         if (!OpenBoatUtils.enabled) {
             this.yawVelocity = yawVelocity;
             return;
@@ -203,64 +212,97 @@ public abstract class BoatMixin implements GetStepHeight {
         float original_delta = yawVelocity - this.yawVelocity;
         // sign isn't needed here because the vanilla acceleration is exactly 1,
         // but I suppose this helps if mojang ever decides to change that value for some reason
-        this.yawVelocity += MathHelper.sign(original_delta) * OpenBoatUtils.GetYawAccel((BoatEntity)(Object)this);
+        this.yawVelocity += MathHelper.sign(original_delta) * OpenBoatUtils.GetYawAccel((AbstractBoatEntity)(Object)this);
     }
 
     // a whole lotta modifyconstants because mojang put the acceleration values in literals
     @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.04f, ordinal = 0))
     private float forwardsAccel(float original) {
         if (!OpenBoatUtils.enabled) return original;
-        return OpenBoatUtils.GetForwardAccel((BoatEntity)(Object)this);
+        return OpenBoatUtils.GetForwardAccel((AbstractBoatEntity)(Object)this);
     }
 
     @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 0))
     private float turnAccel(float original) {
         if (!OpenBoatUtils.enabled) return original;
-        return OpenBoatUtils.GetTurnForwardAccel((BoatEntity)(Object)this);
+        return OpenBoatUtils.GetTurnForwardAccel((AbstractBoatEntity)(Object)this);
     }
 
     @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 1))
     private float backwardsAccel(float original) {
         if (!OpenBoatUtils.enabled) return original;
-        return OpenBoatUtils.GetBackwardAccel((BoatEntity)(Object)this);
+        return OpenBoatUtils.GetBackwardAccel((AbstractBoatEntity)(Object)this);
     }
 
-    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingForward:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
-    private boolean pressingForwardHook(BoatEntity instance) {
+    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;pressingForward:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
+    private boolean pressingForwardHook(AbstractBoatEntity instance) {
         if (!OpenBoatUtils.enabled || !OpenBoatUtils.allowAccelStacking) return this.pressingForward;
         return false;
     }
 
-    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingBack:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
-    private boolean pressingBackHook(BoatEntity instance) {
+    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;pressingBack:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
+    private boolean pressingBackHook(AbstractBoatEntity instance) {
         if (!OpenBoatUtils.enabled || !OpenBoatUtils.allowAccelStacking) return this.pressingBack;
         return false;
     }
 
-    // UNDER_FLOWING_WATER velocity decay
-    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 2))
-    private void velocityDecayHook1(BoatEntity boat, float orig) {
+    //? >= 1.21.5 {
+    // UNDER_FLOWING_WATER
+    @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 1))
+    private float velocityDecayHook1(float constant) {
+        if (OpenBoatUtils.enabled && OpenBoatUtils.underwaterControl) {
+            return OpenBoatUtils.getBlockSlipperiness("minecraft:water");
+        }
+
+        return constant;
+    }
+
+    // UNDER_WATER
+    @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.45F))
+    private float velocityDecayHook2(float constant) {
+        if (OpenBoatUtils.enabled && OpenBoatUtils.underwaterControl) {
+            return OpenBoatUtils.getBlockSlipperiness("minecraft:water");
+        }
+
+        return constant;
+    }
+
+    // IN_WATER
+    @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 0))
+    private float velocityDecayHook3(float constant) {
+        if (OpenBoatUtils.enabled && OpenBoatUtils.surfaceWaterControl) {
+            return OpenBoatUtils.getBlockSlipperiness("minecraft:water");
+        }
+
+        return constant;
+    }
+    //? } else {
+    /*// UNDER_FLOWING_WATER velocity decay
+    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 2))
+    private void velocityDecayHook1(AbstractBoatEntity boat, float orig) {
         if (!OpenBoatUtils.enabled || !OpenBoatUtils.underwaterControl) velocityDecay = orig;
         else velocityDecay = OpenBoatUtils.getBlockSlipperiness("minecraft:water");
     }
 
     // UNDER_WATER velocity decay
-    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 3))
-    private void velocityDecayHook2(BoatEntity boat, float orig) {
+    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 3))
+    private void velocityDecayHook2(AbstractBoatEntity boat, float orig) {
         if (!OpenBoatUtils.enabled || !OpenBoatUtils.underwaterControl) velocityDecay = orig;
         else velocityDecay = OpenBoatUtils.getBlockSlipperiness("minecraft:water");
     }
 
     // IN_WATER velocity decay
-    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 1))
-    private void velocityDecayHook3(BoatEntity boat, float orig) {
+    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 1))
+    private void velocityDecayHook3(AbstractBoatEntity boat, float orig) {
         if (!OpenBoatUtils.enabled || !OpenBoatUtils.surfaceWaterControl) velocityDecay = orig;
         else velocityDecay = OpenBoatUtils.getBlockSlipperiness("minecraft:water");
     }
+    *///? }
+
 
     // Increase resolution for wall priority by running move() multiple times in smaller increments
-    @Redirect(method = "tick()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))
-    private void moveHook(BoatEntity instance, MovementType movementType, Vec3d vec3d) {
+    @Redirect(method = "tick()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/AbstractBoatEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))
+    private void moveHook(AbstractBoatEntity instance, MovementType movementType, Vec3d vec3d) {
         if (!OpenBoatUtils.enabled || OpenBoatUtils.collisionResolution < 1 || OpenBoatUtils.collisionResolution > 50) {
             instance.move(movementType, vec3d);
             return;

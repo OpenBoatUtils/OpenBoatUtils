@@ -1,6 +1,6 @@
 package dev.o7moon.openboatutils;
 
-import net.minecraft.entity.vehicle. /*$ boat >>*/ BoatEntity ;
+import net.minecraft.entity.vehicle.AbstractBoatEntity ;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +14,7 @@ public interface ISettingContext {
     boolean enabled();
     boolean settingHasPerBlock(OpenBoatUtils.PerBlockSettingType setting);
     float getPerBlockForBlock(OpenBoatUtils.PerBlockSettingType setting, String blockid);
-    float getNearbySetting(/*$ boat >>*/ BoatEntity instance, OpenBoatUtils.PerBlockSettingType setting);
+    float getNearbySetting(AbstractBoatEntity instance, OpenBoatUtils.PerBlockSettingType setting);
     float defaultPerBlock(OpenBoatUtils.PerBlockSettingType setting);
     HashMap<String, Float> getSlipperinessMap();
     void resetSettings();
@@ -43,11 +43,11 @@ public interface ISettingContext {
     void removeBlockSlipperiness(String block);
     void removeBlocksSlipperiness(List<String> blocks);
     void clearSlipperinessMap();
-    float GetJumpForce(/*$ boat >>*/ BoatEntity boat);
-    float GetYawAccel(/*$ boat >>*/ BoatEntity boat);
-    float GetForwardAccel(/*$ boat >>*/ BoatEntity boat);
-    float GetBackwardAccel(/*$ boat >>*/ BoatEntity boat);
-    float GetTurnForwardAccel(/*$ boat >>*/ BoatEntity boat);
+    float GetJumpForce(AbstractBoatEntity boat);
+    float GetYawAccel(AbstractBoatEntity boat);
+    float GetForwardAccel(AbstractBoatEntity boat);
+    float GetBackwardAccel(AbstractBoatEntity boat);
+    float GetTurnForwardAccel(AbstractBoatEntity boat);
     void setBlocksSetting(OpenBoatUtils.PerBlockSettingType setting, List<String> blocks, float value);
     void setBlockSetting(OpenBoatUtils.PerBlockSettingType setting, String block, float value);
     void setCollisionMode(CollisionMode mode);
