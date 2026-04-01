@@ -3,9 +3,12 @@ package dev.o7moon.openboatutils;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public enum ClientboundPackets {
     RESET,
@@ -54,150 +57,183 @@ public enum ClientboundPackets {
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
+            // this is fine for now, must update when other contexts exist
+            SettingContext context = OpenBoatUtils.instance;
+            
             short packetID = buf.readShort();
-            switch (packetID) {
-                case 0:
-                    OpenBoatUtils.resetSettings();
-                    return;
-                case 1:
+
+            ClientboundPackets[] packets = ClientboundPackets.values();
+
+            if (packetID >= packets.length) return;
+
+            switch (packets[packetID]) {
+                case RESET -> {
+                    OpenBoatUtils.enabled = false;
+                    context.applyFrom(ISettingContext.VANILLA);
+                }
+                case SET_STEP_HEIGHT -> {
                     float stepSize = buf.readFloat();
-                    OpenBoatUtils.setStepSize(stepSize);
-                    return;
-                case 2:
+                    context.setStepSize(stepSize);
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_DEFAULT_SLIPPERINESS -> {
+                    context.setDefaultSlipperiness(buf.readFloat());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_BLOCKS_SLIPPERINESS -> {
                     float slipperiness = buf.readFloat();
-                    OpenBoatUtils.setAllBlocksSlipperiness(slipperiness);
-                    return;
-                case 3:
-                    slipperiness = buf.readFloat();
-                    String blocks = buf.readString();
-                    String[] blocksArray = blocks.split(",");
-                    OpenBoatUtils.setBlocksSlipperiness(Arrays.asList(blocksArray), slipperiness);
-                    return;
-                case 4:
-                    boolean fallDamage = buf.readBoolean();
-                    OpenBoatUtils.setFallDamage(fallDamage);
-                    return;
-                case 5:
-                    boolean waterElevation = buf.readBoolean();
-                    OpenBoatUtils.setWaterElevation(waterElevation);
-                    return;
-                case 6:
-                    boolean airControl = buf.readBoolean();
-                    OpenBoatUtils.setAirControl(airControl);
-                    return;
-                case 7:
-                    float jumpForce = buf.readFloat();
-                    OpenBoatUtils.setJumpForce(jumpForce);
-                    return;
-                case 8:
-                    short mode = buf.readShort();
-                    Modes.setMode(Modes.values()[mode]);
-                    return;
-                case 9:
-                    double gravity = buf.readDouble();
-                    OpenBoatUtils.setGravityForce(gravity);
-                    return;
-                case 10:
-                    float accel = buf.readFloat();
-                    OpenBoatUtils.setYawAcceleration(accel);
-                    return;
-                case 11:
-                    accel = buf.readFloat();
-                    OpenBoatUtils.setForwardsAcceleration(accel);
-                    return;
-                case 12:
-                    accel = buf.readFloat();
-                    OpenBoatUtils.setBackwardsAcceleration(accel);
-                    return;
-                case 13:
-                    accel = buf.readFloat();
-                    OpenBoatUtils.setTurningForwardsAcceleration(accel);
-                    return;
-                case 14:
-                    boolean allowed = buf.readBoolean();
-                    OpenBoatUtils.setAllowAccelStacking(allowed);
-                    return;
-                case 15:
+
+                    Arrays.stream(buf.readString().split(","))
+                            .map(Identifier::of)
+                            .forEach(block -> context.setBlockSlipperiness(block, slipperiness));
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_BOAT_FALL_DAMAGE -> {
+                    context.setFallDamage(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_BOAT_WATER_ELEVATION -> {
+                    context.setWaterElevation(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_AIR_CONTROL -> {
+                    context.setAirControl(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_BOAT_JUMP_FORCE -> {
+                    context.setJumpForce(buf.readFloat());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_MODE -> {
+                    Modes.setMode(Modes.values()[buf.readShort()]);
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_GRAVITY -> {
+                    context.setGravityForce(buf.readDouble());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_YAW_ACCEL -> {
+                    context.setYawAccel(buf.readFloat());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_FORWARD_ACCEL -> {
+                    context.setForwardAccel(buf.readFloat());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_BACKWARD_ACCEL -> {
+                    context.setBackwardAccel(buf.readFloat());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_TURN_ACCEL -> {
+                    context.setTurnForwardAccel(buf.readFloat());
+                    OpenBoatUtils.enabled = true;
+                }
+                case ALLOW_ACCEL_STACKING -> {
+                    context.setAllowAccelStacking(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case RESEND_VERSION -> {
                     OpenBoatUtils.sendVersionPacket();
-                    return;
-                case 16:
-                    boolean enabled = buf.readBoolean();
-                    OpenBoatUtils.setUnderwaterControl(enabled);
-                    return;
-                case 17:
-                    enabled = buf.readBoolean();
-                    OpenBoatUtils.setSurfaceWaterControl(enabled);
-                    return;
-                case 18:
-                    mode = buf.readShort();
-                    OpenBoatUtils.resetSettings();
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_UNDERWATER_CONTROL -> {
+                    context.setUnderwaterControl(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_SURFACE_WATER_CONTROL -> {
+                    context.setSurfaceWaterControl(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_EXCLUSIVE_MODE -> {
+                    short mode = buf.readShort();
+                    context.applyFrom(ISettingContext.VANILLA);
                     Modes.setMode(Modes.values()[mode]);
-                    return;
-                case 19:
-                    int time = buf.readInt();
-                    OpenBoatUtils.setCoyoteTime(time);
-                    return;
-                case 20:
-                    enabled = buf.readBoolean();
-                    OpenBoatUtils.setWaterJumping(enabled);
-                    return;
-                case 21:
-                    float force = buf.readFloat();
-                    OpenBoatUtils.setSwimForce(force);
-                    return;
-                case 22:
-                    blocks = buf.readString();
-                    blocksArray = blocks.split(",");
-                    OpenBoatUtils.removeBlocksSlipperiness(Arrays.asList(blocksArray));
-                    return;
-                case 23:
-                    OpenBoatUtils.clearSlipperinessMap();
-                    return;
-                case 24:
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_COYOTE_TIME -> {
+                    context.setCoyoteTime(buf.readInt());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_WATER_JUMPING -> {
+                    context.setWaterJumping(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_SWIM_FORCE -> {
+                    context.setSwimForce(buf.readFloat());
+                    OpenBoatUtils.enabled = true;
+                }
+                case REMOVE_BLOCKS_SLIPPERINESS -> {
+                    Arrays.stream(buf.readString().split(","))
+                            .map(Identifier::of)
+                            .forEach(context::unsetBlockSlipperiness);
+                    OpenBoatUtils.enabled = true;
+                }
+                case CLEAR_SLIPPERINESS -> {
+                    context.clearSlipperinessMap();
+                    OpenBoatUtils.enabled = true;
+                }
+                case MODE_SERIES -> {
+                    for (int i = 0; i < buf.readShort(); i++) {
+                        Modes.setMode(Modes.values()[buf.readShort()]);
+                    }
+                    OpenBoatUtils.enabled = true;
+                }
+                case EXCLUSIVE_MODE_SERIES -> {
+                    context.applyFrom(ISettingContext.VANILLA);
                     short amount = buf.readShort();
                     for (int i = 0; i < amount; i++) {
-                        mode = buf.readShort();
+                        short mode = buf.readShort();
                         Modes.setMode(Modes.values()[mode]);
                     }
-                    return;
-                case 25:
-                    OpenBoatUtils.resetSettings();
-                    amount = buf.readShort();
-                    for (int i = 0; i < amount; i++) {
-                        mode = buf.readShort();
-                        Modes.setMode(Modes.values()[mode]);
-                    }
-                    return;
-                case 26:
-                    short setting = buf.readShort();
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_PER_BLOCK -> {
+                    short index = buf.readShort();
                     float value = buf.readFloat();
-                    blocks = buf.readString();
-                    blocksArray = blocks.split(",");
-                    OpenBoatUtils.setBlocksSetting(OpenBoatUtils.PerBlockSettingType.values()[setting], Arrays.asList(blocksArray), value);
-                    return;
-                case 27:
-                    short cmode = buf.readShort();
-                    OpenBoatUtils.setCollisionMode(CollisionMode.values()[cmode]);
-                    return;
-                case 28:
-                    enabled = buf.readBoolean();
-                    OpenBoatUtils.setCanStepWhileFalling(enabled);
-                    return;
-                case 29:
-                    enabled = buf.readBoolean();
-                    OpenBoatUtils.setInterpolationCompat(enabled);
-                    return;
-                case 30:
-                    byte collisionResolution = buf.readByte();
-                    OpenBoatUtils.setCollisionResolution(collisionResolution);
-                    return;
-                case 31:
-                    String entitytypes = buf.readString();
-                    OpenBoatUtils.addToCollisionFilter(entitytypes);
-                    return;
-                case 32:
-                    OpenBoatUtils.clearCollisionFilter();
-                    return;
+
+                    OpenBoatUtils.PerBlockSettingType[] settingTypes = OpenBoatUtils.PerBlockSettingType.values();
+
+                    if (index >= settingTypes.length) return;
+                    OpenBoatUtils.PerBlockSettingType setting = settingTypes[index];
+
+                    Arrays.stream(buf.readString().split(","))
+                            .map(Identifier::of)
+                            .forEach(block -> context.setBlockSetting(block, setting, value));
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_COLLISION_MODE -> {
+                    short collisionMode = buf.readShort();
+
+                    CollisionMode[] collisionModes = CollisionMode.values();
+
+                    if (collisionMode >= collisionModes.length) return;
+
+                    context.setCollisionMode(collisionModes[collisionMode]);
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_STEP_WHILE_FALLING -> {
+                    context.setStepWhileFalling(buf.readBoolean());
+                    OpenBoatUtils.enabled = true;
+                }
+                case SET_INTERPOLATION_COMPAT -> {
+                    OpenBoatUtils.setInterpolationCompat(buf.readBoolean());
+                }
+                case SET_COLLISION_RESOLUTION -> {
+                    context.setCollisionResolution(buf.readByte());
+                    OpenBoatUtils.enabled = true;
+                }
+                case ADD_COLLISION_ENTITYTYPE_FILTER -> {
+                    Arrays.stream(buf.readString().split(","))
+                            .map(EntityType::get)
+                            .filter(Optional::isPresent)
+                            .map(Optional::get)
+                            .forEach(context::addToCollisionFilter);
+                    OpenBoatUtils.enabled = true;
+                }
+                case CLEAR_COLLISION_ENTITYTYPE_FILTER -> {
+                    context.clearCollisionFilter();
+                    OpenBoatUtils.enabled = true;
+                }
             }
         } catch (Exception E) {
             OpenBoatUtils.LOG.error("Error when handling clientbound openboatutils packet: ");

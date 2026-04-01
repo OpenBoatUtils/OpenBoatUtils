@@ -1,5 +1,8 @@
 package dev.o7moon.openboatutils;
 
+import net.minecraft.block.Blocks;
+import net.minecraft.registry.Registries;
+
 public enum Modes {
     BROKEN_SLIME_RALLY,//0
     BROKEN_SLIME_RALLY_BLUE,//1
@@ -29,157 +32,161 @@ public enum Modes {
     ;
 
     public static void setMode(Modes mode) {
+        SettingContext context = OpenBoatUtils.instance;
+
+        // TODO: statically init modes / redo this
+        
         switch (mode){
             case RALLY:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.98f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setStepSize(1.25f);
+                context.setDefaultSlipperiness(0.98f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setStepSize(1.25f);
                 return;
             case RALLY_BLUE:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.989f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setStepSize(1.25f);
+                context.setDefaultSlipperiness(0.989f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setStepSize(1.25f);
                 return;
             case BA_NOFD:
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.98f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
                 return;
             case PARKOUR:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.98f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setJumpForce(0.36f);
-                OpenBoatUtils.setStepSize(0.5f);
+                context.setDefaultSlipperiness(0.98f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setJumpForce(0.36f);
+                context.setStepSize(0.5f);
                 return;
             case BA_BLUE_NOFD:
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.989f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
                 return;
             case PARKOUR_BLUE:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.989f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setJumpForce(0.36f);
-                OpenBoatUtils.setStepSize(0.5f);
+                context.setDefaultSlipperiness(0.989f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setJumpForce(0.36f);
+                context.setStepSize(0.5f);
                 return;
             case BA:
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.98f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
                 return;
             case BA_BLUE:
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.989f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
                 return;
             case BROKEN_SLIME_RALLY:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.98f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.breakSlimePlease();
+                context.setDefaultSlipperiness(0.98f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setStepSize(1.25f);
+                context.breakSlimePlease();
                 return;
             case BROKEN_SLIME_RALLY_BLUE:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.989f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.breakSlimePlease();
+                context.setDefaultSlipperiness(0.989f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setStepSize(1.25f);
+                context.breakSlimePlease();
                 return;
             case BROKEN_SLIME_BA_NOFD:
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.98f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
-                OpenBoatUtils.breakSlimePlease();
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
+                context.breakSlimePlease();
                 return;
             case BROKEN_SLIME_PARKOUR:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.98f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setJumpForce(0.36f);
-                OpenBoatUtils.setStepSize(0.5f);
-                OpenBoatUtils.breakSlimePlease();
+                context.setDefaultSlipperiness(0.98f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setJumpForce(0.36f);
+                context.setStepSize(0.5f);
+                context.breakSlimePlease();
                 return;
             case BROKEN_SLIME_BA_BLUE_NOFD:
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.989f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
-                OpenBoatUtils.breakSlimePlease();
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
+                context.breakSlimePlease();
                 return;
             case BROKEN_SLIME_PARKOUR_BLUE:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.989f);
-                OpenBoatUtils.setFallDamage(false);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setJumpForce(0.36f);
-                OpenBoatUtils.setStepSize(0.5f);
-                OpenBoatUtils.breakSlimePlease();
+                context.setDefaultSlipperiness(0.989f);
+                context.setFallDamage(false);
+                context.setAirControl(true);
+                context.setJumpForce(0.36f);
+                context.setStepSize(0.5f);
+                context.breakSlimePlease();
                 return;
             case BROKEN_SLIME_BA:
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.98f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
-                OpenBoatUtils.breakSlimePlease();
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
+                context.breakSlimePlease();
                 return;
             case BROKEN_SLIME_BA_BLUE:
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.989f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
-                OpenBoatUtils.breakSlimePlease();
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
+                context.breakSlimePlease();
                 return;
             case JUMP_BLOCKS:
-                OpenBoatUtils.setBlockSetting(OpenBoatUtils.PerBlockSettingType.jumpForce, "minecraft:orange_concrete", 0.36f);// ~1 block
-                OpenBoatUtils.setBlockSetting(OpenBoatUtils.PerBlockSettingType.jumpForce, "minecraft:black_concrete", 0.0f);// no jump
-                OpenBoatUtils.setBlockSetting(OpenBoatUtils.PerBlockSettingType.jumpForce, "minecraft:green_concrete", 0.5f);// ~2-3 block
-                OpenBoatUtils.setBlockSetting(OpenBoatUtils.PerBlockSettingType.jumpForce, "minecraft:yellow_concrete", 0.18f);// ~0.5 blocks
+                context.setBlockSetting(Registries.BLOCK.getId(Blocks.ORANGE_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.36f);
+                context.setBlockSetting(Registries.BLOCK.getId(Blocks.BLACK_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.0f);
+                context.setBlockSetting(Registries.BLOCK.getId(Blocks.GREEN_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.5f);
+                context.setBlockSetting(Registries.BLOCK.getId(Blocks.YELLOW_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.18f);
                 return;
             case BOOSTER_BLOCKS:
-                OpenBoatUtils.setBlockSetting(OpenBoatUtils.PerBlockSettingType.forwardsAccel, "minecraft:magenta_glazed_terracotta", 0.08f);// double accel
-                OpenBoatUtils.setBlockSetting(OpenBoatUtils.PerBlockSettingType.yawAccel, "minecraft:light_gray_glazed_terracotta", 0.08f);// double yaw accel
+                context.setBlockSetting(Registries.BLOCK.getId(Blocks.MAGENTA_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.FORWARDS_ACCEL, 0.08f); // double accel
+                context.setBlockSetting(Registries.BLOCK.getId(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.YAW_ACCEL, 0.08f); // double yaw accel
                 return;
             case DEFAULT_ICE:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.98f);
+                context.setDefaultSlipperiness(0.98f);
                 return;
             case DEFAULT_NINE_EIGHT_FIVE:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.985f);
+                context.setDefaultSlipperiness(0.985f);
                 return;
             case NOCOL_BOATS_AND_PLAYERS:
-                OpenBoatUtils.setCollisionMode(CollisionMode.NO_BOATS_OR_PLAYERS);
+                context.setCollisionMode(CollisionMode.NO_BOATS_OR_PLAYERS);
                 return;
             case NOCOL_ALL_ENTITIES:
-                OpenBoatUtils.setCollisionMode(CollisionMode.NO_ENTITIES);
+                context.setCollisionMode(CollisionMode.NO_ENTITIES);
                 return;
             case BA_JANKLESS:
-                OpenBoatUtils.setCanStepWhileFalling(true);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.98f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
+                context.setStepWhileFalling(true);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
                 return;
             case BA_BLUE_JANKLESS:
-                OpenBoatUtils.setCanStepWhileFalling(true);
-                OpenBoatUtils.setAirControl(true);
-                OpenBoatUtils.setBlockSlipperiness("minecraft:air", 0.989f);
-                OpenBoatUtils.setStepSize(1.25f);
-                OpenBoatUtils.setWaterElevation(true);
+                context.setStepWhileFalling(true);
+                context.setAirControl(true);
+                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
+                context.setStepSize(1.25f);
+                context.setWaterElevation(true);
                 return;
             case DEFAULT_BLUE_ICE:
-                OpenBoatUtils.setAllBlocksSlipperiness(0.989f);
+                context.setDefaultSlipperiness(0.989f);
                 return;
         }
     }

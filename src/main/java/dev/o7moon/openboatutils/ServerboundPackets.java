@@ -1,7 +1,6 @@
 package dev.o7moon.openboatutils;
 
 import io.netty.buffer.ByteBuf;
-//? >=1.21
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
