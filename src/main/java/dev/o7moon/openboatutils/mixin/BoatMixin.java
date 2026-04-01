@@ -222,7 +222,11 @@ public abstract class BoatMixin implements GetStepHeight {
         }
 
         if (original_loc == BoatEntity.Location.IN_AIR && context.hasAirControl()) {
-            this.nearbySlipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR));
+            Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR));;
+
+            if (slipperiness == null) slipperiness = context.getDefaultSlipperiness();
+
+            this.nearbySlipperiness = slipperiness;
             loc = BoatEntity.Location.ON_LAND;
         }
 
