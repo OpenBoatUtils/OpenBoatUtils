@@ -7,10 +7,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SettingContext implements ISettingContext {
 
@@ -150,6 +147,15 @@ public class SettingContext implements ISettingContext {
         this.collisionResolution = other.getCollisionResolution();
 
         this.blockSlipperiness.clear();
+        Registries.BLOCK.stream()
+                .map(Registries.BLOCK::getId)
+                .forEach(identifier -> {
+                    Float slipperiness = other.getBlockSlipperiness(identifier);
+
+                    if (slipperiness == null) return;
+
+                    this.blockSlipperiness.put(identifier, slipperiness);
+                });
 
         for (Block b : Registries.BLOCK.stream().toList()) {
             Identifier id = Registries.BLOCK.getId(b);
@@ -158,7 +164,7 @@ public class SettingContext implements ISettingContext {
         }
 
         this.collisionFilteredEntities.clear();
-        this.collisionFilteredEntities.addAll(Registries.ENTITY_TYPE.stream().toList());
+        this.collisionFilteredEntities.addAll(Registries.ENTITY_TYPE.stream().filter(other::isEntityTypeFiltered).toList());
 
         return this;
     }
