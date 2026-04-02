@@ -32,162 +32,154 @@ public enum Modes {
     ;
 
     public static void setMode(Modes mode) {
-        SettingContext context = OpenBoatUtils.instance;
+        MutableContext context = OpenBoatUtils.instance;
 
-        // TODO: statically init modes / redo this
-        
-        switch (mode){
-            case RALLY:
-                context.setDefaultSlipperiness(0.98f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setStepSize(1.25f);
-                return;
-            case RALLY_BLUE:
-                context.setDefaultSlipperiness(0.989f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setStepSize(1.25f);
-                return;
-            case BA_NOFD:
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                return;
-            case PARKOUR:
-                context.setDefaultSlipperiness(0.98f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setJumpForce(0.36f);
-                context.setStepSize(0.5f);
-                return;
-            case BA_BLUE_NOFD:
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                return;
-            case PARKOUR_BLUE:
-                context.setDefaultSlipperiness(0.989f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setJumpForce(0.36f);
-                context.setStepSize(0.5f);
-                return;
-            case BA:
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                return;
-            case BA_BLUE:
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                return;
-            case BROKEN_SLIME_RALLY:
-                context.setDefaultSlipperiness(0.98f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setStepSize(1.25f);
-                context.breakSlimePlease();
-                return;
-            case BROKEN_SLIME_RALLY_BLUE:
-                context.setDefaultSlipperiness(0.989f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setStepSize(1.25f);
-                context.breakSlimePlease();
-                return;
-            case BROKEN_SLIME_BA_NOFD:
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                context.breakSlimePlease();
-                return;
-            case BROKEN_SLIME_PARKOUR:
-                context.setDefaultSlipperiness(0.98f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setJumpForce(0.36f);
-                context.setStepSize(0.5f);
-                context.breakSlimePlease();
-                return;
-            case BROKEN_SLIME_BA_BLUE_NOFD:
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                context.breakSlimePlease();
-                return;
-            case BROKEN_SLIME_PARKOUR_BLUE:
-                context.setDefaultSlipperiness(0.989f);
-                context.setFallDamage(false);
-                context.setAirControl(true);
-                context.setJumpForce(0.36f);
-                context.setStepSize(0.5f);
-                context.breakSlimePlease();
-                return;
-            case BROKEN_SLIME_BA:
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                context.breakSlimePlease();
-                return;
-            case BROKEN_SLIME_BA_BLUE:
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                context.breakSlimePlease();
-                return;
-            case JUMP_BLOCKS:
-                context.setBlockSetting(Registries.BLOCK.getId(Blocks.ORANGE_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.36f);
-                context.setBlockSetting(Registries.BLOCK.getId(Blocks.BLACK_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.0f);
-                context.setBlockSetting(Registries.BLOCK.getId(Blocks.GREEN_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.5f);
-                context.setBlockSetting(Registries.BLOCK.getId(Blocks.YELLOW_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.18f);
-                return;
-            case BOOSTER_BLOCKS:
-                context.setBlockSetting(Registries.BLOCK.getId(Blocks.MAGENTA_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.FORWARDS_ACCEL, 0.08f); // double accel
-                context.setBlockSetting(Registries.BLOCK.getId(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.YAW_ACCEL, 0.08f); // double yaw accel
-                return;
-            case DEFAULT_ICE:
-                context.setDefaultSlipperiness(0.98f);
-                return;
-            case DEFAULT_NINE_EIGHT_FIVE:
-                context.setDefaultSlipperiness(0.985f);
-                return;
-            case NOCOL_BOATS_AND_PLAYERS:
-                context.setCollisionMode(CollisionMode.NO_BOATS_OR_PLAYERS);
-                return;
-            case NOCOL_ALL_ENTITIES:
-                context.setCollisionMode(CollisionMode.NO_ENTITIES);
-                return;
-            case BA_JANKLESS:
-                context.setStepWhileFalling(true);
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                return;
-            case BA_BLUE_JANKLESS:
-                context.setStepWhileFalling(true);
-                context.setAirControl(true);
-                context.setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f);
-                context.setStepSize(1.25f);
-                context.setWaterElevation(true);
-                return;
-            case DEFAULT_BLUE_ICE:
-                context.setDefaultSlipperiness(0.989f);
-                return;
+        switch (mode) {
+            case RALLY -> context
+                    .setDefaultSlipperiness(0.98f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setStepSize(1.25f);
+
+            case RALLY_BLUE -> context
+                    .setDefaultSlipperiness(0.989f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setStepSize(1.25f);
+
+            case BA_NOFD -> context
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true);
+
+            case PARKOUR -> context
+                    .setDefaultSlipperiness(0.98f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setJumpForce(0.36f)
+                    .setStepSize(0.5f);
+
+            case BA_BLUE_NOFD -> context
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true);
+
+            case PARKOUR_BLUE -> context
+                    .setDefaultSlipperiness(0.989f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setJumpForce(0.36f)
+                    .setStepSize(0.5f);
+
+            case BA -> context
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true);
+
+            case BA_BLUE -> context
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true);
+
+            case BROKEN_SLIME_RALLY -> context
+                    .setDefaultSlipperiness(0.98f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setStepSize(1.25f)
+                    .breakSlimePlease();
+
+            case BROKEN_SLIME_RALLY_BLUE -> context
+                    .setDefaultSlipperiness(0.989f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setStepSize(1.25f)
+                    .breakSlimePlease();
+
+            case BROKEN_SLIME_BA_NOFD -> context
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true)
+                    .breakSlimePlease();
+
+            case BROKEN_SLIME_PARKOUR -> context
+                    .setDefaultSlipperiness(0.98f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setJumpForce(0.36f)
+                    .setStepSize(0.5f)
+                    .breakSlimePlease();
+
+            case BROKEN_SLIME_BA_BLUE_NOFD -> context
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true)
+                    .breakSlimePlease();
+
+            case BROKEN_SLIME_PARKOUR_BLUE -> context
+                    .setDefaultSlipperiness(0.989f)
+                    .setFallDamage(false)
+                    .setAirControl(true)
+                    .setJumpForce(0.36f)
+                    .setStepSize(0.5f)
+                    .breakSlimePlease();
+
+            case BROKEN_SLIME_BA -> context
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true)
+                    .breakSlimePlease();
+
+            case BROKEN_SLIME_BA_BLUE -> context
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true)
+                    .breakSlimePlease();
+
+            case JUMP_BLOCKS -> context
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.ORANGE_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.36f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.BLACK_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.0f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.GREEN_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.5f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.YELLOW_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.18f);
+
+            case BOOSTER_BLOCKS -> context
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.MAGENTA_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.FORWARDS_ACCEL, 0.08f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.YAW_ACCEL, 0.08f);
+
+            case DEFAULT_ICE -> context.setDefaultSlipperiness(0.98f);
+
+            case DEFAULT_NINE_EIGHT_FIVE -> context.setDefaultSlipperiness(0.985f);
+
+            case NOCOL_BOATS_AND_PLAYERS -> context.setCollisionMode(CollisionMode.NO_BOATS_OR_PLAYERS);
+
+            case NOCOL_ALL_ENTITIES -> context.setCollisionMode(CollisionMode.NO_ENTITIES);
+
+            case BA_JANKLESS -> context
+                    .setStepWhileFalling(true)
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true);
+
+            case BA_BLUE_JANKLESS -> context
+                    .setStepWhileFalling(true)
+                    .setAirControl(true)
+                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setStepSize(1.25f)
+                    .setWaterElevation(true);
+
+            case DEFAULT_BLUE_ICE -> context.setDefaultSlipperiness(0.989f);
         }
     }
 }
