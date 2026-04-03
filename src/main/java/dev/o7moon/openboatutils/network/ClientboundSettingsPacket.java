@@ -97,6 +97,13 @@ public enum ClientboundSettingsPacket {
         switch (packet) {
             case RESET -> {
                 context.applyFrom(ISettingContext.VANILLA);
+
+                // Special full disable (null context) if we are in the default context,
+                // this should be a catchall for potential any mistakes in the default values
+                // or similar as the mixin does pretty much nothing if the context is null
+                if (context == OpenBoatUtils.instance) {
+                    OpenBoatUtils.instance.setActiveContext(null);
+                }
             }
             case SET_STEP_HEIGHT -> {
                 float stepSize = buf.readFloat();
