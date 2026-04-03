@@ -10,7 +10,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientWorld.class)
 public class ClientWorldMixin {
     @Inject(method = "<init>", at = @At("RETURN"))
-    public void postWorldLoad(CallbackInfo ci){
-        OpenBoatUtils.instance.setActiveContext(OpenBoatUtils.instance);
+    public void postWorldLoad(CallbackInfo ci) {
+        OpenBoatUtils.instance.setActiveContext(null);
+
+        OpenBoatUtils.instance.dropAllContextStores();
     }
 }

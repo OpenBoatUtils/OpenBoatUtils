@@ -1,5 +1,6 @@
 package dev.o7moon.openboatutils.network;
 
+import com.mojang.datafixers.kinds.IdF;
 import dev.o7moon.openboatutils.*;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
@@ -63,7 +64,6 @@ public enum ClientboundSettingsPacket {
 
             @Nullable ISettingContext mutable = OpenBoatUtils.instance.getActiveContext();
 
-            // automatically switch to the default context if we have nothing active
             if (mutable == null) {
                 mutable = OpenBoatUtils.instance;
 
@@ -72,144 +72,160 @@ public enum ClientboundSettingsPacket {
 
             if (!(mutable instanceof final MutableContext context)) return;
 
-            switch (packet) {
-                case RESET -> {
-                    context.applyFrom(ISettingContext.VANILLA);
-                }
-                case SET_STEP_HEIGHT -> {
-                    float stepSize = buf.readFloat();
-                    context.setStepSize(stepSize);
-                }
-                case SET_DEFAULT_SLIPPERINESS -> {
-                    context.setDefaultSlipperiness(buf.readFloat());
-                }
-                case SET_BLOCKS_SLIPPERINESS -> {
-                    float slipperiness = buf.readFloat();
-
-                    Arrays.stream(buf.readString().split(","))
-                            .map(Identifier::of)
-                            .forEach(block -> context.setBlockSlipperiness(block, slipperiness));
-                }
-                case SET_BOAT_FALL_DAMAGE -> {
-                    context.setFallDamage(buf.readBoolean());
-                }
-                case SET_BOAT_WATER_ELEVATION -> {
-                    context.setWaterElevation(buf.readBoolean());
-                }
-                case SET_AIR_CONTROL -> {
-                    context.setAirControl(buf.readBoolean());
-                }
-                case SET_BOAT_JUMP_FORCE -> {
-                    context.setJumpForce(buf.readFloat());
-                }
-                case SET_MODE -> {
-                    Modes.setMode(Modes.values()[buf.readShort()]);
-                }
-                case SET_GRAVITY -> {
-                    context.setGravityForce(buf.readDouble());
-                }
-                case SET_YAW_ACCEL -> {
-                    context.setYawAccel(buf.readFloat());
-                }
-                case SET_FORWARD_ACCEL -> {
-                    context.setForwardAccel(buf.readFloat());
-                }
-                case SET_BACKWARD_ACCEL -> {
-                    context.setBackwardAccel(buf.readFloat());
-                }
-                case SET_TURN_ACCEL -> {
-                    context.setTurnForwardAccel(buf.readFloat());
-                }
-                case ALLOW_ACCEL_STACKING -> {
-                    context.setAllowAccelStacking(buf.readBoolean());
-                }
-                case RESEND_VERSION -> {
-                    OpenBoatUtils.sendVersionPacket();
-                }
-                case SET_UNDERWATER_CONTROL -> {
-                    context.setUnderwaterControl(buf.readBoolean());
-                }
-                case SET_SURFACE_WATER_CONTROL -> {
-                    context.setSurfaceWaterControl(buf.readBoolean());
-                }
-                case SET_EXCLUSIVE_MODE -> {
-                    short mode = buf.readShort();
-                    context.applyFrom(ISettingContext.VANILLA);
-                    Modes.setMode(Modes.values()[mode]);
-                }
-                case SET_COYOTE_TIME -> {
-                    context.setCoyoteTime(buf.readInt());
-                }
-                case SET_WATER_JUMPING -> {
-                    context.setWaterJumping(buf.readBoolean());
-                }
-                case SET_SWIM_FORCE -> {
-                    context.setSwimForce(buf.readFloat());
-                }
-                case REMOVE_BLOCKS_SLIPPERINESS -> {
-                    Arrays.stream(buf.readString().split(","))
-                            .map(Identifier::of)
-                            .forEach(context::unsetBlockSlipperiness);
-                }
-                case CLEAR_SLIPPERINESS -> {
-                    context.clearSlipperinessMap();
-                }
-                case MODE_SERIES -> {
-                    for (int i = 0; i < buf.readShort(); i++) {
-                        Modes.setMode(Modes.values()[buf.readShort()]);
-                    }
-                }
-                case EXCLUSIVE_MODE_SERIES -> {
-                    context.applyFrom(ISettingContext.VANILLA);
-                    short amount = buf.readShort();
-                    for (int i = 0; i < amount; i++) {
-                        short mode = buf.readShort();
-                        Modes.setMode(Modes.values()[mode]);
-                    }
-                }
-                case SET_PER_BLOCK -> {
-                    short index = buf.readShort();
-                    float value = buf.readFloat();
-
-                    OpenBoatUtils.PerBlockSettingType[] settingTypes = OpenBoatUtils.PerBlockSettingType.values();
-
-                    if (index >= settingTypes.length) return;
-                    OpenBoatUtils.PerBlockSettingType setting = settingTypes[index];
-
-                    Arrays.stream(buf.readString().split(","))
-                            .map(Identifier::of)
-                            .forEach(block -> context.setBlockSetting(block, setting, value));
-                }
-                case SET_COLLISION_MODE -> {
-                    short collisionMode = buf.readShort();
-
-                    CollisionMode[] collisionModes = CollisionMode.values();
-
-                    if (collisionMode >= collisionModes.length) return;
-
-                    context.setCollisionMode(collisionModes[collisionMode]);
-                }
-                case SET_STEP_WHILE_FALLING -> {
-                    context.setStepWhileFalling(buf.readBoolean());
-                }
-                case SET_COLLISION_RESOLUTION -> {
-                    context.setCollisionResolution(buf.readByte());
-                }
-                case ADD_COLLISION_ENTITYTYPE_FILTER -> {
-                    Arrays.stream(buf.readString().split(","))
-                            .map(EntityType::get)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .forEach(context::addToCollisionFilter);
-                }
-                case CLEAR_COLLISION_ENTITYTYPE_FILTER -> {
-                    context.clearCollisionFilter();
-                }
-            }
+            handleContextPacket(context, buf, packet);
         } catch (Exception E) {
             OpenBoatUtils.LOG.error("Error when handling clientbound openboatutils packet: ");
             for (StackTraceElement e : E.getStackTrace()){
                 OpenBoatUtils.LOG.error(e.toString());
+            }
+        }
+    }
+
+    public static void handleContextPacket(MutableContext context, PacketByteBuf buf) {
+        short packetID = buf.readShort();
+
+        ClientboundSettingsPacket[] packets = ClientboundSettingsPacket.values();
+
+        if (packetID >= packets.length) return;
+
+        ClientboundSettingsPacket packet = packets[packetID];
+
+        handleContextPacket(context, buf, packet);
+    }
+
+    public static void handleContextPacket(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet) {
+        switch (packet) {
+            case RESET -> {
+                context.applyFrom(ISettingContext.VANILLA);
+            }
+            case SET_STEP_HEIGHT -> {
+                float stepSize = buf.readFloat();
+                context.setStepSize(stepSize);
+            }
+            case SET_DEFAULT_SLIPPERINESS -> {
+                context.setDefaultSlipperiness(buf.readFloat());
+            }
+            case SET_BLOCKS_SLIPPERINESS -> {
+                float slipperiness = buf.readFloat();
+
+                Arrays.stream(buf.readString().split(","))
+                        .map(Identifier::of)
+                        .forEach(block -> context.setBlockSlipperiness(block, slipperiness));
+            }
+            case SET_BOAT_FALL_DAMAGE -> {
+                context.setFallDamage(buf.readBoolean());
+            }
+            case SET_BOAT_WATER_ELEVATION -> {
+                context.setWaterElevation(buf.readBoolean());
+            }
+            case SET_AIR_CONTROL -> {
+                context.setAirControl(buf.readBoolean());
+            }
+            case SET_BOAT_JUMP_FORCE -> {
+                context.setJumpForce(buf.readFloat());
+            }
+            case SET_MODE -> {
+                Modes.setMode(Modes.values()[buf.readShort()]);
+            }
+            case SET_GRAVITY -> {
+                context.setGravityForce(buf.readDouble());
+            }
+            case SET_YAW_ACCEL -> {
+                context.setYawAccel(buf.readFloat());
+            }
+            case SET_FORWARD_ACCEL -> {
+                context.setForwardAccel(buf.readFloat());
+            }
+            case SET_BACKWARD_ACCEL -> {
+                context.setBackwardAccel(buf.readFloat());
+            }
+            case SET_TURN_ACCEL -> {
+                context.setTurnForwardAccel(buf.readFloat());
+            }
+            case ALLOW_ACCEL_STACKING -> {
+                context.setAllowAccelStacking(buf.readBoolean());
+            }
+            case RESEND_VERSION -> {
+                OpenBoatUtils.sendVersionPacket();
+            }
+            case SET_UNDERWATER_CONTROL -> {
+                context.setUnderwaterControl(buf.readBoolean());
+            }
+            case SET_SURFACE_WATER_CONTROL -> {
+                context.setSurfaceWaterControl(buf.readBoolean());
+            }
+            case SET_EXCLUSIVE_MODE -> {
+                short mode = buf.readShort();
+                context.applyFrom(ISettingContext.VANILLA);
+                Modes.setMode(Modes.values()[mode]);
+            }
+            case SET_COYOTE_TIME -> {
+                context.setCoyoteTime(buf.readInt());
+            }
+            case SET_WATER_JUMPING -> {
+                context.setWaterJumping(buf.readBoolean());
+            }
+            case SET_SWIM_FORCE -> {
+                context.setSwimForce(buf.readFloat());
+            }
+            case REMOVE_BLOCKS_SLIPPERINESS -> {
+                Arrays.stream(buf.readString().split(","))
+                        .map(Identifier::of)
+                        .forEach(context::unsetBlockSlipperiness);
+            }
+            case CLEAR_SLIPPERINESS -> {
+                context.clearSlipperinessMap();
+            }
+            case MODE_SERIES -> {
+                for (int i = 0; i < buf.readShort(); i++) {
+                    Modes.setMode(Modes.values()[buf.readShort()]);
+                }
+            }
+            case EXCLUSIVE_MODE_SERIES -> {
+                context.applyFrom(ISettingContext.VANILLA);
+                short amount = buf.readShort();
+                for (int i = 0; i < amount; i++) {
+                    short mode = buf.readShort();
+                    Modes.setMode(Modes.values()[mode]);
+                }
+            }
+            case SET_PER_BLOCK -> {
+                short index = buf.readShort();
+                float value = buf.readFloat();
+
+                OpenBoatUtils.PerBlockSettingType[] settingTypes = OpenBoatUtils.PerBlockSettingType.values();
+
+                if (index >= settingTypes.length) return;
+                OpenBoatUtils.PerBlockSettingType setting = settingTypes[index];
+
+                Arrays.stream(buf.readString().split(","))
+                        .map(Identifier::of)
+                        .forEach(block -> context.setBlockSetting(block, setting, value));
+            }
+            case SET_COLLISION_MODE -> {
+                short collisionMode = buf.readShort();
+
+                CollisionMode[] collisionModes = CollisionMode.values();
+
+                if (collisionMode >= collisionModes.length) return;
+
+                context.setCollisionMode(collisionModes[collisionMode]);
+            }
+            case SET_STEP_WHILE_FALLING -> {
+                context.setStepWhileFalling(buf.readBoolean());
+            }
+            case SET_COLLISION_RESOLUTION -> {
+                context.setCollisionResolution(buf.readByte());
+            }
+            case ADD_COLLISION_ENTITYTYPE_FILTER -> {
+                Arrays.stream(buf.readString().split(","))
+                        .map(EntityType::get)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .forEach(context::addToCollisionFilter);
+            }
+            case CLEAR_COLLISION_ENTITYTYPE_FILTER -> {
+                context.clearCollisionFilter();
             }
         }
     }

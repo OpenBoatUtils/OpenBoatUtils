@@ -5,6 +5,11 @@ import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.entity.vehicle.VehicleEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -14,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
@@ -31,6 +37,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     public static OpenBoatUtils instance;
 
     private final Map<Identifier, StoredContext> stored_contexts = new HashMap<>();
+    private final Map<UUID, EntityContext> entity_contexts = new HashMap<>();
 
     private boolean interpolationCompatibility = false;
 
@@ -63,7 +70,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         interpolationCompatibility = false;
     }
 
-    public static void sendVersionPacket(){
+    public static void sendVersionPacket() {
         PacketByteBuf packet = PacketByteBufs.create();
         packet.writeShort(ServerboundSettingsPacket.VERSION.ordinal());
         packet.writeInt(VERSION);
@@ -83,8 +90,20 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         return stored_contexts.computeIfAbsent(identifier, StoredContext::new);
     }
 
+    public @Nullable EntityContext getEntityContext(UUID uuid) {
+        return entity_contexts.get(uuid);
+    }
+
+    public void putEntityContext(UUID uuid, @NotNull EntityContext context) {
+        entity_contexts.put(uuid, context);
+    }
+
     public void dropStoredContext(Identifier identifier) {
         stored_contexts.remove(identifier);
+    }
+
+    public void putStoredContext(Identifier identifier, @NotNull StoredContext context) {
+        stored_contexts.put(identifier, context);
     }
 
     public void setInterpolationCompatibility(boolean interpolationCompatibility) {
@@ -95,12 +114,27 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         return interpolationCompatibility;
     }
 
-    public void setActiveContext(ISettingContext context) {
-        switchTo();
+    public void setActiveContext(@Nullable ISettingContext context) {
+        if (context != null) context.switchTo();
         this.activeContext = context;
     }
 
+    public void dropAllContextStores() {
+        stored_contexts.clear();
+        entity_contexts.clear();
+    }
+
     public @Nullable ISettingContext getActiveContext() {
+        @Nullable ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+        if (player != null && player.getVehicle() instanceof VehicleEntity vehicle) {
+            @Nullable ISettingContext entityContext = getEntityContext(vehicle.getUuid());
+
+            if (entityContext != null) {
+                return entityContext;
+            }
+        }
+
         return activeContext;
     }
 }

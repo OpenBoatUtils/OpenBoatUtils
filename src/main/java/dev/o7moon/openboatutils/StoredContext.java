@@ -6,7 +6,7 @@ public class StoredContext extends MutableContext {
 
     private final Identifier identifier;
 
-    StoredContext(Identifier identifier) {
+    public StoredContext(Identifier identifier) {
         this.identifier = identifier;
         this.applyFrom(ISettingContext.VANILLA);
     }

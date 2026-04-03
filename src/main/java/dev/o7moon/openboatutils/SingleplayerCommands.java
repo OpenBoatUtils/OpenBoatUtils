@@ -501,6 +501,21 @@ public class SingleplayerCommands {
                         return 1;
                     }))
             );
+
+            dispatcher.register(
+                    literal("dropcontext").then(argument("context", StringArgumentType.greedyString()).executes(ctx -> {
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+
+                        String context = StringArgumentType.getString(ctx, "context").trim();
+
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundContextPacket.DROP_CONTEXT.ordinal());
+                        packet.writeString(context);
+                        OpenBoatUtils.CONTEXT_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
         });
     }
 }
