@@ -7,8 +7,6 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.entity.vehicle.VehicleEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
@@ -115,6 +113,8 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     }
 
     public void setActiveContext(@Nullable ISettingContext context) {
+        if (context == activeContext && context != this) return;
+
         if (context != null) context.switchTo();
         this.activeContext = context;
     }

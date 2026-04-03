@@ -1,6 +1,5 @@
 package dev.o7moon.openboatutils.network;
 
-import com.mojang.datafixers.kinds.IdF;
 import dev.o7moon.openboatutils.*;
 import net.minecraft.entity.EntityType;
 import net.minecraft.network.PacketByteBuf;
@@ -43,7 +42,8 @@ public enum ClientboundSettingsPacket {
     SET_INTERPOLATION_COMPAT,
     SET_COLLISION_RESOLUTION,
     ADD_COLLISION_ENTITYTYPE_FILTER,
-    CLEAR_COLLISION_ENTITYTYPE_FILTER;
+    CLEAR_COLLISION_ENTITYTYPE_FILTER,
+    TRANSACTION;
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
@@ -233,6 +233,13 @@ public enum ClientboundSettingsPacket {
             }
             case CLEAR_COLLISION_ENTITYTYPE_FILTER -> {
                 context.clearCollisionFilter();
+            }
+            case TRANSACTION -> {
+                int size = buf.readInt();
+
+                for (int i = 0; i < size; i++) {
+                    handleContextPacket(context, buf);
+                }
             }
         }
     }

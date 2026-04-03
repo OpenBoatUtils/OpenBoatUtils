@@ -34,9 +34,13 @@ public enum ClientboundContextPacket {
                 case SWITCH_CONTEXT -> {
                     Identifier identifier = Identifier.of(buf.readString());
 
-                    ISettingContext context = OpenBoatUtils.instance.getStoredContext(identifier);
+                    if (identifier.getNamespace().equals(OpenBoatUtils.NAMESPACE)) {
+                        if (!identifier.equals(OpenBoatUtils.DEFAULT_CONTEXT)) {
+                            return;
+                        }
+                    }
 
-                    if (OpenBoatUtils.instance.getActiveContext() == context) return;
+                    ISettingContext context = OpenBoatUtils.instance.getStoredContext(identifier);
 
                     OpenBoatUtils.instance.setActiveContext(context);
                 }
@@ -51,25 +55,19 @@ public enum ClientboundContextPacket {
                 }
                 case STORE_CONTEXT -> {
                     Identifier identifier = Identifier.of(buf.readString());
-                    int size = buf.readInt();
 
                     StoredContext storedContext = new StoredContext(identifier);
 
-                    for (int i = 0; i < size; i++) {
-                        ClientboundSettingsPacket.handleContextPacket(storedContext, buf);
-                    }
+                    ClientboundSettingsPacket.handleContextPacket(storedContext, buf, ClientboundSettingsPacket.TRANSACTION);
 
                     OpenBoatUtils.instance.putStoredContext(identifier, storedContext);
                 }
                 case ENTITY_CONTEXT -> {
                     UUID id = UUID.fromString(buf.readString());
-                    int size = buf.readInt();
 
                     EntityContext entityContext = new EntityContext(id);
 
-                    for (int i = 0; i < size; i++) {
-                        ClientboundSettingsPacket.handleContextPacket(entityContext, buf);
-                    }
+                    ClientboundSettingsPacket.handleContextPacket(entityContext, buf, ClientboundSettingsPacket.TRANSACTION);
 
                     OpenBoatUtils.instance.putEntityContext(id, entityContext);
                 }
