@@ -1,11 +1,10 @@
 package dev.o7moon.openboatutils.mixin;
 
 import dev.o7moon.openboatutils.GetStepHeight;
+import dev.o7moon.openboatutils.ISettingContext;
 import dev.o7moon.openboatutils.OpenBoatUtils;
 import net.minecraft.entity.Entity;
-//? >=1.21.3 {
-import net.minecraft.entity.vehicle.AbstractBoatEntity;
-//?}
+import net.minecraft.entity.vehicle.BoatEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,17 +16,18 @@ public abstract class EntityMixin {
 
     @Inject(method = "getStepHeight", at = @At("HEAD"), cancellable = true)
     public void getStepHeight(CallbackInfoReturnable<Float> cir) {
-        if ((Object) this instanceof AbstractBoatEntity) {
-            GetStepHeight step = (GetStepHeight) this;
-            cir.setReturnValue(step.openBoatUtils$getStepHeight());
+        if (this instanceof GetStepHeight step) {
+            cir.setReturnValue(step.openboatutils$getStepHeight());
             cir.cancel();
         }
     }
 
     @ModifyVariable(method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", at = @At("STORE"), ordinal = 3)
     private boolean hookStepHeightOnGroundCheck(boolean original) {
-        if ((Object) this instanceof AbstractBoatEntity) {
-            if (OpenBoatUtils.canStepWhileFalling()) {
+        if ((Object) this instanceof BoatEntity) {
+            ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+            if (context.hasStepWhileFalling()) {
                 return true;
             }
         }
