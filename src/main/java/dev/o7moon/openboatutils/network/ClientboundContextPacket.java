@@ -6,10 +6,12 @@ import dev.o7moon.openboatutils.OpenBoatUtils;
 import dev.o7moon.openboatutils.StoredContext;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
 public enum ClientboundContextPacket {
+    RESET_CONTEXT,
     SWITCH_CONTEXT,
     DROP_CONTEXT,
     STORE_CONTEXT,
@@ -26,6 +28,9 @@ public enum ClientboundContextPacket {
             ClientboundContextPacket packet = packets[packetID];
 
             switch (packet) {
+                case RESET_CONTEXT -> {
+                    OpenBoatUtils.instance.setActiveContext(null);
+                }
                 case SWITCH_CONTEXT -> {
                     Identifier identifier = Identifier.of(buf.readString());
 
@@ -36,11 +41,13 @@ public enum ClientboundContextPacket {
                     OpenBoatUtils.instance.setActiveContext(context);
                 }
                 case DROP_CONTEXT -> {
-                    if (OpenBoatUtils.instance.getActiveContext() instanceof StoredContext active) {
-                        OpenBoatUtils.instance.dropStoredContext(active.getIdentifier());
-                    }
+                    Identifier identifier = Identifier.of(buf.readString());
 
-                    OpenBoatUtils.instance.setActiveContext(OpenBoatUtils.instance);
+                    @Nullable ISettingContext context = OpenBoatUtils.instance.dropStoredContext(identifier);
+
+                    if (context != null && context == OpenBoatUtils.instance.getActiveContext()) {
+                        OpenBoatUtils.instance.setActiveContext(null);
+                    }
                 }
                 case STORE_CONTEXT -> {
                     Identifier identifier = Identifier.of(buf.readString());
