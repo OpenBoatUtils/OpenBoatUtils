@@ -171,6 +171,12 @@ public abstract class BoatMixin implements GetStepHeight {
 
         interpolator.setLerpDuration(openboatutils$defaultInterpolation);
     }
+    *///? } else if >= 1.21.3 {
+    /*@ModifyVariable(method = "updateTrackedPositionAndAngles", at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    int interpolationStepsHook(int interpolationSteps) {
+        if (!OpenBoatUtils.instance.getInterpolationCompatibility()) return interpolationSteps;
+        return 10;
+    }
     *///? }
 
     //? if >=1.21.3 {
@@ -299,6 +305,7 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (!context.hasFallDamage()) ci.cancel();
     }
+
 
     @Inject(method = "getGravity", at = @At("HEAD"), cancellable = true)
     public void onGetGravity(CallbackInfoReturnable<Double> cir) {
