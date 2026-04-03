@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class SettingContext implements ISettingContext {
+public abstract class MutableContext implements ISettingContext {
 
     private boolean hasFallDamage;
     private boolean hasWaterElevation;
@@ -66,65 +66,61 @@ public class SettingContext implements ISettingContext {
     }
     @Override public int getCollisionResolution() { return collisionResolution; }
 
-    public SettingContext setFallDamage(boolean v) { this.hasFallDamage = v; return this; }
-    public SettingContext setWaterElevation(boolean v) { this.hasWaterElevation = v; return this; }
-    public SettingContext setAirControl(boolean v) { this.hasAirControl = v; return this; }
-    public SettingContext setDefaultSlipperiness(float v) { this.defaultSlipperiness = v; return this; }
-    public SettingContext setJumpForce(float v) { this.jumpForce = v; return this; }
-    public SettingContext setStepSize(float v) { this.stepSize = v; return this; }
-    public SettingContext setGravityForce(double v) { this.gravityForce = v; return this; }
-    public SettingContext setYawAccel(float v) { this.yawAccel = v; return this; }
-    public SettingContext setForwardAccel(float v) { this.forwardAccel = v; return this; }
-    public SettingContext setBackwardAccel(float v) { this.backwardAccel = v; return this; }
-    public SettingContext setTurnForwardAccel(float v) { this.turnForwardAccel = v; return this; }
-    public SettingContext setAllowAccelStacking(boolean v) { this.allowAccelStacking = v; return this; }
-    public SettingContext setUnderwaterControl(boolean v) { this.underwaterControl = v; return this; }
-    public SettingContext setSurfaceWaterControl(boolean v) { this.surfaceWaterControl = v; return this; }
-    public SettingContext setCoyoteTime(int v) { this.coyoteTime = v; return this; }
-    public SettingContext setWaterJumping(boolean v) { this.waterJumping = v; return this; }
-    public SettingContext setSwimForce(float v) { this.swimForce = v; return this; }
-    public SettingContext setCollisionMode(CollisionMode v) { this.collisionMode = v; return this; }
-    public SettingContext setStepWhileFalling(boolean v) { this.stepWhileFalling = v; return this; }
-    public SettingContext setCollisionResolution(int v) { this.collisionResolution = v; return this; }
+    public MutableContext setFallDamage(boolean v) { this.hasFallDamage = v; return this; }
+    public MutableContext setWaterElevation(boolean v) { this.hasWaterElevation = v; return this; }
+    public MutableContext setAirControl(boolean v) { this.hasAirControl = v; return this; }
+    public MutableContext setDefaultSlipperiness(float v) { this.defaultSlipperiness = v; return this; }
+    public MutableContext setJumpForce(float v) { this.jumpForce = v; return this; }
+    public MutableContext setStepSize(float v) { this.stepSize = v; return this; }
+    public MutableContext setGravityForce(double v) { this.gravityForce = v; return this; }
+    public MutableContext setYawAccel(float v) { this.yawAccel = v; return this; }
+    public MutableContext setForwardAccel(float v) { this.forwardAccel = v; return this; }
+    public MutableContext setBackwardAccel(float v) { this.backwardAccel = v; return this; }
+    public MutableContext setTurnForwardAccel(float v) { this.turnForwardAccel = v; return this; }
+    public MutableContext setAllowAccelStacking(boolean v) { this.allowAccelStacking = v; return this; }
+    public MutableContext setUnderwaterControl(boolean v) { this.underwaterControl = v; return this; }
+    public MutableContext setSurfaceWaterControl(boolean v) { this.surfaceWaterControl = v; return this; }
+    public MutableContext setCoyoteTime(int v) { this.coyoteTime = v; return this; }
+    public MutableContext setWaterJumping(boolean v) { this.waterJumping = v; return this; }
+    public MutableContext setSwimForce(float v) { this.swimForce = v; return this; }
+    public MutableContext setCollisionMode(CollisionMode v) { this.collisionMode = v; return this; }
+    public MutableContext setStepWhileFalling(boolean v) { this.stepWhileFalling = v; return this; }
+    public MutableContext setCollisionResolution(int v) { this.collisionResolution = v; return this; }
 
-    public SettingContext addToCollisionFilter(EntityType<?> type) {
+    public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
         return this;
     }
-    public SettingContext removeFromCollisionFilter(EntityType<?> type) {
-        this.collisionFilteredEntities.remove(type);
-        return this;
-    }
-    public SettingContext clearCollisionFilter() {
+    public MutableContext clearCollisionFilter() {
         this.collisionFilteredEntities.clear();
         return this;
     }
 
-    public SettingContext setBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type, float value) {
+    public MutableContext setBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type, float value) {
         perBlockSettings
                 .computeIfAbsent(type, unused -> new HashMap<>())
                 .put(id, value);
         return this;
     }
 
-    public SettingContext breakSlimePlease() {
+    public MutableContext breakSlimePlease() {
         this.blockSlipperiness.remove(Registries.BLOCK.getId(Blocks.SLIME_BLOCK));
         return this;
     }
-    public SettingContext unsetBlockSlipperiness(Identifier id) {
+    public MutableContext unsetBlockSlipperiness(Identifier id) {
         blockSlipperiness.remove(id);
         return this;
     }
-    public SettingContext setBlockSlipperiness(Identifier id, float slipperiness) {
+    public MutableContext setBlockSlipperiness(Identifier id, float slipperiness) {
         blockSlipperiness.put(id, slipperiness);
         return this;
     }
-    public SettingContext clearSlipperinessMap() {
+    public MutableContext clearSlipperinessMap() {
         blockSlipperiness.clear();
         return this;
     }
 
-    public SettingContext applyFrom(ISettingContext other) {
+    public MutableContext applyFrom(ISettingContext other) {
         this.hasFallDamage = other.hasFallDamage();
         this.hasWaterElevation = other.hasWaterElevation();
         this.hasAirControl = other.hasAirControl();

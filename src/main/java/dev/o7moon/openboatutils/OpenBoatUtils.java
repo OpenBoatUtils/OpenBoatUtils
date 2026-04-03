@@ -1,37 +1,40 @@
 package dev.o7moon.openboatutils;
 
-import io.netty.buffer.ByteBuf;
+import dev.o7moon.openboatutils.network.ByteBufChannel;
+import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenBoatUtils extends SettingContext implements ModInitializer {
+import java.util.HashMap;
+import java.util.Map;
+
+public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     public static final String NAMESPACE = "openboatutils";
     public static final int VERSION = 19;
     public static final boolean UNSTABLE = true;
 
     public static final Logger LOG = LoggerFactory.getLogger("OpenBoatUtils");
-    public static final Identifier settingsChannel = Identifier.of(NAMESPACE,"settings");
+
+    public static final ByteBufChannel SETTING_CHANNEL = new ByteBufChannel(Identifier.of(NAMESPACE, "settings"));
+    public static final ByteBufChannel CONTEXT_CHANNEL = new ByteBufChannel(Identifier.of(NAMESPACE, "context"));
+
+    public static final Identifier DEFAULT_CONTEXT = Identifier.of(NAMESPACE, "default");
 
     public static OpenBoatUtils instance;
 
-    public static boolean enabled = false;
+    private final Map<Identifier, StoredContext> stored_contexts = new HashMap<>();
 
-    // non-context settings, don't reset with the rest but reset when joining a server (could persist on proxies)
-    // there is a separate reset packet that includes these, but the original ones are for resetting the
-    // active context rather than the entire state of the mod.
-    // (08/26/25) there is actually not a separate reset packet at the moment. TODO
+    private boolean interpolationCompatibility = false;
 
-    public static boolean interpolationCompat = false;
+    private @Nullable ISettingContext activeContext = null;
 
     public OpenBoatUtils() {
         instance = this;
@@ -39,70 +42,65 @@ public class OpenBoatUtils extends SettingContext implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ClientboundPackets.registerCodecs();
-        ServerboundPackets.registerCodecs();
+        SETTING_CHANNEL.registerCodec();
+        CONTEXT_CHANNEL.registerCodec();
 
-        ServerboundPackets.registerHandlers();
+        SETTING_CHANNEL.registerServerHandler((bytePayload, context) -> {
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
+
+            context.server().execute(() -> {
+                ServerboundSettingsPacket.handlePacket(buf);
+                buf.release();
+            });
+        });
 
         SingleplayerCommands.registerCommands();
     }
 
     public void resetAll() {
-        // reset the default context
-        resetSettings();
+        setActiveContext(this);
 
-        // reset additional non-context state
-        interpolationCompat = false;
-    }
-
-    public void resetSettings() {
-        OpenBoatUtils.enabled = false;
-        OpenBoatUtils.instance.applyFrom(ISettingContext.VANILLA);
+        interpolationCompatibility = false;
     }
 
     public static void sendVersionPacket(){
         PacketByteBuf packet = PacketByteBufs.create();
-        packet.writeShort(ServerboundPackets.VERSION.ordinal());
+        packet.writeShort(ServerboundSettingsPacket.VERSION.ordinal());
         packet.writeInt(VERSION);
         packet.writeBoolean(UNSTABLE);
-        sendPacketC2S(packet);
+
+        SETTING_CHANNEL.sendPacketC2S(packet);
     }
 
-    public record BytePayload(ByteBuf data) implements CustomPayload {
-        public static final PacketCodec<PacketByteBuf, BytePayload> CODEC = CustomPayload.codecOf(BytePayload::write, BytePayload::new);
-        public static final Id<BytePayload> ID = new Id<>(settingsChannel);
-
-        public BytePayload(PacketByteBuf buf) {
-            this(buf.copy());
-            buf.readerIndex(buf.writerIndex());// so mc doesn't complain we haven't read all the bytes
-        }
-
-        void write(PacketByteBuf buf) {
-            buf.writeBytes(data);
-        }
-
-        @Override
-        public Id<? extends CustomPayload> getId() {
-            return ID;
-        }
+    @Override
+    public void switchTo() {
+        OpenBoatUtils.instance.applyFrom(ISettingContext.VANILLA);
     }
 
-    public static void sendPacketC2S(PacketByteBuf packet) {
-        BytePayload payload = new BytePayload(packet);
-        ClientPlayNetworking.send(payload);
+    public @NotNull ISettingContext getStoredContext(Identifier identifier) {
+        if (identifier.equals(DEFAULT_CONTEXT)) return this;
+
+        return stored_contexts.computeIfAbsent(identifier, StoredContext::new);
     }
 
-    public static void sendPacketS2C(ServerPlayerEntity player, PacketByteBuf packet){
-        BytePayload payload = new BytePayload(packet);
-        ServerPlayNetworking.send(player, payload);
-    }
-    // doesn't deal with .enabled because its a non-context setting that is for the general runtime of obu
-    // and not a specific client boat
-    public static void setInterpolationCompat(boolean interpolationCompat) {
-        OpenBoatUtils.interpolationCompat = interpolationCompat;
+    public void dropStoredContext(Identifier identifier) {
+        stored_contexts.remove(identifier);
     }
 
-    public ISettingContext getDefaultContext() {
-        return this;
+    public void setInterpolationCompatibility(boolean interpolationCompatibility) {
+        this.interpolationCompatibility = interpolationCompatibility;
+    }
+
+    public boolean getInterpolationCompatibility() {
+        return interpolationCompatibility;
+    }
+
+    public void setActiveContext(ISettingContext context) {
+        switchTo();
+        this.activeContext = context;
+    }
+
+    public @Nullable ISettingContext getActiveContext() {
+        return activeContext;
     }
 }

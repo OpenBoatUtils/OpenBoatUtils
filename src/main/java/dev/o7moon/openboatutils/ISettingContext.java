@@ -14,6 +14,8 @@ public interface ISettingContext {
     ISettingContext VANILLA = getVanilla();
     Map<Identifier, Float> VANILLA_SLIPPERINESS = getVanillaSlipperinessMap();
 
+    void switchTo();
+
     boolean hasFallDamage();
     boolean hasWaterElevation();
     boolean hasAirControl();
@@ -50,8 +52,11 @@ public interface ISettingContext {
         return map;
     }
 
-    static ISettingContext getVanilla() {
+    private static ISettingContext getVanilla() {
         return new ISettingContext() {
+            @Override
+            public void switchTo() {}
+
             @Override public boolean hasFallDamage() { return true; }
             @Override public boolean hasWaterElevation() { return false; }
             @Override public boolean hasAirControl() { return false; }

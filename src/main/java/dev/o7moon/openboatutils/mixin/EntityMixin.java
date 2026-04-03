@@ -25,7 +25,7 @@ public abstract class EntityMixin {
     @ModifyVariable(method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", at = @At("STORE"), ordinal = 3)
     private boolean hookStepHeightOnGroundCheck(boolean original) {
         if ((Object) this instanceof BoatEntity) {
-            ISettingContext context = OpenBoatUtils.instance.getDefaultContext();
+            ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context.hasStepWhileFalling()) {
                 return true;

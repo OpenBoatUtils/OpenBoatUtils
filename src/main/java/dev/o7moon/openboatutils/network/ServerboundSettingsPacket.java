@@ -1,21 +1,10 @@
-package dev.o7moon.openboatutils;
+package dev.o7moon.openboatutils.network;
 
+import dev.o7moon.openboatutils.OpenBoatUtils;
 import io.netty.buffer.ByteBuf;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
-public enum ServerboundPackets {
+public enum ServerboundSettingsPacket {
     VERSION;
-
-    public static void registerCodecs() {
-        PayloadTypeRegistry.playC2S().register(OpenBoatUtils.BytePayload.ID, OpenBoatUtils.BytePayload.CODEC);
-    }
-
-    public static void registerHandlers(){
-        ServerPlayNetworking.registerGlobalReceiver(OpenBoatUtils.BytePayload.ID, ((payload, context) ->
-                context.server().execute(() ->
-                        handlePacket(payload.data()) )));
-    }
 
     public static void handlePacket(ByteBuf buf) {
         try {

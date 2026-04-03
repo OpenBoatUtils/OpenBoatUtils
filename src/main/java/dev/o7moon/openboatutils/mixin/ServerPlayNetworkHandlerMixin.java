@@ -1,6 +1,8 @@
 package dev.o7moon.openboatutils.mixin;
 
-import dev.o7moon.openboatutils.OpenBoatUtils;
+//? >= 1.21.6 {
+/*import dev.o7moon.openboatutils.OpenBoatUtils;
+*///? }
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,11 +28,7 @@ public class ServerPlayNetworkHandlerMixin {
     //? >=1.21.6 {
     /*@ModifyConstant(method = "onVehicleMove", constant = @Constant(doubleValue = 0.0625))
     private double preventMovedWrongly(double constant) {
-        return OpenBoatUtils.enabled ? Double.MAX_VALUE : constant;
+        return OpenBoatUtils.instance.getActiveContext() != null ? Double.MAX_VALUE : constant;
     }
     *///?}
-
-    // Skip the "moved "wrongly" warn. also skips "moved too quickly"
-    @Redirect(method = "onVehicleMove", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;[Ljava/lang/Object;)V"))
-    private void preventMovedWronglyLog(Logger instance, String s, Object[] objects) {}
 }
