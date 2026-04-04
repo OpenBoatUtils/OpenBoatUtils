@@ -35,6 +35,8 @@ public abstract class MutableContext implements ISettingContext {
     private final Map<OpenBoatUtils.PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
     private final Set<EntityType<?>> collisionFilteredEntities = new HashSet<>();
 
+    private Set<Identifier> blocksWithSettings = new HashSet<>();
+
     @Override public boolean hasFallDamage() { return hasFallDamage; }
     @Override public boolean hasWaterElevation() { return hasWaterElevation; }
     @Override public boolean hasAirControl() { return hasAirControl; }
@@ -59,11 +61,16 @@ public abstract class MutableContext implements ISettingContext {
     }
     @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return collisionFilteredEntities.contains(type); }
     @Override public @Nullable Float getBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type) {
+        if (!blocksWithSettings.contains(id)) return null;
+
         return blockSettings
                 .computeIfAbsent(type, unused -> new HashMap<>())
                 .get(id);
     }
     @Override public int getCollisionResolution() { return collisionResolution; }
+
+    @Override
+    public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
 
     public MutableContext setFallDamage(boolean v) { this.hasFallDamage = v; return this; }
     public MutableContext setWaterElevation(boolean v) { this.hasWaterElevation = v; return this; }
@@ -96,6 +103,7 @@ public abstract class MutableContext implements ISettingContext {
     }
 
     public MutableContext setBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type, float value) {
+        blocksWithSettings.add(id);
         blockSettings
                 .computeIfAbsent(type, unused -> new HashMap<>())
                 .put(id, value);
@@ -140,25 +148,28 @@ public abstract class MutableContext implements ISettingContext {
         this.collisionMode = other.getCollisionMode();
         this.stepWhileFalling = other.hasStepWhileFalling();
         this.collisionResolution = other.getCollisionResolution();
-
-        var blocks = Registries.BLOCK.stream()
-                .map(Registries.BLOCK::getId);
+        this.blocksWithSettings = other.getBlocksWithSettings();
 
         this.blockSlipperiness.clear();
-        this.blockSettings.clear();
-        blocks.forEach(identifier -> {
+        Registries.BLOCK.stream()
+                .map(Registries.BLOCK::getId).forEach(identifier -> {
             Float slipperiness = other.getBlockSlipperiness(identifier);
 
             if (slipperiness == null) return;
 
             this.blockSlipperiness.put(identifier, slipperiness);
+        });
 
+        this.blockSettings.clear();
+        blocksWithSettings.forEach(identifier -> {
             for (PerBlockSettingType type : PerBlockSettingType.values()) {
                 Float setting = other.getBlockSetting(identifier, type);
 
                 if (setting == null) continue;
 
-                this.setBlockSetting(identifier, type, setting);
+                blockSettings
+                        .computeIfAbsent(type, unused -> new HashMap<>())
+                        .put(identifier, setting);
             }
         });
 

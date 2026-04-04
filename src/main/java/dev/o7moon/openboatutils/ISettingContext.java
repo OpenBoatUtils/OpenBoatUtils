@@ -6,8 +6,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public interface ISettingContext {
 
@@ -39,6 +38,8 @@ public interface ISettingContext {
     boolean isEntityTypeFiltered(EntityType<?> type);
     @Nullable Float getBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type);
     int getCollisionResolution();
+
+    Set<Identifier> getBlocksWithSettings();
 
     static Map<Identifier, Float> getVanillaSlipperinessMap() {
         Map<Identifier, Float> map = new HashMap<>();
@@ -80,6 +81,8 @@ public interface ISettingContext {
             @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return false; }
             @Override public @Nullable Float getBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type) { return null; }
             @Override public int getCollisionResolution() { return 1; }
+
+            @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
         };
     }
 }
