@@ -48,7 +48,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(BoatEntity.class)
 public abstract class BoatMixin implements GetStepHeight {
     //? < 1.21.5 {
-    @Shadow float velocityDecay;
+    @Shadow private float velocityDecay;
     //? }
     @Shadow private float nearbySlipperiness;
     @Shadow private double waterLevel;
@@ -67,19 +67,16 @@ public abstract class BoatMixin implements GetStepHeight {
     @Shadow protected abstract boolean checkBoatInWater();
     @Shadow protected abstract BoatEntity.Location checkLocation();
 
-    @Shadow public abstract float getNearbySlipperiness();
-
     @Unique float openboatutils$stepHeight;
     public float openboatutils$getStepHeight() {
         return openboatutils$stepHeight;
     }
 
-    @Unique
-    public void openboatutils$setStepHeight(float f) {
+    @Unique public void openboatutils$setStepHeight(float f) {
         openboatutils$stepHeight = f;
     }
 
-    public float openboatutils$getNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
+    @Unique public float openboatutils$getNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
         Box box = instance.getBoundingBox();
         Box box2 = new Box(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
         int i = MathHelper.floor(box2.minX) - 1;
@@ -132,7 +129,9 @@ public abstract class BoatMixin implements GetStepHeight {
 
     @Unique
     void oncePerTick(BoatEntity instance, BoatEntity.Location loc, MinecraftClient minecraft) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+        if (context == null) return;
 
         if ((loc ==  BoatEntity.Location.UNDER_FLOWING_WATER || loc == BoatEntity.Location.UNDER_WATER) && minecraft.options.jumpKey.isPressed() && context.getSwimForce() != 0.0f) {
             Vec3d velocity = instance.getVelocity();
@@ -241,7 +240,7 @@ public abstract class BoatMixin implements GetStepHeight {
         }
 
         if (original_loc == BoatEntity.Location.IN_AIR && context.hasAirControl()) {
-            Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR));;
+            Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR));
 
             if (slipperiness == null) slipperiness = context.getDefaultSlipperiness();
 
