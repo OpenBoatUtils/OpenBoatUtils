@@ -148,7 +148,7 @@ public abstract class MutableContext implements ISettingContext {
         this.collisionMode = other.getCollisionMode();
         this.stepWhileFalling = other.hasStepWhileFalling();
         this.collisionResolution = other.getCollisionResolution();
-        this.blocksWithSettings = other.getBlocksWithSettings();
+        this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
 
         this.blockSlipperiness.clear();
         Registries.BLOCK.stream()
