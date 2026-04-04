@@ -148,14 +148,14 @@ public enum Modes {
                     .breakSlimePlease();
 
             case JUMP_BLOCKS -> context
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.ORANGE_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.36f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.BLACK_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.0f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.GREEN_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.5f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.YELLOW_CONCRETE), OpenBoatUtils.PerBlockSettingType.JUMP_FORCE, 0.18f);
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.ORANGE_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.36f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.BLACK_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.0f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.GREEN_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.5f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.YELLOW_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.18f);
 
             case BOOSTER_BLOCKS -> context
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.MAGENTA_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.FORWARDS_ACCEL, 0.08f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA), OpenBoatUtils.PerBlockSettingType.YAW_ACCEL, 0.08f);
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.MAGENTA_GLAZED_TERRACOTTA), PerBlockSettingType.FORWARDS_ACCEL, 0.08f)
+                    .setBlockSetting(Registries.BLOCK.getId(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA), PerBlockSettingType.YAW_ACCEL, 0.08f);
 
             case DEFAULT_ICE -> context.setDefaultSlipperiness(0.98f);
 

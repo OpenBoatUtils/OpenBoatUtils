@@ -390,12 +390,12 @@ public class SingleplayerCommands {
                     literal("setblocksetting").then(argument("setting", StringArgumentType.string()).then(argument("value", FloatArgumentType.floatArg()).then(argument("blocks", StringArgumentType.greedyString()).executes(ctx -> {
                         ServerPlayerEntity player = ctx.getSource().getPlayer();
                         if (player == null) return 0;
-                        OpenBoatUtils.PerBlockSettingType setting;
+                        PerBlockSettingType setting;
                         try {
-                            setting = OpenBoatUtils.PerBlockSettingType.valueOf(StringArgumentType.getString(ctx, "setting"));
+                            setting = PerBlockSettingType.valueOf(StringArgumentType.getString(ctx, "setting"));
                         } catch (Exception e) {
                             String valid_settings = "";
-                            for (OpenBoatUtils.PerBlockSettingType s : OpenBoatUtils.PerBlockSettingType.values()) {
+                            for (PerBlockSettingType s : PerBlockSettingType.values()) {
                                 valid_settings += s.toString() + " ";
                             }
                             ctx.getSource().sendMessage(Text.literal("Invalid setting! Valid settings are: "+valid_settings));

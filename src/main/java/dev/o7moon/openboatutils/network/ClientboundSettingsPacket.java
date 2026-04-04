@@ -200,10 +200,10 @@ public enum ClientboundSettingsPacket {
                 short index = buf.readShort();
                 float value = buf.readFloat();
 
-                OpenBoatUtils.PerBlockSettingType[] settingTypes = OpenBoatUtils.PerBlockSettingType.values();
+                PerBlockSettingType[] settingTypes = PerBlockSettingType.values();
 
                 if (index >= settingTypes.length) return;
-                OpenBoatUtils.PerBlockSettingType setting = settingTypes[index];
+                PerBlockSettingType setting = settingTypes[index];
 
                 Arrays.stream(buf.readString().split(","))
                         .map(Identifier::of)

@@ -36,7 +36,7 @@ public interface ISettingContext {
     boolean hasStepWhileFalling();
     @Nullable Float getBlockSlipperiness(Identifier id);
     boolean isEntityTypeFiltered(EntityType<?> type);
-    @Nullable Float getBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type);
+    @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type);
     int getCollisionResolution();
 
     Set<Identifier> getBlocksWithSettings();
@@ -79,7 +79,7 @@ public interface ISettingContext {
             @Override public boolean hasStepWhileFalling() { return false; }
             @Override public @Nullable Float getBlockSlipperiness(Identifier id) { return VANILLA_SLIPPERINESS.get(id); }
             @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return false; }
-            @Override public @Nullable Float getBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type) { return null; }
+            @Override public @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type) { return null; }
             @Override public int getCollisionResolution() { return 1; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }

@@ -4,6 +4,7 @@ import dev.o7moon.openboatutils.CollisionMode;
 import dev.o7moon.openboatutils.GetStepHeight;
 import dev.o7moon.openboatutils.ISettingContext;
 import dev.o7moon.openboatutils.OpenBoatUtils;
+import dev.o7moon.openboatutils.PerBlockSettingType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -78,7 +79,7 @@ public abstract class BoatMixin implements GetStepHeight {
         openboatutils$stepHeight = f;
     }
 
-    public float openboatutils$getNearbySetting(ISettingContext context, BoatEntity instance, OpenBoatUtils.PerBlockSettingType setting) {
+    public float openboatutils$getNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
         Box box = instance.getBoundingBox();
         Box box2 = new Box(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
         int i = MathHelper.floor(box2.minX) - 1;
@@ -144,7 +145,7 @@ public abstract class BoatMixin implements GetStepHeight {
             openboatutils$coyoteTimer--;
         }
 
-        float jumpForce = openboatutils$getNearbySetting(context, instance, OpenBoatUtils.PerBlockSettingType.JUMP_FORCE);
+        float jumpForce = openboatutils$getNearbySetting(context, instance, PerBlockSettingType.JUMP_FORCE);
 
         if (openboatutils$coyoteTimer >= 0 && jumpForce > 0f && minecraft.options.jumpKey.isPressed()) {
             Vec3d velocity = instance.getVelocity();
@@ -329,7 +330,7 @@ public abstract class BoatMixin implements GetStepHeight {
         // sign isn't needed here because the vanilla acceleration is exactly 1,
         // but I suppose this helps if mojang ever decides to change that value for some reason
 
-        float yaw_accel = openboatutils$getNearbySetting(context, instance, OpenBoatUtils.PerBlockSettingType.YAW_ACCEL);
+        float yaw_accel = openboatutils$getNearbySetting(context, instance, PerBlockSettingType.YAW_ACCEL);
 
         this.yawVelocity += MathHelper.sign(original_delta) * yaw_accel;
     }
@@ -341,7 +342,7 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (context == null) return original;
 
-        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, OpenBoatUtils.PerBlockSettingType.FORWARDS_ACCEL);
+        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.FORWARDS_ACCEL);
     }
 
     @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 0))
@@ -350,7 +351,7 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (context == null) return original;
 
-        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, OpenBoatUtils.PerBlockSettingType.TURN_FORWARDS_ACCEL);
+        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.TURN_FORWARDS_ACCEL);
     }
 
     @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 1))
@@ -359,7 +360,7 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (context == null) return original;
 
-        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, OpenBoatUtils.PerBlockSettingType.BACKWARDS_ACCEL);
+        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.BACKWARDS_ACCEL);
     }
 
     @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingForward:Z", opcode = Opcodes.GETFIELD, ordinal = 0))

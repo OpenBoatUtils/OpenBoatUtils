@@ -32,7 +32,7 @@ public abstract class MutableContext implements ISettingContext {
     private int collisionResolution;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
-    private final Map<OpenBoatUtils.PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
+    private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
     private final Set<EntityType<?>> collisionFilteredEntities = new HashSet<>();
 
     private Set<Identifier> blocksWithSettings = new HashSet<>();
@@ -60,7 +60,7 @@ public abstract class MutableContext implements ISettingContext {
         return blockSlipperiness.get(id);
     }
     @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return collisionFilteredEntities.contains(type); }
-    @Override public @Nullable Float getBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type) {
+    @Override public @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type) {
         if (!blocksWithSettings.contains(id)) return null;
 
         return blockSettings
@@ -102,7 +102,7 @@ public abstract class MutableContext implements ISettingContext {
         return this;
     }
 
-    public MutableContext setBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type, float value) {
+    public MutableContext setBlockSetting(Identifier id, PerBlockSettingType type, float value) {
         blocksWithSettings.add(id);
         blockSettings
                 .computeIfAbsent(type, unused -> new HashMap<>())
@@ -179,22 +179,6 @@ public abstract class MutableContext implements ISettingContext {
         return this;
     }
 
-    public enum PerBlockSettingType {
-        JUMP_FORCE,
-        FORWARDS_ACCEL,
-        BACKWARDS_ACCEL,
-        YAW_ACCEL,
-        TURN_FORWARDS_ACCEL;
 
-        public float fromContext(ISettingContext context) {
-            return switch (this) {
-                case JUMP_FORCE -> context.getJumpForce();
-                case FORWARDS_ACCEL -> context.getForwardAccel();
-                case BACKWARDS_ACCEL -> context.getBackwardAccel();
-                case YAW_ACCEL -> context.getYawAccel();
-                case TURN_FORWARDS_ACCEL -> context.getTurnForwardAccel();
-            };
-        }
-    }
 }
 
