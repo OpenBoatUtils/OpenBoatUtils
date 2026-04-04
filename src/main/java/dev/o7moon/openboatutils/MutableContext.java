@@ -1,6 +1,5 @@
 package dev.o7moon.openboatutils;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
@@ -33,7 +32,7 @@ public abstract class MutableContext implements ISettingContext {
     private int collisionResolution;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
-    private final Map<OpenBoatUtils.PerBlockSettingType, Map<Identifier, Float>> perBlockSettings = new HashMap<>();
+    private final Map<OpenBoatUtils.PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
     private final Set<EntityType<?>> collisionFilteredEntities = new HashSet<>();
 
     @Override public boolean hasFallDamage() { return hasFallDamage; }
@@ -58,9 +57,9 @@ public abstract class MutableContext implements ISettingContext {
     @Override public @Nullable Float getBlockSlipperiness(Identifier id) {
         return blockSlipperiness.get(id);
     }
-    @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return false; }
+    @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return collisionFilteredEntities.contains(type); }
     @Override public @Nullable Float getBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type) {
-        return perBlockSettings
+        return blockSettings
                 .computeIfAbsent(type, unused -> new HashMap<>())
                 .get(id);
     }
@@ -97,7 +96,7 @@ public abstract class MutableContext implements ISettingContext {
     }
 
     public MutableContext setBlockSetting(Identifier id, OpenBoatUtils.PerBlockSettingType type, float value) {
-        perBlockSettings
+        blockSettings
                 .computeIfAbsent(type, unused -> new HashMap<>())
                 .put(id, value);
         return this;
@@ -142,22 +141,26 @@ public abstract class MutableContext implements ISettingContext {
         this.stepWhileFalling = other.hasStepWhileFalling();
         this.collisionResolution = other.getCollisionResolution();
 
+        var blocks = Registries.BLOCK.stream()
+                .map(Registries.BLOCK::getId);
+
         this.blockSlipperiness.clear();
-        Registries.BLOCK.stream()
-                .map(Registries.BLOCK::getId)
-                .forEach(identifier -> {
-                    Float slipperiness = other.getBlockSlipperiness(identifier);
+        this.blockSettings.clear();
+        blocks.forEach(identifier -> {
+            Float slipperiness = other.getBlockSlipperiness(identifier);
 
-                    if (slipperiness == null) return;
+            if (slipperiness == null) return;
 
-                    this.blockSlipperiness.put(identifier, slipperiness);
-                });
+            this.blockSlipperiness.put(identifier, slipperiness);
 
-        for (Block b : Registries.BLOCK.stream().toList()) {
-            Identifier id = Registries.BLOCK.getId(b);
+            for (PerBlockSettingType type : PerBlockSettingType.values()) {
+                Float setting = other.getBlockSetting(identifier, type);
 
-            this.blockSlipperiness.put(id, other.getBlockSlipperiness(id));
-        }
+                if (setting == null) continue;
+
+                this.setBlockSetting(identifier, type, setting);
+            }
+        });
 
         this.collisionFilteredEntities.clear();
         this.collisionFilteredEntities.addAll(Registries.ENTITY_TYPE.stream().filter(other::isEntityTypeFiltered).toList());
