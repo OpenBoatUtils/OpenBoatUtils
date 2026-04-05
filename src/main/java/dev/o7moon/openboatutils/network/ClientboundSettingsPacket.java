@@ -184,7 +184,8 @@ public enum ClientboundSettingsPacket {
                 context.clearSlipperinessMap();
             }
             case MODE_SERIES -> {
-                for (int i = 0; i < buf.readShort(); i++) {
+                short amount = buf.readShort();
+                for (int i = 0; i < amount; i++) {
                     Modes.setMode(Modes.values()[buf.readShort()]);
                 }
             }
