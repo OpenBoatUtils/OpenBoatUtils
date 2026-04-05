@@ -30,12 +30,14 @@ public abstract class MutableContext implements ISettingContext {
     private CollisionMode collisionMode;
     private boolean stepWhileFalling;
     private int collisionResolution;
+    private float walltapMultiplier;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
     private final Set<EntityType<?>> collisionFilteredEntities = new HashSet<>();
 
     private Set<Identifier> blocksWithSettings = new HashSet<>();
+    private Set<PerBlockSettingType> settingsInUse = new HashSet<>();
 
     @Override public boolean hasFallDamage() { return hasFallDamage; }
     @Override public boolean hasWaterElevation() { return hasWaterElevation; }
@@ -68,9 +70,13 @@ public abstract class MutableContext implements ISettingContext {
                 .get(id);
     }
     @Override public int getCollisionResolution() { return collisionResolution; }
+    @Override public float getWalltapMultiplier() { return walltapMultiplier; }
 
     @Override
     public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
+
+    @Override
+    public boolean hasAnyBlocksWithSetting(PerBlockSettingType type) { return settingsInUse.contains(type); }
 
     public MutableContext setFallDamage(boolean v) { this.hasFallDamage = v; return this; }
     public MutableContext setWaterElevation(boolean v) { this.hasWaterElevation = v; return this; }
@@ -92,6 +98,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setCollisionMode(CollisionMode v) { this.collisionMode = v; return this; }
     public MutableContext setStepWhileFalling(boolean v) { this.stepWhileFalling = v; return this; }
     public MutableContext setCollisionResolution(int v) { this.collisionResolution = v; return this; }
+    public MutableContext setWalltapMultiplier(float v) { this.walltapMultiplier = v; return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -104,6 +111,7 @@ public abstract class MutableContext implements ISettingContext {
 
     public MutableContext setBlockSetting(Identifier id, PerBlockSettingType type, float value) {
         blocksWithSettings.add(id);
+        settingsInUse.add(type);
         blockSettings
                 .computeIfAbsent(type, unused -> new HashMap<>())
                 .put(id, value);
@@ -148,7 +156,10 @@ public abstract class MutableContext implements ISettingContext {
         this.collisionMode = other.getCollisionMode();
         this.stepWhileFalling = other.hasStepWhileFalling();
         this.collisionResolution = other.getCollisionResolution();
+        this.walltapMultiplier = other.getWalltapMultiplier();
+
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
+        this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());
 
         this.blockSlipperiness.clear();
         Registries.BLOCK.stream()

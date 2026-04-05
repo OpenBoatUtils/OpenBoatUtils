@@ -43,7 +43,8 @@ public enum ClientboundSettingsPacket {
     SET_COLLISION_RESOLUTION,
     ADD_COLLISION_ENTITYTYPE_FILTER,
     CLEAR_COLLISION_ENTITYTYPE_FILTER,
-    TRANSACTION;
+    TRANSACTION,
+    SET_WALLTAP_MULTIPLIER;
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
@@ -241,6 +242,9 @@ public enum ClientboundSettingsPacket {
                 for (int i = 0; i < size; i++) {
                     handleContextPacket(context, buf);
                 }
+            }
+            case SET_WALLTAP_MULTIPLIER -> {
+                context.setWalltapMultiplier(buf.readFloat());
             }
         }
     }

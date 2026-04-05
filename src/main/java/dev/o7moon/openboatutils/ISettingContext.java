@@ -38,8 +38,10 @@ public interface ISettingContext {
     boolean isEntityTypeFiltered(EntityType<?> type);
     @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type);
     int getCollisionResolution();
+    float getWalltapMultiplier();
 
     Set<Identifier> getBlocksWithSettings();
+    boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
 
     static Map<Identifier, Float> getVanillaSlipperinessMap() {
         Map<Identifier, Float> map = new HashMap<>();
@@ -81,8 +83,12 @@ public interface ISettingContext {
             @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return false; }
             @Override public @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type) { return null; }
             @Override public int getCollisionResolution() { return 1; }
+            @Override public float getWalltapMultiplier() { return 0; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
+
+            @Override
+            public boolean hasAnyBlocksWithSetting(PerBlockSettingType type) { return false; }
         };
     }
 }
