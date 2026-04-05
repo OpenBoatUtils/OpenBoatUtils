@@ -6,7 +6,9 @@ public enum PerBlockSettingType {
     BACKWARDS_ACCEL,
     YAW_ACCEL,
     TURN_FORWARDS_ACCEL,
-    WALLTAP_MULTIPLIER;
+    WALLTAP_MULTIPLIER,
+    JUMPS,
+    COYOTE_TIME;
 
     public float fromContext(ISettingContext context) {
         return switch (this) {
@@ -16,6 +18,8 @@ public enum PerBlockSettingType {
             case YAW_ACCEL -> context.getYawAccel();
             case TURN_FORWARDS_ACCEL -> context.getTurnForwardAccel();
             case WALLTAP_MULTIPLIER -> context.getWalltapMultiplier();
+            case JUMPS -> context.getJumps();
+            case COYOTE_TIME -> context.getCoyoteTime();
         };
     }
 }

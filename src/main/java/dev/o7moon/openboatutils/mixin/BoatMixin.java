@@ -63,9 +63,13 @@ public abstract class BoatMixin implements GetStepHeight {
     *///? }
 
     @Unique private int openboatutils$coyoteTimer;
+    @Unique private int openboatutils$remaining_jumps;
+    @Unique private boolean openboatutils$debounce = false;
 
     @Shadow protected abstract boolean checkBoatInWater();
     @Shadow protected abstract BoatEntity.Location checkLocation();
+
+    @Shadow public abstract void remove(Entity.RemovalReason reason);
 
     @Unique float openboatutils$stepHeight;
     public float openboatutils$getStepHeight() {
@@ -76,7 +80,7 @@ public abstract class BoatMixin implements GetStepHeight {
         openboatutils$stepHeight = f;
     }
 
-    @Unique public float openboatutils$getNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
+    @Unique public float openboatutils$getAverageNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
         Box box = instance.getBoundingBox();
         Box box2 = new Box(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
         int i = MathHelper.floor(box2.minX) - 1;
@@ -127,6 +131,56 @@ public abstract class BoatMixin implements GetStepHeight {
         return f / (float) o;
     }
 
+    @Unique public float openboatutils$getMaxNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
+        Box box = instance.getBoundingBox();
+        Box box2 = new Box(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
+        int i = MathHelper.floor(box2.minX) - 1;
+        int j = MathHelper.ceil(box2.maxX) + 1;
+        int k = MathHelper.floor(box2.minY) - 1;
+        int l = MathHelper.ceil(box2.maxY) + 1;
+        int m = MathHelper.floor(box2.minZ) - 1;
+        int n = MathHelper.ceil(box2.maxZ) + 1;
+        VoxelShape voxelShape = VoxelShapes.cuboid(box2);
+        float f = 0.0f;
+        int o = 0;
+        BlockPos.Mutable mutable = new BlockPos.Mutable();
+        for (int p = i; p < j; ++p) {
+            for (int q = m; q < n; ++q) {
+                int r = (p == i || p == j - 1 ? 1 : 0) + (q == m || q == n - 1 ? 1 : 0);
+                if (r == 2) continue;
+                for (int s = k; s < l; ++s) {
+                    if (r > 0 && (s == k || s == l - 1)) continue;
+                    mutable.set(p, s, q);
+
+                    //? if >=1.21.9 {
+                    /*World world = instance.getEntityWorld();
+                     *///?} else {
+                    World world = instance.getWorld();
+                    //?}
+
+                    BlockState blockState = world.getBlockState(mutable);
+
+                    if (blockState.getBlock() instanceof LilyPadBlock || !VoxelShapes.matchesAnywhere(blockState.getCollisionShape(world, mutable).offset(p, s, q), voxelShape, BooleanBiFunction.AND)) continue;
+
+                    Float value = context.getBlockSetting(Registries.BLOCK.getId(blockState.getBlock()), setting);
+
+                    if (value == null) value = setting.fromContext(context);
+
+                    f = Math.max(f, value);
+                    ++o;
+                }
+            }
+        }
+
+        Float air = context.getBlockSetting(Registries.BLOCK.getId(Blocks.AIR), setting);
+
+        if (air == null) air = setting.fromContext(context);
+
+        if (o == 0) return air;
+
+        return f;
+    }
+
     @Unique
     void oncePerTick(BoatEntity instance, BoatEntity.Location loc, MinecraftClient minecraft) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
@@ -140,16 +194,37 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (loc == BoatEntity.Location.ON_LAND || (context.hasWaterJumping() && loc == BoatEntity.Location.IN_WATER)) {
             openboatutils$coyoteTimer = context.getCoyoteTime();
+            openboatutils$remaining_jumps = context.getJumps();
+            openboatutils$debounce = false;
+
+            if (context.hasAnyBlocksWithSetting(PerBlockSettingType.COYOTE_TIME)) {
+                openboatutils$coyoteTimer = Math.round(openboatutils$getMaxNearbySetting(context, instance, PerBlockSettingType.COYOTE_TIME));
+            }
+
+            if (context.hasAnyBlocksWithSetting(PerBlockSettingType.JUMPS)) {
+                openboatutils$remaining_jumps = Math.round(openboatutils$getMaxNearbySetting(context, instance, PerBlockSettingType.JUMPS));
+            }
         } else {
             openboatutils$coyoteTimer--;
+
+            if (openboatutils$coyoteTimer == -1) {
+                openboatutils$remaining_jumps--;
+            }
         }
 
-        float jumpForce = openboatutils$getNearbySetting(context, instance, PerBlockSettingType.JUMP_FORCE);
+        float jumpForce = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.JUMP_FORCE);
 
-        if (openboatutils$coyoteTimer >= 0 && jumpForce > 0f && minecraft.options.jumpKey.isPressed()) {
+        boolean jumping = minecraft.options.jumpKey.isPressed();
+
+        if (!jumping) openboatutils$debounce = false;
+
+        if (openboatutils$remaining_jumps > 0 && jumpForce > 0f && jumping && !openboatutils$debounce) {
             Vec3d velocity = instance.getVelocity();
             instance.setVelocity(velocity.x, jumpForce, velocity.z);
-            openboatutils$coyoteTimer = -1;// cant jump again until grounded
+
+            openboatutils$coyoteTimer = -1;
+            openboatutils$remaining_jumps--;
+            openboatutils$debounce = true;
         }
     }
 
@@ -329,7 +404,7 @@ public abstract class BoatMixin implements GetStepHeight {
         // sign isn't needed here because the vanilla acceleration is exactly 1,
         // but I suppose this helps if mojang ever decides to change that value for some reason
 
-        float yaw_accel = openboatutils$getNearbySetting(context, instance, PerBlockSettingType.YAW_ACCEL);
+        float yaw_accel = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.YAW_ACCEL);
 
         this.yawVelocity += MathHelper.sign(original_delta) * yaw_accel;
     }
@@ -341,7 +416,7 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (context == null) return original;
 
-        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.FORWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.FORWARDS_ACCEL);
     }
 
     @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 0))
@@ -350,7 +425,7 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (context == null) return original;
 
-        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.TURN_FORWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.TURN_FORWARDS_ACCEL);
     }
 
     @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 1))
@@ -359,7 +434,7 @@ public abstract class BoatMixin implements GetStepHeight {
 
         if (context == null) return original;
 
-        return openboatutils$getNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.BACKWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.BACKWARDS_ACCEL);
     }
 
     @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingForward:Z", opcode = Opcodes.GETFIELD, ordinal = 0))

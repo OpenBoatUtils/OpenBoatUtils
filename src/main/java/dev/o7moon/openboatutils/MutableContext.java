@@ -31,6 +31,7 @@ public abstract class MutableContext implements ISettingContext {
     private boolean stepWhileFalling;
     private int collisionResolution;
     private float walltapMultiplier;
+    private int jumps;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
@@ -71,6 +72,7 @@ public abstract class MutableContext implements ISettingContext {
     }
     @Override public int getCollisionResolution() { return collisionResolution; }
     @Override public float getWalltapMultiplier() { return walltapMultiplier; }
+    @Override public int getJumps() { return jumps; }
 
     @Override
     public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
@@ -99,6 +101,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setStepWhileFalling(boolean v) { this.stepWhileFalling = v; return this; }
     public MutableContext setCollisionResolution(int v) { this.collisionResolution = v; return this; }
     public MutableContext setWalltapMultiplier(float v) { this.walltapMultiplier = v; return this; }
+    public MutableContext setJumps(int jumps) { this.jumps = jumps; return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -157,6 +160,7 @@ public abstract class MutableContext implements ISettingContext {
         this.stepWhileFalling = other.hasStepWhileFalling();
         this.collisionResolution = other.getCollisionResolution();
         this.walltapMultiplier = other.getWalltapMultiplier();
+        this.jumps = other.getJumps();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
         this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());

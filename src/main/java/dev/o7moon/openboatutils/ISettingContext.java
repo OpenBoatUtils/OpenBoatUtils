@@ -39,6 +39,7 @@ public interface ISettingContext {
     @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type);
     int getCollisionResolution();
     float getWalltapMultiplier();
+    int getJumps();
 
     Set<Identifier> getBlocksWithSettings();
     boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
@@ -84,6 +85,7 @@ public interface ISettingContext {
             @Override public @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type) { return null; }
             @Override public int getCollisionResolution() { return 1; }
             @Override public float getWalltapMultiplier() { return 0; }
+            @Override public int getJumps() { return 1; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
 
