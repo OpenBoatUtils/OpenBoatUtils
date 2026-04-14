@@ -60,6 +60,11 @@ public abstract class BoatRendererMixin {
     private void preRender(BoatEntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue renderCommandQueue, CameraRenderState cameraRenderState, CallbackInfo ci) {
         float scale = ((ScaledBoatRenderState) state).openBoatUtils$getScale();
         matrices.push();
+
+        if (scale < 0) {
+            matrices.translate(0, 0.5625 * -scale, 0);
+        }
+
         matrices.scale(scale, scale, scale);
     }
 
@@ -72,6 +77,11 @@ public abstract class BoatRendererMixin {
     private void preRender(BoatEntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         float scale = ((ScaledBoatRenderState) state).openBoatUtils$getScale();
         matrices.push();
+
+        if (scale < 0) {
+            matrices.translate(0, 0.5625 * -scale, 0);
+        }
+
         matrices.scale(scale, scale, scale);
     }
 
@@ -84,6 +94,11 @@ public abstract class BoatRendererMixin {
     private void preRender(BoatEntity boatEntity, float f, float g, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         float scale = openBoatUtils$getScale(boatEntity);
         matrices.push();
+
+        if (scale < 0) {
+            matrices.translate(0, 0.5625 * -scale, 0);
+        }
+
         matrices.scale(scale, scale, scale);
     }
 
