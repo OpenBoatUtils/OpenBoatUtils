@@ -1,10 +1,6 @@
 package dev.o7moon.openboatutils.mixin;
 
-import dev.o7moon.openboatutils.CollisionMode;
-import dev.o7moon.openboatutils.GetStepHeight;
-import dev.o7moon.openboatutils.ISettingContext;
-import dev.o7moon.openboatutils.OpenBoatUtils;
-import dev.o7moon.openboatutils.PerBlockSettingType;
+import dev.o7moon.openboatutils.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -71,11 +67,12 @@ public abstract class BoatMixin implements GetStepHeight {
 
     @Shadow public abstract void remove(Entity.RemovalReason reason);
 
+    @Unique private float openBoatUtils$lastScale;
+
     @Unique float openboatutils$stepHeight;
-    public float openboatutils$getStepHeight() {
+    @Unique public float openboatutils$getStepHeight() {
         return openboatutils$stepHeight;
     }
-
     @Unique public void openboatutils$setStepHeight(float f) {
         openboatutils$stepHeight = f;
     }
@@ -579,6 +576,22 @@ public abstract class BoatMixin implements GetStepHeight {
         Vec3d subMoveVel = instance.getVelocity().multiply(1d / resolution);
         for(int i = 0; i < resolution; i++) {
             instance.move(movementType, subMoveVel);
+        }
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void onTick(CallbackInfo ci) {
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+        float currentScale = 1f;
+
+        if (context != null) {
+            currentScale = context.getScale();
+        }
+
+        if (currentScale != openBoatUtils$lastScale) {
+            openBoatUtils$lastScale = currentScale;
+            ((BoatEntity) (Object) this).calculateDimensions();
         }
     }
 }

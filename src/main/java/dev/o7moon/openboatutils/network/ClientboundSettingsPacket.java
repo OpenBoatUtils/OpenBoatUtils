@@ -45,7 +45,8 @@ public enum ClientboundSettingsPacket {
     CLEAR_COLLISION_ENTITYTYPE_FILTER,
     TRANSACTION,
     SET_WALLTAP_MULTIPLIER,
-    SET_JUMPS;
+    SET_JUMPS,
+    SET_SCALE;
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
@@ -249,6 +250,9 @@ public enum ClientboundSettingsPacket {
             }
             case SET_JUMPS -> {
                 context.setJumps(buf.readInt());
+            }
+            case SET_SCALE -> {
+                context.setScale(buf.readFloat());
             }
         }
     }

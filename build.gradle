@@ -91,7 +91,8 @@ loom {
 
 stonecutter {
     replacements.string(
-            current.parsed.matches('>=1.21.3')
+            current.parsed.matches('>=1.21.3'),
+            "!boat_entity"
     ) {
         replace 'BoatEntity', 'AbstractBoatEntity'
     }

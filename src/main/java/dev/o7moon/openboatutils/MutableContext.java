@@ -32,6 +32,7 @@ public abstract class MutableContext implements ISettingContext {
     private int collisionResolution;
     private float walltapMultiplier;
     private int jumps;
+    private float scale;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
@@ -73,6 +74,7 @@ public abstract class MutableContext implements ISettingContext {
     @Override public int getCollisionResolution() { return collisionResolution; }
     @Override public float getWalltapMultiplier() { return walltapMultiplier; }
     @Override public int getJumps() { return jumps; }
+    @Override public float getScale() { return scale; }
 
     @Override
     public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
@@ -102,6 +104,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setCollisionResolution(int v) { this.collisionResolution = v; return this; }
     public MutableContext setWalltapMultiplier(float v) { this.walltapMultiplier = v; return this; }
     public MutableContext setJumps(int jumps) { this.jumps = jumps; return this; }
+    public MutableContext setScale(float scale) { this.scale = scale; return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -161,6 +164,7 @@ public abstract class MutableContext implements ISettingContext {
         this.collisionResolution = other.getCollisionResolution();
         this.walltapMultiplier = other.getWalltapMultiplier();
         this.jumps = other.getJumps();
+        this.scale = other.getScale();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
         this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());

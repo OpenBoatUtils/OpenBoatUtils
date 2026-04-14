@@ -6,6 +6,8 @@ import dev.o7moon.openboatutils.OpenBoatUtils;
 import dev.o7moon.openboatutils.PerBlockSettingType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
@@ -23,11 +25,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
     @Shadow private World world;
+
+    @Shadow
+    public abstract UUID getUuid();
 
     @Inject(method = "getStepHeight", at = @At("HEAD"), cancellable = true)
     public void getStepHeight(CallbackInfoReturnable<Float> cir) {
@@ -101,7 +107,11 @@ public abstract class EntityMixin {
             }
 
             if (!blockPositions.isEmpty()) {
-                World world = instance.getEntityWorld();
+                //? >= 1.21.9 {
+                /*World world = instance.getEntityWorld();
+                *///? } else {
+                World world = instance.getWorld();
+                //? }
 
                 int n = 0;
                 float multipliers = 0;
@@ -147,5 +157,22 @@ public abstract class EntityMixin {
         }
 
         return original;
+    }
+
+    @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
+    public void getDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
+        if ((Object) this instanceof BoatEntity) {
+            @Nullable ISettingContext boatContext = OpenBoatUtils.instance.getEntityContext(this.getUuid());
+
+            if (boatContext != null) {
+                cir.setReturnValue(cir.getReturnValue().scaled(boatContext.getScale()));
+            }
+
+            @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+            if (context != null) {
+                cir.setReturnValue(cir.getReturnValue().scaled(context.getScale()));
+            }
+        }
     }
 }
