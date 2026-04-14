@@ -61,6 +61,10 @@ public abstract class BoatRendererMixin {
         float scale = ((ScaledBoatRenderState) state).openBoatUtils$getScale();
         matrices.push();
         matrices.scale(scale, scale, scale);
+
+        if (scale < 0) {
+            matrices.translate(0, 0.5625 * scale, 0);
+        }
     }
 
     @Inject(method = "render*", at = @At("RETURN"))
