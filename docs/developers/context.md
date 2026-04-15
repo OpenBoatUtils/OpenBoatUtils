@@ -12,8 +12,10 @@ Contexts come in three flavours:
 
 By default openboatutils has no context active (***`null` context***), which effectively disables every internal hook used, sending a reset packet to the default context will switch to the `null` context as a safeguard.
 
-## Clientbound
+The default context behaves identically to pre-context versions of openboatutils.
 
+
+## Clientbound
 ### Reset Context
 Resets the currently active context back to `null`.
 
@@ -32,7 +34,7 @@ If the identifier belongs to the `openboatutils` namespace, only the `default` c
 
 | Packet ID | Identifier |
 |-----------|------------|
-| 1 (`short`) | `string` |
+| 1 (`short`) | `string (namespaced:key)`  |
 
 ***
 
@@ -43,7 +45,7 @@ If the removed context is currently active, the active context is also reset to 
 
 | Packet ID | Identifier |
 |-----------|------------|
-| 2 (`short`) | `string` |
+| 2 (`short`) | `string (namespaced:key)`  |
 
 ***
 
@@ -51,10 +53,11 @@ If the removed context is currently active, the active context is also reset to 
 Creates or overwrites a stored context with the given identifier, and applies a batch of settings to it.
 
 The settings are read as a [Transaction](developers/settings.html#transaction) minus the transaction packet id `short`.
+You can write this by writing a transaction packet's payload after the identifier. 
 
-| Packet ID | Identifier | Settings |
-|-----------|------------|----------|
-| 3 (`short`) | `string` | `transaction` |
+| Packet ID | Identifier                | Settings |
+|-----------|---------------------------|----------|
+| 3 (`short`) | `string (namespaced:key)` | `transaction` |
 
 ***
 
@@ -62,7 +65,8 @@ The settings are read as a [Transaction](developers/settings.html#transaction) m
 Creates or updates a context tied to a specific entity (by UUID).
 
 Like `Store Context`, the settings are read as a [Transaction](developers/settings.html#transaction) minus the transaction packet id `short`.
+You can write this by writing a transaction packet's payload after the identifier.
 
-| Packet ID | Entity UUID | Settings |
-|-----------|-------------|----------|
-| 4 (`short`) | `string (UUID)` | `transaction` |
+| Packet ID | Entity UUID                 | Settings |
+|-----------|-----------------------------|----------|
+| 4 (`short`) | `string (UUID with dashes)` | `transaction` |

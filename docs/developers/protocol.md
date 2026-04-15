@@ -1,9 +1,11 @@
 # Protocol
 OpenBoatUtils uses a feature of the vanilla game called Plugin Channels to communicate
 
-Before 0.5.0 all packets were sent through the `openboatutils:settings` channel, as of this version some additional packets are availiable through `openboatutils:context`.
+OpenBoatUtils uses two plugin channels:
+- [`openboatutils:settings`](/developers/settings) for all boat settings
+- [`openboatutils:context`](/developers/context) for context operations (introduced in `0.5.0`)
 
-Ignoring the context api entirely produced behaviour identical to before contexts.
+The context api is optional, ignoring it will produce identical behaviour to before the introduction.
 
 ::: info A Note on Strings
 OpenBoatUtils writes all it's packets with a class in Minecraft called `PacketByteBuf`.

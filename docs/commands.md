@@ -266,17 +266,12 @@ Drops the specified settings context, removing it and all settings stored within
 
 Example: `/dropcontext myplugin:mycontext`
 
-## `/setinterpolationten <enabled>`  <Badge type="tip" text="^mc1.21.3" />
+## `/setinterpolationten <enabled>`
 Enables or disables interpolation compatibility mode.
 
 - `<enabled>` - boolean
 
 Example: `/setinterpolationten true`
-
-::: details Why do this?
-Before 1.21.3 boats interpolated over the last 10 ticks, after this point it was changed to 3 ticks by mojang.
-Most servers will set this to true upon join to replicate the pre 1.21.3 behaviour which is usually essential for racing.
-:::
 
 ## `/setcollisionresolution <resolution>`
 Sets the collision resolution level. Must be between `1` and `50`.

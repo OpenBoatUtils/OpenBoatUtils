@@ -1,8 +1,8 @@
 # Versions
 
-The client will send the server a packet letting it know which version of OpenBoatUtils it's running. This is a table of the version IDs of each version.
+The client will send the server a packet letting it know which version of OpenBoatUtils it's running. This is mostly complete table of the version IDs of each version.
 
-Versions < 0.1.2 do not send a version packet.
+Versions `< 0.1.2` do not send a version packet.
 
 | ID  | Version | Notes                                                         |
 |-----|:-------:|---------------------------------------------------------------|

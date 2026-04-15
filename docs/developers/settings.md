@@ -7,11 +7,22 @@ Plugin Channel Identifier: `openboatutils:settings`
 Contains packets that modify the current context (by default this is the default context)
 with the exception of the version packet, which is here due to backwards compatibility
 
-Before `0.5.0` contexts didn't exist, and behaved identical to the current default context implementation.
-
 ## Serverbound
 ### Version
 Sends the server the version of OpenBoatUtils we are currently running. This is sent once on join.
+
+As of `0.5.0` an unstable flag is also sent after the first short.
+It is intended to block use of potentially broken development builds without
+having to impact the version Ids. ***probably reject builds of these for most people***
+
+Take care to only read the unstable flag when the version id is `>= 19` (0.5.0).
+
+| Packet ID | Version | Unstable (as of 0.5.0) |
+|-----------|---------|------------------------|
+| 0 (`short`) | [Version ID](https://github.com/o7Moon/OpenBoatUtils/wiki/Version-IDs) (`int`) | `boolean` |
+
+### Transaction Result
+Sent after a transaction packet has been processed
 
 As of `0.5.0` an unstable flag is also sent after the first short.
 It is intended to block use of potentially broken development builds without
@@ -228,7 +239,7 @@ If nonzero, pressing space while underwater will apply this vertical force to th
 ***
 
 ### Clear Blocks Slipperiness
-removes the specific slipperiness for the specified blocks, giving them to whatever the default slipperiness is.
+Removes the specific slipperiness for the specified blocks, giving them to whatever the default slipperiness is.
 
 | Packet ID | blocks |
 |-----------|--------|
@@ -250,7 +261,7 @@ applies a list of modes in order with one packet.
 
 | Packet ID | amount | modes |
 |-----------|--------|-------|
-| 24 (`short`) | `short` | `short[amount]` |
+| 24 (`short`) | `short` | `short[]` |
 
 ***
 
@@ -259,7 +270,7 @@ applies a list of modes in order with one packet, resetting first.
 
 | Packet ID | amount | modes |
 |-----------|--------|-------|
-| 25 (`short`) | `short` | `short[amount]` |
+| 25 (`short`) | `short` | `short[]` |
 
 ***
 
@@ -302,23 +313,19 @@ Sets if the boat is allowed to step when it hits the side of a block in the air.
 
 ***
 
-### Set Ten Step Interpolation
-Sets if the boat interpolation is changed from 3 steps to 10. this is a non-context setting, the api for these is still being defined so it is not very ergonomic to use currently (they cant be reset, you have to manually set the value if you want the default one).
+### Set Ten Step Interpolation  <Badge type="warning" text="Non-Context" />
+Sets if the boat interpolation is changed from 3 steps to 10.
 
-This affects *all* boats.
+This affects *all* boats and is handled completely separately to contexts, a reset packet won't clear this setting but relogging will.
 
 | Packet ID | enabled |
 |-----------|---------|
 | 29 (`short`) | `boolean` (default false) |
 
-***
-
-### Set Air Stepping
-Sets if the boat is allowed to step when it hits the side of a block in the air.
-
-| Packet ID | enabled |
-|-----------|---------|
-| 28 (`short`) | `boolean` (default false) |
+::: details Why do this?
+Before 1.21.3 boats interpolated over 10 ticks, after this point it was changed to 3 ticks by mojang.
+Most servers will set this to true upon join to replicate the pre 1.21.3 behaviour which is usually essential for racing.
+:::
 
 ***
 
@@ -358,7 +365,7 @@ Sends multiple setting packets bundled together as a single atomic update. Each 
 
 | Packet ID | Count | Packets |
 |-----------|-------|---------|
-| 33 (`short`) | `int` | `packet[count]` (each a full clientbound settings packet) |
+| 33 (`short`) | `int` | `packet[]` (each a full clientbound settings packet) |
 
 ***
 
@@ -392,8 +399,8 @@ Sets the scale of the boat.
 ### Set Step Up Slipperiness <Badge type="tip" text="^0.5.0" />
 The boat's current velocity will be multiplied by this value whenever the boat steps up a block.
 
-| Packet ID | Scale |
-|-----------|-------|
-| 36 (`short`) | `float` |
+| Packet ID    | Scale |
+|--------------|-------|
+| 37 (`short`) | `float` |
 
 ***
