@@ -6,6 +6,8 @@ import dev.o7moon.openboatutils.OpenBoatUtils;
 import dev.o7moon.openboatutils.PerBlockSettingType;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
@@ -23,11 +25,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
     @Shadow private World world;
+
+    @Shadow
+    public abstract UUID getUuid();
 
     @Inject(method = "getStepHeight", at = @At("HEAD"), cancellable = true)
     public void getStepHeight(CallbackInfoReturnable<Float> cir) {
@@ -45,89 +51,95 @@ public abstract class EntityMixin {
             )
     )
     private void hookWalltap(Entity instance, double x, double y, double z) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        if ((Object) this instanceof BoatEntity) {
+            ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
-        if (context != null && (context.getWalltapMultiplier() > 0 ||
-                context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER))) {
+            if (context != null && (context.getWalltapMultiplier() > 0 ||
+                    context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER))) {
 
-            Vec3d before = instance.getVelocity();
-            float multiplier = context.getWalltapMultiplier();
+                Vec3d before = instance.getVelocity();
+                float multiplier = context.getWalltapMultiplier();
 
-            List<BlockPos> blockPositions = new ArrayList<>();
+                List<BlockPos> blockPositions = new ArrayList<>();
 
-            if (context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER)) {
-                Box box = instance.getBoundingBox();
-                Vec3d min = box.getMinPos();
-                Vec3d max = box.getMaxPos();
+                if (context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER)) {
+                    Box box = instance.getBoundingBox();
+                    Vec3d min = box.getMinPos();
+                    Vec3d max = box.getMaxPos();
 
-                int minX = (int) Math.floor(min.x + 1e-5);
-                int minY = (int) Math.floor(min.y + 1e-5);
-                int minZ = (int) Math.floor(min.z + 1e-5);
-                int maxX = (int) Math.ceil(max.x - 1e-5);
-                int maxY = (int) Math.ceil(max.y - 1e-5);
-                int maxZ = (int) Math.ceil(max.z - 1e-5);
+                    int minX = (int) Math.floor(min.x + 1e-5);
+                    int minY = (int) Math.floor(min.y + 1e-5);
+                    int minZ = (int) Math.floor(min.z + 1e-5);
+                    int maxX = (int) Math.ceil(max.x - 1e-5);
+                    int maxY = (int) Math.ceil(max.y - 1e-5);
+                    int maxZ = (int) Math.ceil(max.z - 1e-5);
 
-                if (max.x % 1 == 0) {
-                    for (int y1 = minY; y1 <= maxY; y1++) {
-                        for (int z1 = minZ; z1 < maxZ; z1++) {
-                            blockPositions.add(new BlockPos(maxX, y1, z1));
+                    if (max.x % 1 == 0) {
+                        for (int y1 = minY; y1 <= maxY; y1++) {
+                            for (int z1 = minZ; z1 < maxZ; z1++) {
+                                blockPositions.add(new BlockPos(maxX, y1, z1));
+                            }
+                        }
+                    }
+
+                    if (min.x % 1 == 0) {
+                        for (int y1 = minY; y1 <= maxY; y1++) {
+                            for (int z1 = minZ; z1 < maxZ; z1++) {
+                                blockPositions.add(new BlockPos(minX - 1, y1, z1));
+                            }
+                        }
+                    }
+
+                    if (max.z % 1 == 0) {
+                        for (int y1 = minY; y1 <= maxY; y1++) {
+                            for (int x1 = minX; x1 < maxX; x1++) {
+                                blockPositions.add(new BlockPos(x1, y1, maxZ));
+                            }
+                        }
+                    }
+
+                    if (min.z % 1 == 0) {
+                        for (int y1 = minY; y1 <= maxY; y1++) {
+                            for (int x1 = minX; x1 < maxX; x1++) {
+                                blockPositions.add(new BlockPos(x1, y1, minZ - 1));
+                            }
                         }
                     }
                 }
 
-                if (min.x % 1 == 0) {
-                    for (int y1 = minY; y1 <= maxY; y1++) {
-                        for (int z1 = minZ; z1 < maxZ; z1++) {
-                            blockPositions.add(new BlockPos(minX - 1, y1, z1));
+                if (!blockPositions.isEmpty()) {
+                    //? >= 1.21.9 {
+                    /*World world = instance.getEntityWorld();
+                     *///? } else {
+                    World world = instance.getWorld();
+                    //? }
+
+                    int n = 0;
+                    float multipliers = 0;
+
+                    for (BlockPos pos : blockPositions) {
+                        BlockState state = world.getBlockState(pos);
+
+                        Float v = context.getBlockSetting(
+                                Registries.BLOCK.getId(state.getBlock()),
+                                PerBlockSettingType.WALLTAP_MULTIPLIER
+                        );
+
+                        if (v != null) {
+                            n++;
+                            multipliers += v;
                         }
                     }
-                }
 
-                if (max.z % 1 == 0) {
-                    for (int y1 = minY; y1 <= maxY; y1++) {
-                        for (int x1 = minX; x1 < maxX; x1++) {
-                            blockPositions.add(new BlockPos(x1, y1, maxZ));
-                        }
+                    if (n > 0) {
+                        multiplier = multipliers / n;
                     }
                 }
 
-                if (min.z % 1 == 0) {
-                    for (int y1 = minY; y1 <= maxY; y1++) {
-                        for (int x1 = minX; x1 < maxX; x1++) {
-                            blockPositions.add(new BlockPos(x1, y1, minZ - 1));
-                        }
-                    }
+                if (multiplier > 0) {
+                    if (x == 0) x = before.x * -multiplier;
+                    if (z == 0) z = before.z * -multiplier;
                 }
-            }
-
-            if (!blockPositions.isEmpty()) {
-                World world = instance.getEntityWorld();
-
-                int n = 0;
-                float multipliers = 0;
-
-                for (BlockPos pos : blockPositions) {
-                    BlockState state = world.getBlockState(pos);
-
-                    Float v = context.getBlockSetting(
-                            Registries.BLOCK.getId(state.getBlock()),
-                            PerBlockSettingType.WALLTAP_MULTIPLIER
-                    );
-
-                    if (v != null) {
-                        n++;
-                        multipliers += v;
-                    }
-                }
-
-                if (n > 0) {
-                    multiplier = multipliers / n;
-                }
-            }
-
-            if (multiplier > 0) {
-                if (x == 0) x = before.x * -multiplier;
-                if (z == 0) z = before.z * -multiplier;
             }
         }
 
@@ -147,5 +159,22 @@ public abstract class EntityMixin {
         }
 
         return original;
+    }
+
+    @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
+    public void getDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
+        if ((Object) this instanceof BoatEntity) {
+            @Nullable ISettingContext boatContext = OpenBoatUtils.instance.getEntityContext(this.getUuid());
+
+            if (boatContext != null) {
+                cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(boatContext.getScale())));
+            }
+
+            @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+            if (context != null) {
+                cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(context.getScale())));
+            }
+        }
     }
 }

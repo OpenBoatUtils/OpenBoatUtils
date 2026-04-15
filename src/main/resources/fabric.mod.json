@@ -4,7 +4,7 @@
   "version": "${version}",
   "name": "OpenBoatUtils",
   "description": "",
-  "authors": ["o7Moon"],
+  "authors": ["microwavedram", "o7Moon", "GitHub Contributors"],
   "contact": {},
   "license": "MIT",
   "icon": "assets/openboatutils/OpenBoatUtils_small_square.png",
