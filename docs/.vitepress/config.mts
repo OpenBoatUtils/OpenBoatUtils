@@ -24,8 +24,8 @@ export default defineConfig({
         items: [
          { text: 'Protocol', link: '/developers/protocol' },
          { text: 'Versions', link: '/developers/versions' },
-         { text: 'Serverbound', link: '/developers/serverbound' },
-         { text: 'Clientbound', link: '/developers/clientbound' },
+         { text: 'Settings', link: '/developers/settings' },
+         { text: 'Context', link: '/developers/context' },
         ]
      }
     ],
