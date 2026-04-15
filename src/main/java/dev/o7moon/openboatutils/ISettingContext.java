@@ -1,57 +1,100 @@
 package dev.o7moon.openboatutils;
 
-import net.minecraft.entity.vehicle. /*$ boat >>*/ BoatEntity ;
+import net.minecraft.block.Block;
+import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.List;
-
-// TODO impl the default context to see how well this api functions.
-// it may need to become an abstract class
-
-// this is unfinished, leaving it unused rn so i can release ten step interpolation asap
+import java.util.*;
 
 public interface ISettingContext {
-    boolean enabled();
-    boolean settingHasPerBlock(OpenBoatUtils.PerBlockSettingType setting);
-    float getPerBlockForBlock(OpenBoatUtils.PerBlockSettingType setting, String blockid);
-    float getNearbySetting(/*$ boat >>*/ BoatEntity instance, OpenBoatUtils.PerBlockSettingType setting);
-    float defaultPerBlock(OpenBoatUtils.PerBlockSettingType setting);
-    HashMap<String, Float> getSlipperinessMap();
-    void resetSettings();
-    void setStepSize(float stepsize);
-    void setBlocksSlipperiness(List<String> blocks, float slipperiness);
-    void setAllBlocksSlipperiness(float slipperiness);
-    void setBlockSlipperiness(String block, float slipperiness);
-    float getBlockSlipperiness(String block);
+
+    ISettingContext VANILLA = getVanilla();
+    Map<Identifier, Float> VANILLA_SLIPPERINESS = getVanillaSlipperinessMap();
+
+    void switchTo();
+
+    boolean hasFallDamage();
+    boolean hasWaterElevation();
+    boolean hasAirControl();
+    float getDefaultSlipperiness();
+    float getJumpForce();
     float getStepSize();
-    void setFallDamage(boolean newValue);
-    void setWaterElevation(boolean newValue);
-    void setAirControl(boolean newValue);
-    void setJumpForce(float newValue);
-    void setGravityForce(double g);
-    void setYawAcceleration(float accel);
-    void setForwardsAcceleration(float accel);
-    void setBackwardsAcceleration(float accel);
-    void setTurningForwardsAcceleration(float accel);
-    void setAllowAccelStacking(boolean value);
-    void setUnderwaterControl(boolean value);
-    void setSurfaceWaterControl(boolean value);
-    void setCoyoteTime(int t);
-    void setWaterJumping(boolean value);
-    void setSwimForce(float value);
-    void breakSlimePlease();
-    void removeBlockSlipperiness(String block);
-    void removeBlocksSlipperiness(List<String> blocks);
-    void clearSlipperinessMap();
-    float GetJumpForce(/*$ boat >>*/ BoatEntity boat);
-    float GetYawAccel(/*$ boat >>*/ BoatEntity boat);
-    float GetForwardAccel(/*$ boat >>*/ BoatEntity boat);
-    float GetBackwardAccel(/*$ boat >>*/ BoatEntity boat);
-    float GetTurnForwardAccel(/*$ boat >>*/ BoatEntity boat);
-    void setBlocksSetting(OpenBoatUtils.PerBlockSettingType setting, List<String> blocks, float value);
-    void setBlockSetting(OpenBoatUtils.PerBlockSettingType setting, String block, float value);
-    void setCollisionMode(CollisionMode mode);
+    double getGravityForce();
+    float getYawAccel();
+    float getForwardAccel();
+    float getBackwardAccel();
+    float getTurnForwardAccel();
+    boolean hasAllowAccelStacking();
+    boolean hasUnderwaterControl();
+    boolean hasSurfaceWaterControl();
+    int getCoyoteTime();
+    boolean hasWaterJumping();
+    float getSwimForce();
     CollisionMode getCollisionMode();
-    boolean canStepWhileFalling();
-    void setCanStepWhileFalling(boolean canStepWhileFalling);
+    boolean hasStepWhileFalling();
+    @Nullable Float getBlockSlipperiness(Identifier id);
+    boolean isEntityTypeFiltered(EntityType<?> type);
+    @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type);
+    int getCollisionResolution();
+    float getWalltapMultiplier();
+    int getJumps();
+    float getScale();
+    float getStepUpSlipperiness();
+
+    Set<Identifier> getBlocksWithSettings();
+    boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
+
+    static Map<Identifier, Float> getVanillaSlipperinessMap() {
+        Map<Identifier, Float> map = new HashMap<>();
+
+        for (Block b : Registries.BLOCK.stream().toList()) {
+            if (b.getSlipperiness() != 0.6f){
+                map.put(Registries.BLOCK.getId(b), b.getSlipperiness());
+            }
+        }
+
+        return map;
+    }
+
+    private static ISettingContext getVanilla() {
+        return new ISettingContext() {
+            @Override
+            public void switchTo() {}
+
+            @Override public boolean hasFallDamage() { return true; }
+            @Override public boolean hasWaterElevation() { return false; }
+            @Override public boolean hasAirControl() { return false; }
+            @Override public float getDefaultSlipperiness() { return 0.6f; }
+            @Override public float getJumpForce() { return 0; }
+            @Override public float getStepSize() { return 0; }
+            @Override public double getGravityForce() { return -0.03999999910593033; }
+            @Override public float getYawAccel() { return 1f; }
+            @Override public float getForwardAccel() { return 0.04f; }
+            @Override public float getBackwardAccel() { return 0.005f; }
+            @Override public float getTurnForwardAccel() { return 0.005f; }
+            @Override public boolean hasAllowAccelStacking() { return false; }
+            @Override public boolean hasUnderwaterControl() { return false; }
+            @Override public boolean hasSurfaceWaterControl() { return false; }
+            @Override public int getCoyoteTime() { return 0; }
+            @Override public boolean hasWaterJumping() { return false; }
+            @Override public float getSwimForce() { return 0; }
+            @Override public CollisionMode getCollisionMode() { return CollisionMode.VANILLA; }
+            @Override public boolean hasStepWhileFalling() { return false; }
+            @Override public @Nullable Float getBlockSlipperiness(Identifier id) { return VANILLA_SLIPPERINESS.get(id); }
+            @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return false; }
+            @Override public @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type) { return null; }
+            @Override public int getCollisionResolution() { return 1; }
+            @Override public float getWalltapMultiplier() { return 0; }
+            @Override public int getJumps() { return 1; }
+            @Override public float getScale() { return 1; }
+            @Override public float getStepUpSlipperiness() { return 1; }
+
+            @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
+
+            @Override
+            public boolean hasAnyBlocksWithSetting(PerBlockSettingType type) { return false; }
+        };
+    }
 }

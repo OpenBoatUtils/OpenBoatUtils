@@ -1,12 +1,11 @@
 package dev.o7moon.openboatutils.mixin;
 
+//? >= 1.21.6 {
+/*import dev.o7moon.openboatutils.OpenBoatUtils;
+*///? }
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayNetworkHandler.class)
@@ -17,12 +16,18 @@ public class ServerPlayNetworkHandlerMixin {
     }
 
     // Force the flag that triggers moved wrongly to false
+
+    //? <1.21.6 {
     @ModifyVariable(method = "onVehicleMove", at = @At("STORE"), ordinal = 2)
     private boolean onVehicleMove_WronglyFlag(boolean original) {
         return false;
     }
+    //?}
 
-    // Skip the "moved "wrongly" warn. also skips "moved too quickly"
-    @Redirect(method = "onVehicleMove", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;warn(Ljava/lang/String;[Ljava/lang/Object;)V"))
-    private void preventMovedWronglyLog(Logger instance, String s, Object[] objects) {}
+    //? >=1.21.6 {
+    /*@ModifyConstant(method = "onVehicleMove", constant = @Constant(doubleValue = 0.0625))
+    private double preventMovedWrongly(double constant) {
+        return OpenBoatUtils.instance.getActiveContext() != null ? Double.MAX_VALUE : constant;
+    }
+    *///?}
 }
