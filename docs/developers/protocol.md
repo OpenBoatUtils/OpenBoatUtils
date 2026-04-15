@@ -12,7 +12,7 @@ OpenBoatUtils writes all it's packets with a class in Minecraft called `PacketBy
 Spigot based servers don't expose this class, so usually a java standard library class called `DataOutputStream` is used instead.
 
 This works well for the most part, however it does not write strings in the minecraft-protocol-way that `PacketByteBuf` does.
-`PacketByteBuf` writes string length as a [VarInt](https://wiki.vg/VarInt_And_VarLong), while `DataOutputStream`'s `writeUTF(...)` uses a fixed length short.
+`PacketByteBuf` writes string length as a [VarInt](https://minecraft.wiki/w/Java_Edition_protocol/Data_types#VarInt_and_VarLong), while `DataOutputStream`'s `writeUTF(...)` uses a fixed length short.
 
 Here is a small function which writes a string to a `DataOutputStream` in a way that is compatible with `PacketByteBuf`
 ```java

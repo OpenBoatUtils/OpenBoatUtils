@@ -52,7 +52,7 @@ If the removed context is currently active, the active context is also reset to 
 ### Store Context
 Creates or overwrites a stored context with the given identifier, and applies a batch of settings to it.
 
-The settings are read as a [Transaction](developers/settings.html#transaction) minus the transaction packet id `short`.
+The settings are read as a [Transaction](/developers/settings#transaction) minus the transaction packet id `short`.
 You can write this by writing a transaction packet's payload after the identifier. 
 
 | Packet ID | Identifier                | Settings |
@@ -64,7 +64,7 @@ You can write this by writing a transaction packet's payload after the identifie
 ### Entity Context
 Creates or updates a context tied to a specific entity (by UUID).
 
-Like `Store Context`, the settings are read as a [Transaction](developers/settings.html#transaction) minus the transaction packet id `short`.
+Like `Store Context`, the settings are read as a [Transaction](/developers/settings#transaction) minus the transaction packet id `short`.
 You can write this by writing a transaction packet's payload after the identifier.
 
 | Packet ID | Entity UUID                 | Settings |
