@@ -555,6 +555,19 @@ public class SingleplayerCommands {
                         return 1;
                     }))
             );
+
+            dispatcher.register(
+                    literal("setstepupslipperiness").then(argument("slipperiness", FloatArgumentType.floatArg()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        float aFloat = FloatArgumentType.getFloat(ctx,"slipperiness");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_STEP_UP_SLIPPERINESS.ordinal());
+                        packet.writeFloat(aFloat);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
         });
     }
 }

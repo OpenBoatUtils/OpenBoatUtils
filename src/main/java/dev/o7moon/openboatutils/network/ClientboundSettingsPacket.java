@@ -46,7 +46,8 @@ public enum ClientboundSettingsPacket {
     TRANSACTION,
     SET_WALLTAP_MULTIPLIER,
     SET_JUMPS,
-    SET_SCALE;
+    SET_SCALE,
+    SET_STEP_UP_SLIPPERINESS;
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
@@ -103,7 +104,7 @@ public enum ClientboundSettingsPacket {
 
                 // Special full disable (null context) if we are in the default context,
                 // this should be a catchall for potential any mistakes in the default values
-                // or similar as the mixin does pretty much nothing if the context is null
+                // or similar as the mixin(s) does pretty much nothing if the context is null
                 if (context == OpenBoatUtils.instance) {
                     OpenBoatUtils.instance.setActiveContext(null);
                 }
@@ -253,6 +254,9 @@ public enum ClientboundSettingsPacket {
             }
             case SET_SCALE -> {
                 context.setScale(buf.readFloat());
+            }
+            case SET_STEP_UP_SLIPPERINESS -> {
+                context.setStepUpSlipperiness(buf.readFloat());
             }
         }
     }

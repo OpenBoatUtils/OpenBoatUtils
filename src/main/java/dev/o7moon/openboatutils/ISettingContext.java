@@ -41,6 +41,7 @@ public interface ISettingContext {
     float getWalltapMultiplier();
     int getJumps();
     float getScale();
+    float getStepUpSlipperiness();
 
     Set<Identifier> getBlocksWithSettings();
     boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
@@ -88,6 +89,7 @@ public interface ISettingContext {
             @Override public float getWalltapMultiplier() { return 0; }
             @Override public int getJumps() { return 1; }
             @Override public float getScale() { return 1; }
+            @Override public float getStepUpSlipperiness() { return 1; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
 

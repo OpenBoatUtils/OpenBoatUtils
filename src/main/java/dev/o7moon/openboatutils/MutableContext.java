@@ -33,6 +33,7 @@ public abstract class MutableContext implements ISettingContext {
     private float walltapMultiplier;
     private int jumps;
     private float scale;
+    private float stepUpSlipperiness;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
@@ -75,6 +76,7 @@ public abstract class MutableContext implements ISettingContext {
     @Override public float getWalltapMultiplier() { return walltapMultiplier; }
     @Override public int getJumps() { return jumps; }
     @Override public float getScale() { return scale; }
+    @Override public float getStepUpSlipperiness() { return stepUpSlipperiness; }
 
     @Override
     public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
@@ -103,8 +105,9 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setStepWhileFalling(boolean v) { this.stepWhileFalling = v; return this; }
     public MutableContext setCollisionResolution(int v) { this.collisionResolution = v; return this; }
     public MutableContext setWalltapMultiplier(float v) { this.walltapMultiplier = v; return this; }
-    public MutableContext setJumps(int jumps) { this.jumps = jumps; return this; }
-    public MutableContext setScale(float scale) { this.scale = scale; return this; }
+    public MutableContext setJumps(int v) { this.jumps = v; return this; }
+    public MutableContext setScale(float v) { this.scale = v; return this; }
+    public MutableContext setStepUpSlipperiness(float v) { this.stepUpSlipperiness = v; return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -165,6 +168,7 @@ public abstract class MutableContext implements ISettingContext {
         this.walltapMultiplier = other.getWalltapMultiplier();
         this.jumps = other.getJumps();
         this.scale = other.getScale();
+        this.stepUpSlipperiness = other.getStepUpSlipperiness();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
         this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());

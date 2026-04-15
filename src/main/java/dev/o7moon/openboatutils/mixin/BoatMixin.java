@@ -42,7 +42,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 *///? }
 
 @Mixin(BoatEntity.class)
-public abstract class BoatMixin implements GetStepHeight {
+public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     //? < 1.21.5 {
     @Shadow private float velocityDecay;
     //? }

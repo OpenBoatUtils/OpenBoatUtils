@@ -5,6 +5,7 @@ layout: home
 hero:
   name: "OpenBoatUtils"
   text: "Configurable Boat Physics"
+  image: /logo.png
   actions:
     - theme: brand
       text: Modrinth

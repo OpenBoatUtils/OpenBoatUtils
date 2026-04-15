@@ -1,9 +1,6 @@
 package dev.o7moon.openboatutils.mixin;
 
-import dev.o7moon.openboatutils.GetStepHeight;
-import dev.o7moon.openboatutils.ISettingContext;
-import dev.o7moon.openboatutils.OpenBoatUtils;
-import dev.o7moon.openboatutils.PerBlockSettingType;
+import dev.o7moon.openboatutils.*;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
@@ -148,11 +145,12 @@ public abstract class EntityMixin {
 
     @ModifyVariable(method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", at = @At("STORE"), ordinal = 3)
     private boolean hookStepHeightOnGroundCheck(boolean original) {
-        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
-
-        if (context == null) return original;
 
         if ((Object) this instanceof BoatEntity) {
+            @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+            if (context == null) return original;
+
             if (context.hasStepWhileFalling()) {
                 return true;
             }
@@ -174,6 +172,28 @@ public abstract class EntityMixin {
 
             if (context != null) {
                 cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(context.getScale())));
+            }
+        }
+    }
+
+    @Inject(
+            method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/util/math/Vec3d;subtract(DDD)Lnet/minecraft/util/math/Vec3d;",
+                    shift = At.Shift.BEFORE
+            )
+    )
+    private void hookStepUp(Vec3d movement, CallbackInfoReturnable<Vec3d> cir) {
+        if ((Object) this instanceof BoatEntity boat) {
+            @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+            if (context != null) {
+                float slipperiness = ((GetNearbySetting) boat).openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.STEP_UP_SLIPPERINESS);
+
+                if (slipperiness != 1) {
+                    boat.setVelocity(boat.getVelocity().multiply(slipperiness));
+                }
             }
         }
     }

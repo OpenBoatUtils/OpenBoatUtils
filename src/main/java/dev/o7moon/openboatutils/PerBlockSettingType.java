@@ -8,7 +8,8 @@ public enum PerBlockSettingType {
     TURN_FORWARDS_ACCEL,
     WALLTAP_MULTIPLIER,
     JUMPS,
-    COYOTE_TIME;
+    COYOTE_TIME,
+    STEP_UP_SLIPPERINESS;
 
     public float fromContext(ISettingContext context) {
         return switch (this) {
@@ -20,6 +21,7 @@ public enum PerBlockSettingType {
             case WALLTAP_MULTIPLIER -> context.getWalltapMultiplier();
             case JUMPS -> context.getJumps();
             case COYOTE_TIME -> context.getCoyoteTime();
+            case STEP_UP_SLIPPERINESS -> context.getStepUpSlipperiness();
         };
     }
 }
