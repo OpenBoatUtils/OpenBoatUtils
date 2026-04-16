@@ -26,6 +26,7 @@ export default defineConfig({
          { text: 'Versions', link: '/developers/versions' },
          { text: 'Settings', link: '/developers/settings' },
          { text: 'Context', link: '/developers/context' },
+          { text: 'Configuration', link: '/developers/configuration' },
         ]
      }
     ],

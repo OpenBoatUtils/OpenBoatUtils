@@ -10,9 +10,9 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-public class ByteBufChannel {
+public abstract class ByteBufChannel<T, S, C> {
 
-    private final CustomPayload.Id<BytePayload> id;
+    protected final CustomPayload.Id<BytePayload> id;
 
     public final PacketCodec<PacketByteBuf, BytePayload> codec;
 
@@ -29,46 +29,15 @@ public class ByteBufChannel {
         );
     }
 
-    public void registerCodec() {
-        PayloadTypeRegistry.playS2C().register(id, codec);
-        PayloadTypeRegistry.playC2S().register(id, codec);
-    }
+    public abstract void registerCodec();
 
-    public void registerServerHandler(ServerPlayNetworking.PlayPayloadHandler<BytePayload> handler) {
-        ServerPlayNetworking.registerGlobalReceiver(id, handler);
-    }
+    public abstract void registerServerHandler(S handler);
 
-    public void registerClientHandler(ClientPlayNetworking.PlayPayloadHandler<BytePayload> handler) {
-        ClientPlayNetworking.registerGlobalReceiver(id, handler);
-    }
+    public abstract void registerClientHandler(C handler);
 
-    public void sendPacketC2S(PacketByteBuf byteBuf) {
-        ClientPlayNetworking.send(new BytePayload() {
-            @Override
-            public ByteBuf getData() {
-                return byteBuf;
-            }
+    public abstract void sendPacketC2S(PacketByteBuf byteBuf);
 
-            @Override
-            public Id<? extends CustomPayload> getId() {
-                return id;
-            }
-        });
-    }
-
-    public void sendPacketS2C(ServerPlayerEntity player, PacketByteBuf byteBuf) {
-        ServerPlayNetworking.send(player, new BytePayload() {
-            @Override
-            public ByteBuf getData() {
-                return byteBuf;
-            }
-
-            @Override
-            public Id<? extends CustomPayload> getId() {
-                return id;
-            }
-        });
-    }
+    public abstract void sendPacketS2C(T player, PacketByteBuf byteBuf);
 
     private void encode(BytePayload bytePayload, PacketByteBuf packetByteBuf) {
         packetByteBuf.writeBytes(bytePayload.getData());

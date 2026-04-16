@@ -1,6 +1,8 @@
 package dev.o7moon.openboatutils;
 
 import dev.o7moon.openboatutils.network.ByteBufChannel;
+import dev.o7moon.openboatutils.network.ConfigurationByteBufChannel;
+import dev.o7moon.openboatutils.network.PlayByteBufChannel;
 import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
@@ -27,8 +29,9 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     public static final Logger LOG = LoggerFactory.getLogger("OpenBoatUtils");
 
-    public static final ByteBufChannel SETTING_CHANNEL = new ByteBufChannel(Identifier.of(NAMESPACE, "settings"));
-    public static final ByteBufChannel CONTEXT_CHANNEL = new ByteBufChannel(Identifier.of(NAMESPACE, "context"));
+    public static final PlayByteBufChannel SETTING_CHANNEL = new PlayByteBufChannel(Identifier.of(NAMESPACE, "settings"));
+    public static final PlayByteBufChannel CONTEXT_CHANNEL = new PlayByteBufChannel(Identifier.of(NAMESPACE, "context"));
+    public static final ConfigurationByteBufChannel CONFIGURATION_CHANNEL = new ConfigurationByteBufChannel(Identifier.of(NAMESPACE, "configuration"));
 
     public static final Identifier DEFAULT_CONTEXT = Identifier.of(NAMESPACE, "default");
 
@@ -49,6 +52,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     public void onInitialize() {
         SETTING_CHANNEL.registerCodec();
         CONTEXT_CHANNEL.registerCodec();
+        CONFIGURATION_CHANNEL.registerCodec();
 
         SETTING_CHANNEL.registerServerHandler((bytePayload, context) -> {
             PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
