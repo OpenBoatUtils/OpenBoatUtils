@@ -210,7 +210,7 @@ Example: `/collisionmode 1`
 |    `0`    | `VANILLA`                         |
 |    `1`    | `NO_BOATS_OR_PLAYERS`             |
 |    `2`    | `NO_ENTITIES`                     |
-|    `3`    | `EMTITYTYPE_FILTER`               |
+|    `3`    | `ENTITYTYPE_FILTER`               |
 |    `4`    | `NO_BOATS_OR_PLAYERS_PLUS_FILTER` |
 
 ## `/stepwhilefalling <enabled>`
