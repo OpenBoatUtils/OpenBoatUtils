@@ -1,9 +1,10 @@
 # Protocol
 OpenBoatUtils uses a feature of the vanilla game called Plugin Channels to communicate
 
-OpenBoatUtils uses two plugin channels:
+OpenBoatUtils uses three plugin channels:
 - [`openboatutils:settings`](/developers/settings) for all boat settings
 - [`openboatutils:context`](/developers/context) for context operations (introduced in `0.5.0`)
+- [`openboatutils:configuration`](/developers/configuration) for configuration phase versioning.
 
 The context api is optional, ignoring it will produce identical behaviour to before the introduction.
 

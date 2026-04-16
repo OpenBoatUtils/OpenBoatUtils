@@ -6,11 +6,12 @@ import dev.o7moon.openboatutils.network.ClientboundSettingsPacket;
 import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 
-import static dev.o7moon.openboatutils.OpenBoatUtils.CONTEXT_CHANNEL;
-import static dev.o7moon.openboatutils.OpenBoatUtils.SETTING_CHANNEL;
+import static dev.o7moon.openboatutils.OpenBoatUtils.*;
 
 public class OpenBoatUtilsClient implements ClientModInitializer {
 
@@ -30,6 +31,16 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
                 ClientboundContextPacket.handlePacket(buf);
                 buf.release();
             });
+        });
+
+        ClientConfigurationConnectionEvents.START.register((handler, client) -> {
+            PacketByteBuf buf = PacketByteBufs.create();
+
+            buf.writeShort(ServerboundSettingsPacket.VERSION.ordinal());
+            buf.writeInt(VERSION);
+            buf.writeBoolean(UNSTABLE);
+
+            CONFIGURATION_CHANNEL.sendPacketC2S(buf);
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
