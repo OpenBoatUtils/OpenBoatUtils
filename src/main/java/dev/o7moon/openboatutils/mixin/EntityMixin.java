@@ -180,7 +180,11 @@ public abstract class EntityMixin {
             method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/util/math/Vec3d;subtract(DDD)Lnet/minecraft/util/math/Vec3d;",
+                    //? >= 1.21.5 {
+                    /*target = "Lnet/minecraft/util/math/Vec3d;subtract(DDD)Lnet/minecraft/util/math/Vec3d;",
+                    *///? } else {
+                    target = "Lnet/minecraft/util/math/Vec3d;add(DDD)Lnet/minecraft/util/math/Vec3d;",
+                    //? }
                     shift = At.Shift.BEFORE
             )
     )
