@@ -406,3 +406,21 @@ The boat's current velocity will be multiplied by this value whenever the boat s
 |--------------|----------------------|
 | 37 (`short`) | `float`              |
 
+***
+
+### Set Reset On World Load <Badge type="warning" text="Non-Context" /> <Badge type="tip" text="^0.5.0" />
+Sets if everything is reset upon world load, including non-context settings.
+
+This is `true` by default, see the details block below for why.
+
+| Packet ID    | Enabled (default `true`) |
+|--------------|--------------------------|
+| 38 (`short`) | `boolean`                |
+
+::: warning
+This is handled completely separately to contexts, a reset packet won't clear this setting but relogging will.
+:::
+
+::: details
+The process used by server proxies (Velocity, etc..) to switch a player between servers is indistinguishable from a dimension change. We treat all world loads as a "new server" entirely, because it very much could be.
+:::

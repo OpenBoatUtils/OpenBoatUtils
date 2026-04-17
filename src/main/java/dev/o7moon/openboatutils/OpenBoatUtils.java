@@ -1,6 +1,5 @@
 package dev.o7moon.openboatutils;
 
-import dev.o7moon.openboatutils.network.ByteBufChannel;
 import dev.o7moon.openboatutils.network.ConfigurationByteBufChannel;
 import dev.o7moon.openboatutils.network.PlayByteBufChannel;
 import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
@@ -41,6 +40,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     private final Map<UUID, EntityContext> entity_contexts = new HashMap<>();
 
     private boolean interpolationCompatibility = false;
+    private boolean resetOnWorldLoad = true;
 
     private @Nullable ISettingContext activeContext = null;
 
@@ -70,6 +70,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         setActiveContext(this);
 
         interpolationCompatibility = false;
+        resetOnWorldLoad = true;
     }
 
     public static void sendVersionPacket() {
@@ -115,6 +116,12 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     public boolean getInterpolationCompatibility() {
         return interpolationCompatibility;
     }
+
+    public void setResetOnWorldLoad(boolean resetOnWorldLoad) {
+        this.resetOnWorldLoad = resetOnWorldLoad;
+    }
+
+    public boolean getResetOnWorldLoad() { return resetOnWorldLoad; }
 
     public void setActiveContext(@Nullable ISettingContext context) {
         if (context == activeContext && context != this) return;

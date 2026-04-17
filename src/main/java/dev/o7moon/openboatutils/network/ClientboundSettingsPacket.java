@@ -47,7 +47,8 @@ public enum ClientboundSettingsPacket {
     SET_WALLTAP_MULTIPLIER,
     SET_JUMPS,
     SET_SCALE,
-    SET_STEP_UP_SLIPPERINESS;
+    SET_STEP_UP_SLIPPERINESS,
+    SET_RESET_ON_WORLD_LOAD;
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
@@ -59,13 +60,6 @@ public enum ClientboundSettingsPacket {
 
             ClientboundSettingsPacket packet = packets[packetID];
 
-            // This is the one non-context setting
-            if (packet == ClientboundSettingsPacket.SET_INTERPOLATION_COMPAT) {
-                OpenBoatUtils.instance.setInterpolationCompatibility(buf.readBoolean());
-
-                return;
-            }
-
             @Nullable ISettingContext mutable = OpenBoatUtils.instance.getActiveContext();
 
             if (mutable == null) {
@@ -76,7 +70,7 @@ public enum ClientboundSettingsPacket {
 
             if (!(mutable instanceof final MutableContext context)) return;
 
-            handleContextPacket(context, buf, packet);
+            handlePacket(context, buf, packet, false);
         } catch (Exception E) {
             OpenBoatUtils.LOG.error("Error when handling clientbound openboatutils packet: ");
             for (StackTraceElement e : E.getStackTrace()){
@@ -85,7 +79,7 @@ public enum ClientboundSettingsPacket {
         }
     }
 
-    public static void handleContextPacket(MutableContext context, PacketByteBuf buf) {
+    public static void handlePacket(MutableContext context, PacketByteBuf buf, boolean isTransaction) {
         short packetID = buf.readShort();
 
         ClientboundSettingsPacket[] packets = ClientboundSettingsPacket.values();
@@ -94,10 +88,26 @@ public enum ClientboundSettingsPacket {
 
         ClientboundSettingsPacket packet = packets[packetID];
 
-        handleContextPacket(context, buf, packet);
+        System.out.println(packet.toString());
+
+        handlePacket(context, buf, packet, isTransaction);
     }
 
-    public static void handleContextPacket(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet) {
+    public static void handlePacket(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet, boolean isTransaction) {
+
+        // Both of these are non-context settings, they are handled seperately.
+        // Almost certainly should be out of this channel but backwards compatibility!!
+        if (packet == ClientboundSettingsPacket.SET_INTERPOLATION_COMPAT) {
+            OpenBoatUtils.instance.setInterpolationCompatibility(buf.readBoolean());
+
+            return;
+        } else if (packet == ClientboundSettingsPacket.SET_RESET_ON_WORLD_LOAD) {
+            OpenBoatUtils.instance.setResetOnWorldLoad(buf.readBoolean());
+
+            return;
+        }
+
+        final MutableContext finalContext = context;
         switch (packet) {
             case RESET -> {
                 context.applyFrom(ISettingContext.VANILLA);
@@ -105,7 +115,7 @@ public enum ClientboundSettingsPacket {
                 // Special full disable (null context) if we are in the default context,
                 // this should be a catchall for potential any mistakes in the default values
                 // or similar as the mixin(s) does pretty much nothing if the context is null
-                if (context == OpenBoatUtils.instance) {
+                if (context == OpenBoatUtils.instance && !isTransaction) {
                     OpenBoatUtils.instance.setActiveContext(null);
                 }
             }
@@ -121,7 +131,7 @@ public enum ClientboundSettingsPacket {
 
                 Arrays.stream(buf.readString().split(","))
                         .map(Identifier::of)
-                        .forEach(block -> context.setBlockSlipperiness(block, slipperiness));
+                        .forEach(block -> finalContext.setBlockSlipperiness(block, slipperiness));
             }
             case SET_BOAT_FALL_DAMAGE -> {
                 context.setFallDamage(buf.readBoolean());
@@ -212,7 +222,7 @@ public enum ClientboundSettingsPacket {
 
                 Arrays.stream(buf.readString().split(","))
                         .map(Identifier::of)
-                        .forEach(block -> context.setBlockSetting(block, setting, value));
+                        .forEach(block -> finalContext.setBlockSetting(block, setting, value));
             }
             case SET_COLLISION_MODE -> {
                 short collisionMode = buf.readShort();
@@ -243,7 +253,7 @@ public enum ClientboundSettingsPacket {
                 int size = buf.readInt();
 
                 for (int i = 0; i < size; i++) {
-                    handleContextPacket(context, buf);
+                    handlePacket(context, buf, true);
                 }
             }
             case SET_WALLTAP_MULTIPLIER -> {
