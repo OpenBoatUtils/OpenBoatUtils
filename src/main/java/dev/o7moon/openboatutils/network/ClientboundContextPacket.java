@@ -58,7 +58,7 @@ public enum ClientboundContextPacket {
 
                     StoredContext storedContext = new StoredContext(identifier);
 
-                    ClientboundSettingsPacket.handleContextPacket(storedContext, buf, ClientboundSettingsPacket.TRANSACTION);
+                    ClientboundSettingsPacket.handlePacket(storedContext, buf, ClientboundSettingsPacket.TRANSACTION, true);
 
                     OpenBoatUtils.instance.putStoredContext(identifier, storedContext);
                 }
@@ -67,7 +67,7 @@ public enum ClientboundContextPacket {
 
                     EntityContext entityContext = new EntityContext(id);
 
-                    ClientboundSettingsPacket.handleContextPacket(entityContext, buf, ClientboundSettingsPacket.TRANSACTION);
+                    ClientboundSettingsPacket.handlePacket(entityContext, buf, ClientboundSettingsPacket.TRANSACTION, true);
 
                     OpenBoatUtils.instance.putEntityContext(id, entityContext);
                 }

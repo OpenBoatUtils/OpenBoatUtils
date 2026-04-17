@@ -568,6 +568,19 @@ public class SingleplayerCommands {
                         return 1;
                     }))
             );
+
+            dispatcher.register(
+                    literal("setresetonworldload").then(argument("enabled", BoolArgumentType.bool()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        boolean enabled = BoolArgumentType.getBool(ctx,"enabled");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_RESET_ON_WORLD_LOAD.ordinal());
+                        packet.writeBoolean(enabled);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
         });
     }
 }
