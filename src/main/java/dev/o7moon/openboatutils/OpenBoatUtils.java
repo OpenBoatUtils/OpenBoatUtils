@@ -24,7 +24,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     public static final String NAMESPACE = "openboatutils";
     public static final int VERSION = 19;
-    public static final boolean UNSTABLE = true;
+    public static final boolean UNSTABLE = false;
 
     public static final Logger LOG = LoggerFactory.getLogger("OpenBoatUtils");
 
