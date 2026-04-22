@@ -1,4 +1,4 @@
-//~ !boat_entity
+//~ !boat
 package dev.o7moon.openboatutils.mixin;
 
 //? >= 1.21.3 {

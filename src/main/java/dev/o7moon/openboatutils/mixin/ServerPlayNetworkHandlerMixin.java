@@ -1,8 +1,7 @@
+//~ !boat
 package dev.o7moon.openboatutils.mixin;
 
-//? >= 1.21.6 {
-/*import dev.o7moon.openboatutils.OpenBoatUtils;
-*///? }
+import dev.o7moon.openboatutils.OpenBoatUtils;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.*;
@@ -20,7 +19,7 @@ public class ServerPlayNetworkHandlerMixin {
     //? <1.21.6 {
     @ModifyVariable(method = "handleMoveVehicle", at = @At("STORE"), ordinal = 2)
     private boolean onVehicleMove_WronglyFlag(boolean original) {
-        return false;
+        return OpenBoatUtils.instance.getActiveContext() == null && original;
     }
     //?}
 

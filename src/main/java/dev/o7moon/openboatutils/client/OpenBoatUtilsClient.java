@@ -1,3 +1,4 @@
+//~ !boat
 package dev.o7moon.openboatutils.client;
 
 import dev.o7moon.openboatutils.OpenBoatUtils;

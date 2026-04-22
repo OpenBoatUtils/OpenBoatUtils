@@ -1,3 +1,4 @@
+//~ !boat
 package dev.o7moon.openboatutils.network;
 
 import dev.o7moon.openboatutils.EntityContext;

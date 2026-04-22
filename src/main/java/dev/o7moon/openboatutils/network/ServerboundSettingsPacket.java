@@ -1,3 +1,4 @@
+//~ !boat
 package dev.o7moon.openboatutils.network;
 
 import dev.o7moon.openboatutils.OpenBoatUtils;
@@ -12,7 +13,7 @@ public enum ServerboundSettingsPacket {
             switch (packetID) {
                 case 0:
                     int versionID = buf.readInt();
-                    OpenBoatUtils.LOG.info("OpenBoatUtils version received by server: "+versionID);
+                    OpenBoatUtils.LOG.info("OpenAbstractBoatUtils version received by server: "+versionID);
             }
         } catch (Exception E) {
             OpenBoatUtils.LOG.error("Error when handling serverbound openboatutils packet: ");

@@ -1,4 +1,3 @@
-//~ !boat_entity
 package dev.o7moon.openboatutils.mixin;
 
 //? >= 1.21.9 {
@@ -6,18 +5,17 @@ package dev.o7moon.openboatutils.mixin;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 *///? }
-import com.mojang.blaze3d.vertex.PoseStack;
 import dev.o7moon.openboatutils.ISettingContext;
 import dev.o7moon.openboatutils.OpenBoatUtils;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.BoatRenderer;
 //? >= 1.21.3 {
 /*import net.minecraft.client.renderer.entity.AbstractBoatRenderer;
 import net.minecraft.client.renderer.entity.state.BoatRenderState;
-import net.minecraft.world.entity.Entity;
 import dev.o7moon.openboatutils.ScaledBoatRenderState;
-import net.minecraft.world.entity.vehicle.AbstractBoat;
-*///? }
+*///? } else {
+import net.minecraft.client.renderer.entity.BoatRenderer;
+//? }
 import net.minecraft.world.entity.vehicle.Boat;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -34,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class BoatRendererMixin {
 
     //? >= 1.21.3 {
-    /*@Unique private float openBoatUtils$getScale(AbstractBoat boat) {
+    /*@Unique private float openBoatUtils$getScale(Boat boat) {
     *///? } else {
     @Unique private float openBoatUtils$getScale(Boat boat) {
     //? }
@@ -111,8 +109,8 @@ public abstract class BoatRendererMixin {
     //? }
 
     //? >= 1.21.3 {
-    /*@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/vehicle/AbstractBoat;Lnet/minecraft/client/renderer/entity/state/BoatRenderState;F)V", at = @At("RETURN"))
-    private void populateScale(AbstractBoat entity, BoatRenderState state,
+    /*@Inject(method = "extractRenderState(Lnet/minecraft/world/entity/vehicle/Boat;Lnet/minecraft/client/renderer/entity/state/BoatRenderState;F)V", at = @At("RETURN"))
+    private void populateScale(Boat entity, BoatRenderState state,
                                float tickDelta, CallbackInfo ci) {
 
         ((ScaledBoatRenderState) state).openBoatUtils$setScale(

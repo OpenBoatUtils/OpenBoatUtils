@@ -92,8 +92,14 @@ loom {
 stonecutter {
     replacements.string(
             current.parsed.matches('>=1.21.3'),
-            "!boat_entity"
+            "!boat"
     ) {
-        replace 'Boat', 'AbstractBoat'
+        replace 'Boat ', 'AbstractBoat '
+        replace 'Boat.class', 'AbstractBoat.class'
+        replace 'Lnet/minecraft/world/entity/vehicle/Boat', 'Lnet/minecraft/world/entity/vehicle/AbstractBoat'
+        replace 'net.minecraft.world.entity.vehicle.Boat', 'net.minecraft.world.entity.vehicle.AbstractBoat'
+        replace '(Boat)', '(AbstractBoat)'
+        replace 'Boat.', 'AbstractBoat.'
+        replace 'instanceof Boat', 'instanceof AbstractBoat'
     }
 }

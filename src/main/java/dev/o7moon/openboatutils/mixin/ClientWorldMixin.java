@@ -1,3 +1,4 @@
+//~ !boat
 package dev.o7moon.openboatutils.mixin;
 
 import dev.o7moon.openboatutils.OpenBoatUtils;

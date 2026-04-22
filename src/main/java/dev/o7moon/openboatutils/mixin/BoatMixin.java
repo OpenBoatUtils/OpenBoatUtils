@@ -6,7 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
+//? >= 1.21.5 {
+/*import net.minecraft.world.entity.EntityType;
+*///? }
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
@@ -43,32 +45,22 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     @Shadow @Final private InterpolationHandler interpolation;
     *///? }
 
+    @Shadow private double waterLevel;
     @Unique private int openboatutils$coyoteTimer;
     @Unique private int openboatutils$remaining_jumps;
     @Unique private boolean openboatutils$debounce = false;
 
-    @Shadow public abstract void remove(Entity.RemovalReason reason);
+    @Shadow protected abstract boolean checkInWater();
 
-    @Shadow
-    protected abstract Boat.Status getStatus();
+    @Shadow private float landFriction;
+    @Shadow private float deltaRotation;
+    @Shadow private boolean inputUp;
+    @Shadow private boolean inputDown;
 
-    @Shadow
-    private double waterLevel;
-
-    @Shadow
-    protected abstract boolean checkInWater();
-
-    @Shadow
-    private float landFriction;
-    @Shadow
-    private float deltaRotation;
-    @Shadow
-    private boolean inputUp;
-    @Shadow
-    private boolean inputDown;
-    @Shadow
-    private float invFriction;
-    @Unique private float openBoatUtils$lastScale;
+    //? < 1.21.5 {
+    @Shadow private float invFriction;
+    //? }
+    @Unique private float OpenBoatUtils$lastScale;
 
     @Unique float openboatutils$stepHeight;
     @Unique public float openboatutils$getStepHeight() {
@@ -268,7 +260,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         mixedInstance.openboatutils$setStepHeight(0f);
 
-        Boat.Status loc = this.getStatus();
+        Boat.Status loc = ((BoatAccessor) instance).getStatus();
         Boat.Status original_loc = loc;
 
         if (context == null) return loc;
@@ -583,8 +575,8 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             currentScale = context.getScale();
         }
 
-        if (currentScale != openBoatUtils$lastScale) {
-            openBoatUtils$lastScale = currentScale;
+        if (currentScale != OpenBoatUtils$lastScale) {
+            OpenBoatUtils$lastScale = currentScale;
             ((Boat) (Object) this).refreshDimensions();
         }
     }

@@ -1,3 +1,4 @@
+//~ !boat
 package dev.o7moon.openboatutils;
 
 import com.mojang.brigadier.arguments.*;
