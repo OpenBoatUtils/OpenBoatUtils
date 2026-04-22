@@ -6,11 +6,11 @@ import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.vehicle.VehicleEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.vehicle.VehicleEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -28,15 +28,15 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     public static final Logger LOG = LoggerFactory.getLogger("OpenBoatUtils");
 
-    public static final PlayByteBufChannel SETTING_CHANNEL = new PlayByteBufChannel(Identifier.of(NAMESPACE, "settings"));
-    public static final PlayByteBufChannel CONTEXT_CHANNEL = new PlayByteBufChannel(Identifier.of(NAMESPACE, "context"));
-    public static final ConfigurationByteBufChannel CONFIGURATION_CHANNEL = new ConfigurationByteBufChannel(Identifier.of(NAMESPACE, "configuration"));
+    public static final PlayByteBufChannel SETTING_CHANNEL = new PlayByteBufChannel(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "settings"));
+    public static final PlayByteBufChannel CONTEXT_CHANNEL = new PlayByteBufChannel(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "context"));
+    public static final ConfigurationByteBufChannel CONFIGURATION_CHANNEL = new ConfigurationByteBufChannel(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "configuration"));
 
-    public static final Identifier DEFAULT_CONTEXT = Identifier.of(NAMESPACE, "default");
+    public static final ResourceLocation DEFAULT_CONTEXT = ResourceLocation.fromNamespaceAndPath(NAMESPACE, "default");
 
     public static OpenBoatUtils instance;
 
-    private final Map<Identifier, StoredContext> stored_contexts = new HashMap<>();
+    private final Map<ResourceLocation, StoredContext> stored_contexts = new HashMap<>();
     private final Map<UUID, EntityContext> entity_contexts = new HashMap<>();
 
     private boolean interpolationCompatibility = false;
@@ -55,7 +55,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         CONFIGURATION_CHANNEL.registerCodec();
 
         SETTING_CHANNEL.registerServerHandler((bytePayload, context) -> {
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
 
             context.server().execute(() -> {
                 ServerboundSettingsPacket.handlePacket(buf);
@@ -74,7 +74,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     }
 
     public static void sendVersionPacket() {
-        PacketByteBuf packet = PacketByteBufs.create();
+        FriendlyByteBuf packet = PacketByteBufs.create();
         packet.writeShort(ServerboundSettingsPacket.VERSION.ordinal());
         packet.writeInt(VERSION);
         packet.writeBoolean(UNSTABLE);
@@ -87,7 +87,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         OpenBoatUtils.instance.applyFrom(ISettingContext.VANILLA);
     }
 
-    public @NotNull ISettingContext getStoredContext(Identifier identifier) {
+    public @NotNull ISettingContext getStoredContext(ResourceLocation identifier) {
         if (identifier.equals(DEFAULT_CONTEXT)) return this;
 
         return stored_contexts.computeIfAbsent(identifier, StoredContext::new);
@@ -101,11 +101,11 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         entity_contexts.put(uuid, context);
     }
 
-    public @Nullable StoredContext dropStoredContext(Identifier identifier) {
+    public @Nullable StoredContext dropStoredContext(ResourceLocation identifier) {
         return stored_contexts.remove(identifier);
     }
 
-    public void putStoredContext(Identifier identifier, @NotNull StoredContext context) {
+    public void putStoredContext(ResourceLocation identifier, @NotNull StoredContext context) {
         stored_contexts.put(identifier, context);
     }
 
@@ -136,10 +136,10 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     }
 
     public @Nullable ISettingContext getActiveContext() {
-        @Nullable ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        @Nullable LocalPlayer player = Minecraft.getInstance().player;
 
         if (player != null && player.getVehicle() instanceof VehicleEntity vehicle) {
-            @Nullable ISettingContext entityContext = getEntityContext(vehicle.getUuid());
+            @Nullable ISettingContext entityContext = getEntityContext(vehicle.getUUID());
 
             if (entityContext != null) {
                 return entityContext;

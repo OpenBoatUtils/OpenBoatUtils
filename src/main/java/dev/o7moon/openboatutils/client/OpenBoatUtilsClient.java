@@ -9,7 +9,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 import static dev.o7moon.openboatutils.OpenBoatUtils.*;
 
@@ -18,7 +18,7 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         SETTING_CHANNEL.registerClientHandler((bytePayload, context) -> {
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
             context.client().execute(() -> {
                 ClientboundSettingsPacket.handlePacket(buf);
                 buf.release();
@@ -26,7 +26,7 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
         });
 
         CONTEXT_CHANNEL.registerClientHandler((bytePayload, context) -> {
-            PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
+            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
             context.client().execute(() -> {
                 ClientboundContextPacket.handlePacket(buf);
                 buf.release();
@@ -34,7 +34,7 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
         });
 
         ClientConfigurationConnectionEvents.START.register((handler, client) -> {
-            PacketByteBuf buf = PacketByteBufs.create();
+            FriendlyByteBuf buf = PacketByteBufs.create();
 
             buf.writeShort(ServerboundSettingsPacket.VERSION.ordinal());
             buf.writeInt(VERSION);

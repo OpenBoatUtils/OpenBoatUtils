@@ -1,9 +1,8 @@
 package dev.o7moon.openboatutils;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -35,11 +34,11 @@ public abstract class MutableContext implements ISettingContext {
     private float scale;
     private float stepUpSlipperiness;
 
-    private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
-    private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
+    private final Map<ResourceLocation, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
+    private final Map<PerBlockSettingType, Map<ResourceLocation, Float>> blockSettings = new HashMap<>();
     private final Set<EntityType<?>> collisionFilteredEntities = new HashSet<>();
 
-    private Set<Identifier> blocksWithSettings = new HashSet<>();
+    private Set<ResourceLocation> blocksWithSettings = new HashSet<>();
     private Set<PerBlockSettingType> settingsInUse = new HashSet<>();
 
     @Override public boolean hasFallDamage() { return hasFallDamage; }
@@ -61,11 +60,11 @@ public abstract class MutableContext implements ISettingContext {
     @Override public float getSwimForce() { return swimForce; }
     @Override public CollisionMode getCollisionMode() { return collisionMode; }
     @Override public boolean hasStepWhileFalling() { return stepWhileFalling; }
-    @Override public @Nullable Float getBlockSlipperiness(Identifier id) {
+    @Override public @Nullable Float getBlockSlipperiness(ResourceLocation id) {
         return blockSlipperiness.get(id);
     }
     @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return collisionFilteredEntities.contains(type); }
-    @Override public @Nullable Float getBlockSetting(Identifier id, PerBlockSettingType type) {
+    @Override public @Nullable Float getBlockSetting(ResourceLocation id, PerBlockSettingType type) {
         if (!blocksWithSettings.contains(id)) return null;
 
         return blockSettings
@@ -79,7 +78,7 @@ public abstract class MutableContext implements ISettingContext {
     @Override public float getStepUpSlipperiness() { return stepUpSlipperiness; }
 
     @Override
-    public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
+    public Set<ResourceLocation> getBlocksWithSettings() { return blocksWithSettings; }
 
     @Override
     public boolean hasAnyBlocksWithSetting(PerBlockSettingType type) { return settingsInUse.contains(type); }
@@ -118,7 +117,7 @@ public abstract class MutableContext implements ISettingContext {
         return this;
     }
 
-    public MutableContext setBlockSetting(Identifier id, PerBlockSettingType type, float value) {
+    public MutableContext setBlockSetting(ResourceLocation id, PerBlockSettingType type, float value) {
         blocksWithSettings.add(id);
         settingsInUse.add(type);
         blockSettings
@@ -128,14 +127,14 @@ public abstract class MutableContext implements ISettingContext {
     }
 
     public MutableContext breakSlimePlease() {
-        this.blockSlipperiness.remove(Registries.BLOCK.getId(Blocks.SLIME_BLOCK));
+        this.blockSlipperiness.remove(BuiltInRegistries.BLOCK.getKey(net.minecraft.world.level.block.Blocks.SLIME_BLOCK));
         return this;
     }
-    public MutableContext unsetBlockSlipperiness(Identifier id) {
+    public MutableContext unsetBlockSlipperiness(ResourceLocation id) {
         blockSlipperiness.remove(id);
         return this;
     }
-    public MutableContext setBlockSlipperiness(Identifier id, float slipperiness) {
+    public MutableContext setBlockSlipperiness(ResourceLocation id, float slipperiness) {
         blockSlipperiness.put(id, slipperiness);
         return this;
     }
@@ -174,8 +173,8 @@ public abstract class MutableContext implements ISettingContext {
         this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());
 
         this.blockSlipperiness.clear();
-        Registries.BLOCK.stream()
-                .map(Registries.BLOCK::getId).forEach(identifier -> {
+        BuiltInRegistries.BLOCK.stream()
+                .map(BuiltInRegistries.BLOCK::getKey).forEach(identifier -> {
             Float slipperiness = other.getBlockSlipperiness(identifier);
 
             if (slipperiness == null) return;
@@ -197,7 +196,7 @@ public abstract class MutableContext implements ISettingContext {
         });
 
         this.collisionFilteredEntities.clear();
-        this.collisionFilteredEntities.addAll(Registries.ENTITY_TYPE.stream().filter(other::isEntityTypeFiltered).toList());
+        this.collisionFilteredEntities.addAll(BuiltInRegistries.ENTITY_TYPE.stream().filter(other::isEntityTypeFiltered).toList());
 
         return this;
     }

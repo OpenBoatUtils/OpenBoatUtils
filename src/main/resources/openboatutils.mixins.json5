@@ -16,7 +16,8 @@
     /*,"BoatRenderStateMixin"
     *///? }
     //? >=1.21.5 {
-    /*,"PositionInterpolatorAccessor"
+    /*,
+    "InterpolationHandlerAccessor"
     *///?}
   ],
   "injectors": {

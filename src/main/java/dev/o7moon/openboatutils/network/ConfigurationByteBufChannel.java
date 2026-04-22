@@ -2,19 +2,16 @@ package dev.o7moon.openboatutils.network;
 
 import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerConfigurationNetworkHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.network.ServerConfigurationPacketListenerImpl;
 
-public class ConfigurationByteBufChannel extends ByteBufChannel<ServerConfigurationNetworkHandler, ServerConfigurationNetworking.ConfigurationPacketHandler<ByteBufChannel.BytePayload>, ClientConfigurationNetworking.ConfigurationPayloadHandler<ByteBufChannel.BytePayload>> {
+public class ConfigurationByteBufChannel extends ByteBufChannel<ServerConfigurationPacketListenerImpl, ServerConfigurationNetworking.ConfigurationPacketHandler<ByteBufChannel.BytePayload>, ClientConfigurationNetworking.ConfigurationPayloadHandler<ByteBufChannel.BytePayload>> {
 
-    public ConfigurationByteBufChannel(Identifier identifier) {
+    public ConfigurationByteBufChannel(ResourceLocation identifier) {
         super(identifier);
     }
 
@@ -31,7 +28,7 @@ public class ConfigurationByteBufChannel extends ByteBufChannel<ServerConfigurat
         ClientConfigurationNetworking.registerGlobalReceiver(id, handler);
     }
 
-    public void sendPacketC2S(PacketByteBuf byteBuf) {
+    public void sendPacketC2S(FriendlyByteBuf byteBuf) {
         ClientConfigurationNetworking.send(new BytePayload() {
             @Override
             public ByteBuf getData() {
@@ -39,13 +36,13 @@ public class ConfigurationByteBufChannel extends ByteBufChannel<ServerConfigurat
             }
 
             @Override
-            public Id<? extends CustomPayload> getId() {
+            public Type<? extends CustomPacketPayload> type() {
                 return id;
             }
         });
     }
 
-    public void sendPacketS2C(ServerConfigurationNetworkHandler player, PacketByteBuf byteBuf) {
+    public void sendPacketS2C(ServerConfigurationPacketListenerImpl player, FriendlyByteBuf byteBuf) {
         ServerConfigurationNetworking.send(player, new BytePayload() {
             @Override
             public ByteBuf getData() {
@@ -53,7 +50,7 @@ public class ConfigurationByteBufChannel extends ByteBufChannel<ServerConfigurat
             }
 
             @Override
-            public Id<? extends CustomPayload> getId() {
+            public Type<? extends CustomPacketPayload> type() {
                 return id;
             }
         });

@@ -1,16 +1,16 @@
 package dev.o7moon.openboatutils.mixin;
 
 import dev.o7moon.openboatutils.*;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -27,12 +27,10 @@ import java.util.UUID;
 @Mixin(Entity.class)
 public abstract class EntityMixin {
 
-    @Shadow private World world;
-
     @Shadow
-    public abstract UUID getUuid();
+    public abstract UUID getUUID();
 
-    @Inject(method = "getStepHeight", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "maxUpStep", at = @At("HEAD"), cancellable = true)
     public void getStepHeight(CallbackInfoReturnable<Float> cir) {
         if (this instanceof GetStepHeight step) {
             cir.setReturnValue(step.openboatutils$getStepHeight());
@@ -44,25 +42,25 @@ public abstract class EntityMixin {
             method = "move",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;setVelocity(DDD)V"
+                    target = "Lnet/minecraft/world/entity/Entity;setDeltaMovement(DDD)V"
             )
     )
     private void hookWalltap(Entity instance, double x, double y, double z) {
-        if ((Object) this instanceof BoatEntity) {
+        if ((Object) this instanceof Boat) {
             ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context != null && (context.getWalltapMultiplier() > 0 ||
                     context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER))) {
 
-                Vec3d before = instance.getVelocity();
+                Vec3 before = instance.getDeltaMovement();
                 float multiplier = context.getWalltapMultiplier();
 
                 List<BlockPos> blockPositions = new ArrayList<>();
 
                 if (context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER)) {
-                    Box box = instance.getBoundingBox();
-                    Vec3d min = box.getMinPos();
-                    Vec3d max = box.getMaxPos();
+                    AABB box = instance.getBoundingBox();
+                    Vec3 min = box.getMinPosition();
+                    Vec3 max = box.getMaxPosition();
 
                     int minX = (int) Math.floor(min.x + 1e-5);
                     int minY = (int) Math.floor(min.y + 1e-5);
@@ -105,11 +103,7 @@ public abstract class EntityMixin {
                 }
 
                 if (!blockPositions.isEmpty()) {
-                    //? >= 1.21.9 {
-                    /*World world = instance.getEntityWorld();
-                     *///? } else {
-                    World world = instance.getWorld();
-                    //? }
+                    Level world = instance.level();
 
                     int n = 0;
                     float multipliers = 0;
@@ -118,7 +112,7 @@ public abstract class EntityMixin {
                         BlockState state = world.getBlockState(pos);
 
                         Float v = context.getBlockSetting(
-                                Registries.BLOCK.getId(state.getBlock()),
+                                BuiltInRegistries.BLOCK.getKey(state.getBlock()),
                                 PerBlockSettingType.WALLTAP_MULTIPLIER
                         );
 
@@ -140,13 +134,13 @@ public abstract class EntityMixin {
             }
         }
 
-        instance.setVelocity(x, y, z);
+        instance.setDeltaMovement(x, y, z);
     }
 
-    @ModifyVariable(method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", at = @At("STORE"), ordinal = 3)
+    @ModifyVariable(method = "collide", at = @At("STORE"), ordinal = 3)
     private boolean hookStepHeightOnGroundCheck(boolean original) {
 
-        if ((Object) this instanceof BoatEntity) {
+        if ((Object) this instanceof Boat) {
             @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context == null) return original;
@@ -160,43 +154,43 @@ public abstract class EntityMixin {
     }
 
     @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
-    public void getDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
-        if ((Object) this instanceof BoatEntity) {
-            @Nullable ISettingContext boatContext = OpenBoatUtils.instance.getEntityContext(this.getUuid());
+    public void getDimensions(Pose pose, CallbackInfoReturnable<EntityDimensions> cir) {
+        if ((Object) this instanceof Boat) {
+            @Nullable ISettingContext boatContext = OpenBoatUtils.instance.getEntityContext(this.getUUID());
 
             if (boatContext != null) {
-                cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(boatContext.getScale())));
+                cir.setReturnValue(cir.getReturnValue().scale(Math.abs(boatContext.getScale())));
             }
 
             @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context != null) {
-                cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(context.getScale())));
+                cir.setReturnValue(cir.getReturnValue().scale(Math.abs(context.getScale())));
             }
         }
     }
 
     @Inject(
-            method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;",
+            method = "collide",
             at = @At(
                     value = "INVOKE",
                     //? >= 1.21.5 {
-                    /*target = "Lnet/minecraft/util/math/Vec3d;subtract(DDD)Lnet/minecraft/util/math/Vec3d;",
+                    /*target = "Lnet/minecraft/world/phys/Vec3;subtract(DDD)Lnet/minecraft/world/phys/Vec3;",
                     *///? } else {
-                    target = "Lnet/minecraft/util/math/Vec3d;add(DDD)Lnet/minecraft/util/math/Vec3d;",
+                    target = "Lnet/minecraft/world/phys/Vec3;add(DDD)Lnet/minecraft/world/phys/Vec3;",
                     //? }
                     shift = At.Shift.BEFORE
             )
     )
-    private void hookStepUp(Vec3d movement, CallbackInfoReturnable<Vec3d> cir) {
-        if ((Object) this instanceof BoatEntity boat) {
+    private void hookStepUp(Vec3 movement, CallbackInfoReturnable<Vec3> cir) {
+        if ((Object) this instanceof Boat boat) {
             @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context != null) {
                 float slipperiness = ((GetNearbySetting) boat).openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.STEP_UP_SLIPPERINESS);
 
                 if (slipperiness != 1) {
-                    boat.setVelocity(boat.getVelocity().multiply(slipperiness));
+                    boat.setDeltaMovement(boat.getDeltaMovement().scale(slipperiness));
                 }
             }
         }

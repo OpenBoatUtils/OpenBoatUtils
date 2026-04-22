@@ -1,7 +1,7 @@
 package dev.o7moon.openboatutils;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Blocks;
 
 public enum Modes {
     BROKEN_SLIME_RALLY,//0
@@ -50,7 +50,7 @@ public enum Modes {
             case BA_NOFD -> context
                     .setFallDamage(false)
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.98f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true);
 
@@ -64,7 +64,7 @@ public enum Modes {
             case BA_BLUE_NOFD -> context
                     .setFallDamage(false)
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.989f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true);
 
@@ -77,13 +77,13 @@ public enum Modes {
 
             case BA -> context
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.98f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true);
 
             case BA_BLUE -> context
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.989f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true);
 
@@ -104,7 +104,7 @@ public enum Modes {
             case BROKEN_SLIME_BA_NOFD -> context
                     .setFallDamage(false)
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.98f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true)
                     .breakSlimePlease();
@@ -120,7 +120,7 @@ public enum Modes {
             case BROKEN_SLIME_BA_BLUE_NOFD -> context
                     .setFallDamage(false)
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.989f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true)
                     .breakSlimePlease();
@@ -135,27 +135,27 @@ public enum Modes {
 
             case BROKEN_SLIME_BA -> context
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.98f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true)
                     .breakSlimePlease();
 
             case BROKEN_SLIME_BA_BLUE -> context
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.989f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true)
                     .breakSlimePlease();
 
             case JUMP_BLOCKS -> context
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.ORANGE_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.36f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.BLACK_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.0f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.GREEN_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.5f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.YELLOW_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.18f);
+                    .setBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.ORANGE_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.36f)
+                    .setBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.BLACK_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.0f)
+                    .setBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.GREEN_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.5f)
+                    .setBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.YELLOW_CONCRETE), PerBlockSettingType.JUMP_FORCE, 0.18f);
 
             case BOOSTER_BLOCKS -> context
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.MAGENTA_GLAZED_TERRACOTTA), PerBlockSettingType.FORWARDS_ACCEL, 0.08f)
-                    .setBlockSetting(Registries.BLOCK.getId(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA), PerBlockSettingType.YAW_ACCEL, 0.08f);
+                    .setBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.MAGENTA_GLAZED_TERRACOTTA), PerBlockSettingType.FORWARDS_ACCEL, 0.08f)
+                    .setBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA), PerBlockSettingType.YAW_ACCEL, 0.08f);
 
             case DEFAULT_ICE -> context.setDefaultSlipperiness(0.98f);
 
@@ -168,14 +168,14 @@ public enum Modes {
             case BA_JANKLESS -> context
                     .setStepWhileFalling(true)
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.98f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.98f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true);
 
             case BA_BLUE_JANKLESS -> context
                     .setStepWhileFalling(true)
                     .setAirControl(true)
-                    .setBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR), 0.989f)
+                    .setBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), 0.989f)
                     .setStepSize(1.25f)
                     .setWaterElevation(true);
 

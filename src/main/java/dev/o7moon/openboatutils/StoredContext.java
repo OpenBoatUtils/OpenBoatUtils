@@ -1,17 +1,17 @@
 package dev.o7moon.openboatutils;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class StoredContext extends MutableContext {
 
-    private final Identifier identifier;
+    private final ResourceLocation identifier;
 
-    public StoredContext(Identifier identifier) {
+    public StoredContext(ResourceLocation identifier) {
         this.identifier = identifier;
         this.applyFrom(ISettingContext.VANILLA);
     }
 
-    public Identifier getIdentifier() {
+    public ResourceLocation getIdentifier() {
         return identifier;
     }
 

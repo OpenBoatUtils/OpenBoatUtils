@@ -1,9 +1,9 @@
 package dev.o7moon.openboatutils.network;
 
 import dev.o7moon.openboatutils.*;
-import net.minecraft.entity.EntityType;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -50,7 +50,7 @@ public enum ClientboundSettingsPacket {
     SET_STEP_UP_SLIPPERINESS,
     SET_RESET_ON_WORLD_LOAD;
 
-    public static void handlePacket(PacketByteBuf buf) {
+    public static void handlePacket(FriendlyByteBuf buf) {
         try {
             short packetID = buf.readShort();
 
@@ -79,7 +79,7 @@ public enum ClientboundSettingsPacket {
         }
     }
 
-    public static void handlePacket(MutableContext context, PacketByteBuf buf, boolean isTransaction) {
+    public static void handlePacket(MutableContext context, FriendlyByteBuf buf, boolean isTransaction) {
         short packetID = buf.readShort();
 
         ClientboundSettingsPacket[] packets = ClientboundSettingsPacket.values();
@@ -93,7 +93,7 @@ public enum ClientboundSettingsPacket {
         handlePacket(context, buf, packet, isTransaction);
     }
 
-    public static void handlePacket(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet, boolean isTransaction) {
+    public static void handlePacket(MutableContext context, FriendlyByteBuf buf, ClientboundSettingsPacket packet, boolean isTransaction) {
 
         // Both of these are non-context settings, they are handled seperately.
         // Almost certainly should be out of this channel but backwards compatibility!!
@@ -129,8 +129,8 @@ public enum ClientboundSettingsPacket {
             case SET_BLOCKS_SLIPPERINESS -> {
                 float slipperiness = buf.readFloat();
 
-                Arrays.stream(buf.readString().split(","))
-                        .map(Identifier::of)
+                Arrays.stream(buf.readUtf().split(","))
+                        .map(ResourceLocation::parse)
                         .forEach(block -> finalContext.setBlockSlipperiness(block, slipperiness));
             }
             case SET_BOAT_FALL_DAMAGE -> {
@@ -190,8 +190,8 @@ public enum ClientboundSettingsPacket {
                 context.setSwimForce(buf.readFloat());
             }
             case REMOVE_BLOCKS_SLIPPERINESS -> {
-                Arrays.stream(buf.readString().split(","))
-                        .map(Identifier::of)
+                Arrays.stream(buf.readUtf().split(","))
+                        .map(ResourceLocation::parse)
                         .forEach(context::unsetBlockSlipperiness);
             }
             case CLEAR_SLIPPERINESS -> {
@@ -220,8 +220,8 @@ public enum ClientboundSettingsPacket {
                 if (index >= settingTypes.length) return;
                 PerBlockSettingType setting = settingTypes[index];
 
-                Arrays.stream(buf.readString().split(","))
-                        .map(Identifier::of)
+                Arrays.stream(buf.readUtf().split(","))
+                        .map(ResourceLocation::parse)
                         .forEach(block -> finalContext.setBlockSetting(block, setting, value));
             }
             case SET_COLLISION_MODE -> {
@@ -240,8 +240,8 @@ public enum ClientboundSettingsPacket {
                 context.setCollisionResolution(buf.readByte());
             }
             case ADD_COLLISION_ENTITYTYPE_FILTER -> {
-                Arrays.stream(buf.readString().split(","))
-                        .map(EntityType::get)
+                Arrays.stream(buf.readUtf().split(","))
+                        .map(EntityType::byString)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
                         .forEach(context::addToCollisionFilter);

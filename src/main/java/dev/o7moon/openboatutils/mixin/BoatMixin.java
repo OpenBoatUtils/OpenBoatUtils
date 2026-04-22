@@ -1,35 +1,28 @@
 package dev.o7moon.openboatutils.mixin;
 
 import dev.o7moon.openboatutils.*;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LilyPadBlock;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-//? >= 1.21.5 {
-/*import net.minecraft.entity.EntityType;
-*///? }
-import net.minecraft.entity.MovementType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.function.BooleanBiFunction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.World;
-//? >= 1.21.5 {
-/*import net.minecraft.entity.PositionInterpolator;
-*///? }
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.WaterlilyBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.BooleanOp;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
-//? >= 1.21.5 {
-/*import org.spongepowered.asm.mixin.Final;
-*///? }
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -38,35 +31,43 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 //? >= 1.21.5 {
-/*import java.util.function.Supplier;
+/*import net.minecraft.world.entity.InterpolationHandler;
+import java.util.function.Supplier;
 *///? }
 
-@Mixin(BoatEntity.class)
+@Mixin(Boat.class)
 public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
-    //? < 1.21.5 {
-    @Shadow private float velocityDecay;
-    //? }
-    @Shadow private float nearbySlipperiness;
-    @Shadow private double waterLevel;
-    @Shadow private float yawVelocity;
-    @Shadow private boolean pressingForward;
-    @Shadow private boolean pressingBack;
 
     //? >=1.21.5 {
-    /*@Shadow @Final
-    private PositionInterpolator interpolator;
-    @Unique private int openboatutils$defaultInterpolation;
+    /*@Unique private int openboatutils$defaultInterpolation;
+    @Shadow @Final private InterpolationHandler interpolation;
     *///? }
 
     @Unique private int openboatutils$coyoteTimer;
     @Unique private int openboatutils$remaining_jumps;
     @Unique private boolean openboatutils$debounce = false;
 
-    @Shadow protected abstract boolean checkBoatInWater();
-    @Shadow protected abstract BoatEntity.Location checkLocation();
-
     @Shadow public abstract void remove(Entity.RemovalReason reason);
 
+    @Shadow
+    protected abstract Boat.Status getStatus();
+
+    @Shadow
+    private double waterLevel;
+
+    @Shadow
+    protected abstract boolean checkInWater();
+
+    @Shadow
+    private float landFriction;
+    @Shadow
+    private float deltaRotation;
+    @Shadow
+    private boolean inputUp;
+    @Shadow
+    private boolean inputDown;
+    @Shadow
+    private float invFriction;
     @Unique private float openBoatUtils$lastScale;
 
     @Unique float openboatutils$stepHeight;
@@ -77,19 +78,19 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         openboatutils$stepHeight = f;
     }
 
-    @Unique public float openboatutils$getAverageNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
-        Box box = instance.getBoundingBox();
-        Box box2 = new Box(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
-        int i = MathHelper.floor(box2.minX) - 1;
-        int j = MathHelper.ceil(box2.maxX) + 1;
-        int k = MathHelper.floor(box2.minY) - 1;
-        int l = MathHelper.ceil(box2.maxY) + 1;
-        int m = MathHelper.floor(box2.minZ) - 1;
-        int n = MathHelper.ceil(box2.maxZ) + 1;
-        VoxelShape voxelShape = VoxelShapes.cuboid(box2);
+    @Unique public float openboatutils$getAverageNearbySetting(ISettingContext context, Boat instance, PerBlockSettingType setting) {
+        AABB box = instance.getBoundingBox();
+        AABB box2 = new AABB(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
+        int i = Mth.floor(box2.minX) - 1;
+        int j = Mth.ceil(box2.maxX) + 1;
+        int k = Mth.floor(box2.minY) - 1;
+        int l = Mth.ceil(box2.maxY) + 1;
+        int m = Mth.floor(box2.minZ) - 1;
+        int n = Mth.ceil(box2.maxZ) + 1;
+        VoxelShape voxelShape = Shapes.create(box2);
         float f = 0.0f;
         int o = 0;
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         for (int p = i; p < j; ++p) {
             for (int q = m; q < n; ++q) {
                 int r = (p == i || p == j - 1 ? 1 : 0) + (q == m || q == n - 1 ? 1 : 0);
@@ -98,17 +99,13 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
                     if (r > 0 && (s == k || s == l - 1)) continue;
                     mutable.set(p, s, q);
 
-                    //? if >=1.21.9 {
-                    /*World world = instance.getEntityWorld();
-                    *///?} else {
-                    World world = instance.getWorld();
-                     //?}
+                    Level world = instance.level();
 
                     BlockState blockState = world.getBlockState(mutable);
 
-                    if (blockState.getBlock() instanceof LilyPadBlock || !VoxelShapes.matchesAnywhere(blockState.getCollisionShape(world, mutable).offset(p, s, q), voxelShape, BooleanBiFunction.AND)) continue;
+                    if (blockState.getBlock() instanceof WaterlilyBlock || !Shapes.joinIsNotEmpty(blockState.getCollisionShape(world, mutable).move(p, s, q), voxelShape, BooleanOp.AND)) continue;
 
-                    Float value = context.getBlockSetting(Registries.BLOCK.getId(blockState.getBlock()), setting);
+                    Float value = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(blockState.getBlock()), setting);
 
                     if (value == null) value = setting.fromContext(context);
 
@@ -119,7 +116,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         }
 
 
-        Float air = context.getBlockSetting(Registries.BLOCK.getId(Blocks.AIR), setting);
+        Float air = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), setting);
 
         if (air == null) air = setting.fromContext(context);
 
@@ -128,19 +125,19 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         return f / (float) o;
     }
 
-    @Unique public float openboatutils$getMaxNearbySetting(ISettingContext context, BoatEntity instance, PerBlockSettingType setting) {
-        Box box = instance.getBoundingBox();
-        Box box2 = new Box(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
-        int i = MathHelper.floor(box2.minX) - 1;
-        int j = MathHelper.ceil(box2.maxX) + 1;
-        int k = MathHelper.floor(box2.minY) - 1;
-        int l = MathHelper.ceil(box2.maxY) + 1;
-        int m = MathHelper.floor(box2.minZ) - 1;
-        int n = MathHelper.ceil(box2.maxZ) + 1;
-        VoxelShape voxelShape = VoxelShapes.cuboid(box2);
+    @Unique public float openboatutils$getMaxNearbySetting(ISettingContext context, Boat instance, PerBlockSettingType setting) {
+        AABB box = instance.getBoundingBox();
+        AABB box2 = new AABB(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
+        int i = Mth.floor(box2.minX) - 1;
+        int j = Mth.ceil(box2.maxX) + 1;
+        int k = Mth.floor(box2.minY) - 1;
+        int l = Mth.ceil(box2.maxY) + 1;
+        int m = Mth.floor(box2.minZ) - 1;
+        int n = Mth.ceil(box2.maxZ) + 1;
+        VoxelShape voxelShape = Shapes.create(box2);
         float f = 0.0f;
         int o = 0;
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         for (int p = i; p < j; ++p) {
             for (int q = m; q < n; ++q) {
                 int r = (p == i || p == j - 1 ? 1 : 0) + (q == m || q == n - 1 ? 1 : 0);
@@ -149,17 +146,13 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
                     if (r > 0 && (s == k || s == l - 1)) continue;
                     mutable.set(p, s, q);
 
-                    //? if >=1.21.9 {
-                    /*World world = instance.getEntityWorld();
-                     *///?} else {
-                    World world = instance.getWorld();
-                    //?}
+                    Level world = instance.level();
 
                     BlockState blockState = world.getBlockState(mutable);
 
-                    if (blockState.getBlock() instanceof LilyPadBlock || !VoxelShapes.matchesAnywhere(blockState.getCollisionShape(world, mutable).offset(p, s, q), voxelShape, BooleanBiFunction.AND)) continue;
+                    if (blockState.getBlock() instanceof WaterlilyBlock || !Shapes.joinIsNotEmpty(blockState.getCollisionShape(world, mutable).move(p, s, q), voxelShape, BooleanOp.AND)) continue;
 
-                    Float value = context.getBlockSetting(Registries.BLOCK.getId(blockState.getBlock()), setting);
+                    Float value = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(blockState.getBlock()), setting);
 
                     if (value == null) value = setting.fromContext(context);
 
@@ -169,7 +162,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             }
         }
 
-        Float air = context.getBlockSetting(Registries.BLOCK.getId(Blocks.AIR), setting);
+        Float air = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), setting);
 
         if (air == null) air = setting.fromContext(context);
 
@@ -179,17 +172,17 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     }
 
     @Unique
-    void oncePerTick(BoatEntity instance, BoatEntity.Location loc, MinecraftClient minecraft) {
+    void oncePerTick(Boat instance, Boat.Status loc, Minecraft minecraft) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null) return;
 
-        if ((loc ==  BoatEntity.Location.UNDER_FLOWING_WATER || loc == BoatEntity.Location.UNDER_WATER) && minecraft.options.jumpKey.isPressed() && context.getSwimForce() != 0.0f) {
-            Vec3d velocity = instance.getVelocity();
-            instance.setVelocity(velocity.x, velocity.y + context.getSwimForce(), velocity.z);
+        if ((loc ==  Boat.Status.UNDER_FLOWING_WATER || loc == Boat.Status.UNDER_WATER) && minecraft.options.keyJump.isDown() && context.getSwimForce() != 0.0f) {
+            Vec3 velocity = instance.getDeltaMovement();
+            instance.setDeltaMovement(velocity.x, velocity.y + context.getSwimForce(), velocity.z);
         }
 
-        if (loc == BoatEntity.Location.ON_LAND || (context.hasWaterJumping() && loc == BoatEntity.Location.IN_WATER)) {
+        if (loc == Boat.Status.ON_LAND || (context.hasWaterJumping() && loc == Boat.Status.IN_WATER)) {
             openboatutils$coyoteTimer = context.getCoyoteTime();
             openboatutils$remaining_jumps = context.getJumps();
             openboatutils$debounce = false;
@@ -211,13 +204,13 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         float jumpForce = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.JUMP_FORCE);
 
-        boolean jumping = minecraft.options.jumpKey.isPressed();
+        boolean jumping = minecraft.options.keyJump.isDown();
 
         if (!jumping) openboatutils$debounce = false;
 
         if (openboatutils$remaining_jumps > 0 && jumpForce > 0f && jumping && !openboatutils$debounce) {
-            Vec3d velocity = instance.getVelocity();
-            instance.setVelocity(velocity.x, jumpForce, velocity.z);
+            Vec3 velocity = instance.getDeltaMovement();
+            instance.setDeltaMovement(velocity.x, jumpForce, velocity.z);
 
             openboatutils$coyoteTimer = -1;
             openboatutils$remaining_jumps--;
@@ -227,8 +220,8 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
     //? >= 1.21.5 {
     /*@Inject(method = "<init>", at = @At("RETURN"))
-    private void hookConstructor(EntityType<?> type, World world, Supplier<?> itemSupplier, CallbackInfo ci) {
-        openboatutils$defaultInterpolation = ((PositionInterpolatorAccessor) interpolator).getLerpDuration();
+    private void hookConstructor(EntityType<?> type, Level world, Supplier<?> itemSupplier, CallbackInfo ci) {
+        openboatutils$defaultInterpolation = ((InterpolationHandlerAccessor) interpolation).getInterpolationSteps();
     }
 
     @Inject(
@@ -237,14 +230,14 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     )
     private void hookPositionInterpolator(CallbackInfo ci) {
         if (OpenBoatUtils.instance.getInterpolationCompatibility()) {
-            interpolator.setLerpDuration(10);
+            interpolation.setInterpolationLength(10);
             return;
         }
 
-        interpolator.setLerpDuration(openboatutils$defaultInterpolation);
+        interpolation.setInterpolationLength(openboatutils$defaultInterpolation);
     }
     *///? } else if >= 1.21.3 {
-    /*@ModifyVariable(method = "updateTrackedPositionAndAngles", at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    /*@ModifyVariable(method = "lerpTo", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     int interpolationStepsHook(int interpolationSteps) {
         if (!OpenBoatUtils.instance.getInterpolationCompatibility()) return interpolationSteps;
         return 10;
@@ -252,21 +245,21 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     *///? }
 
     //? if >=1.21.3 {
-    /*@Redirect(method = "getPaddleSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/BoatEntity$Location;"))
+    /*@Redirect(method = "getPaddleSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;getStatus()Lnet/minecraft/world/entity/vehicle/Boat$Status;"))
     *///?} else {
-    @Redirect(method = "getPaddleSoundEvent", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/BoatEntity$Location;"))
+    @Redirect(method = "getPaddleSound", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;getStatus()Lnet/minecraft/world/entity/vehicle/Boat$Status;"))
     //?}
-    BoatEntity.Location paddleHook(BoatEntity instance) {
+    Boat.Status paddleHook(Boat instance) {
         return hookCheckLocation(instance, false);
     }
 
-    @Redirect(method = {"tick"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;checkLocation()Lnet/minecraft/entity/vehicle/BoatEntity$Location;"))
-    BoatEntity.Location tickHook(BoatEntity instance) {
+    @Redirect(method = {"tick"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;getStatus()Lnet/minecraft/world/entity/vehicle/Boat$Status;"))
+    Boat.Status tickHook(Boat instance) {
         return hookCheckLocation(instance, true);
     }
 
     @Unique
-    BoatEntity.Location hookCheckLocation(BoatEntity instance, boolean is_tick) {
+    Boat.Status hookCheckLocation(Boat instance, boolean is_tick) {
         BoatMixin mixedInstance = (BoatMixin) (Object) instance;
 
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
@@ -275,69 +268,69 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         mixedInstance.openboatutils$setStepHeight(0f);
 
-        BoatEntity.Location loc = this.checkLocation();
-        BoatEntity.Location original_loc = loc;
+        Boat.Status loc = this.getStatus();
+        Boat.Status original_loc = loc;
 
         if (context == null) return loc;
 
-        MinecraftClient minecraft = MinecraftClient.getInstance();
+        Minecraft minecraft = Minecraft.getInstance();
         if (minecraft == null) return loc;
-        PlayerEntity player = minecraft.player;
+        Player player = minecraft.player;
         if (player == null) return loc;
         Entity vehicle = player.getVehicle();
-        if (!(vehicle instanceof BoatEntity boat)) return loc;
+        if (!(vehicle instanceof Boat boat)) return loc;
 
         if (!boat.equals(instance)) return loc;
         if (is_tick) oncePerTick(instance, loc, minecraft);
 
         mixedInstance.openboatutils$setStepHeight(context.getStepSize());
 
-        if (loc == BoatEntity.Location.UNDER_WATER || loc == BoatEntity.Location.UNDER_FLOWING_WATER) {
+        if (loc == Boat.Status.UNDER_WATER || loc == Boat.Status.UNDER_FLOWING_WATER) {
             if (context.hasWaterElevation()) {
-                instance.setPosition(instance.getX(), this.waterLevel += 1.0, instance.getZ());
-                Vec3d velocity = instance.getVelocity();
-                instance.setVelocity(velocity.x, 0f, velocity.z);// parity with old boatutils, but maybe in the future
+                instance.setPos(instance.getX(), this.waterLevel += 1.0, instance.getZ());
+                Vec3 velocity = instance.getDeltaMovement();
+                instance.setDeltaMovement(velocity.x, 0f, velocity.z);// parity with old boatutils, but maybe in the future
                 // there should be an implementation with different y velocities here.
-                return BoatEntity.Location.IN_WATER;
+                return Boat.Status.IN_WATER;
             }
             return loc;
         }
 
-        if (this.checkBoatInWater()) {
+        if (this.checkInWater()) {
             if (context.hasWaterElevation()) {
-                Vec3d velocity = instance.getVelocity();
-                instance.setVelocity(velocity.x, 0.0, velocity.z);
+                Vec3 velocity = instance.getDeltaMovement();
+                instance.setDeltaMovement(velocity.x, 0.0, velocity.z);
             }
-            loc = BoatEntity.Location.IN_WATER;
+            loc = Boat.Status.IN_WATER;
         }
 
-        if (original_loc == BoatEntity.Location.IN_AIR && context.hasAirControl()) {
-            Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.AIR));
+        if (original_loc == Boat.Status.IN_AIR && context.hasAirControl()) {
+            Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.AIR));
 
             if (slipperiness == null) slipperiness = context.getDefaultSlipperiness();
 
-            this.nearbySlipperiness = slipperiness;
-            loc = BoatEntity.Location.ON_LAND;
+            this.landFriction = slipperiness;
+            loc = Boat.Status.ON_LAND;
         }
 
         return loc;
     }
 
-    @Redirect(method = "getNearbySlipperiness", at = @At(value="INVOKE",target="Lnet/minecraft/block/Block;getSlipperiness()F"))
+    @Redirect(method = "getGroundFriction", at = @At(value="INVOKE",target="Lnet/minecraft/world/level/block/Block;getFriction()F"))
     float getFriction(Block block) {
 
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
-        if (context == null) return block.getSlipperiness();
+        if (context == null) return block.getFriction();
 
-        Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(block));
+        Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(block));
 
         if (slipperiness != null) return slipperiness;
 
         return context.getDefaultSlipperiness();
     }
 
-    @Inject(method = "collidesWith", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
     void canCollideHook(Entity other, CallbackInfoReturnable<Boolean> ci) {
 
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
@@ -351,7 +344,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         if (mode == CollisionMode.VANILLA) return;
 
         if ((mode == CollisionMode.NO_BOATS_OR_PLAYERS || mode == CollisionMode.NO_BOATS_OR_PLAYERS_PLUS_FILTER) &&
-                (other instanceof BoatEntity || other instanceof PlayerEntity)) {
+                (other instanceof Boat || other instanceof Player)) {
             ci.setReturnValue(false);
             ci.cancel();
             return;
@@ -369,7 +362,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         }
     }
 
-    @Inject(method = "fall", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "checkFallDamage", at = @At("HEAD"), cancellable = true)
     void fallHook(CallbackInfo ci) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
@@ -379,7 +372,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     }
 
 
-    @Inject(method = "getGravity", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getDefaultGravity", at = @At("HEAD"), cancellable = true)
     public void onGetGravity(CallbackInfoReturnable<Double> cir) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
@@ -389,77 +382,77 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         cir.cancel();
     }
 
-    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;yawVelocity:F", opcode = Opcodes.PUTFIELD))
-    private void redirectYawVelocityIncrement(BoatEntity instance, float yawVelocity) {
+    @Redirect(method = "controlBoat", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/vehicle/Boat;deltaRotation:F", opcode = Opcodes.PUTFIELD))
+    private void redirectYawVelocityIncrement(Boat instance, float yawVelocity) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null) {
-            this.yawVelocity = yawVelocity;
+            this.deltaRotation = yawVelocity;
             return;
         }
-        float original_delta = yawVelocity - this.yawVelocity;
+        float original_delta = yawVelocity - this.deltaRotation;
         // sign isn't needed here because the vanilla acceleration is exactly 1,
         // but I suppose this helps if mojang ever decides to change that value for some reason
 
         float yaw_accel = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.YAW_ACCEL);
 
-        this.yawVelocity += MathHelper.sign(original_delta) * yaw_accel;
+        this.deltaRotation += Mth.sign(original_delta) * yaw_accel;
     }
 
     // a whole lotta modifyconstants because mojang put the acceleration values in literals
-    @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.04f, ordinal = 0))
+    @ModifyConstant(method = "controlBoat", constant = @Constant(floatValue = 0.04f, ordinal = 0))
     private float forwardsAccel(float original) {
         ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null) return original;
 
-        return openboatutils$getAverageNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.FORWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (Boat) (Object) this, PerBlockSettingType.FORWARDS_ACCEL);
     }
 
-    @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 0))
+    @ModifyConstant(method = "controlBoat", constant = @Constant(floatValue = 0.005f, ordinal = 0))
     private float turnAccel(float original) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null) return original;
 
-        return openboatutils$getAverageNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.TURN_FORWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (Boat) (Object) this, PerBlockSettingType.TURN_FORWARDS_ACCEL);
     }
 
-    @ModifyConstant(method = "updatePaddles", constant = @Constant(floatValue = 0.005f, ordinal = 1))
+    @ModifyConstant(method = "controlBoat", constant = @Constant(floatValue = 0.005f, ordinal = 1))
     private float backwardsAccel(float original) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null) return original;
 
-        return openboatutils$getAverageNearbySetting(context, (BoatEntity) (Object) this, PerBlockSettingType.BACKWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (Boat) (Object) this, PerBlockSettingType.BACKWARDS_ACCEL);
     }
 
-    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingForward:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
-    private boolean pressingForwardHook(BoatEntity instance) {
+    @Redirect(method = "controlBoat", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/vehicle/Boat;inputUp:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
+    private boolean pressingForwardHook(Boat instance) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
-        if (context == null || !context.hasAllowAccelStacking()) return this.pressingForward;
+        if (context == null || !context.hasAllowAccelStacking()) return this.inputUp;
 
         return false;
     }
 
-    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingBack:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
-    private boolean pressingBackHook(BoatEntity instance) {
+    @Redirect(method = "controlBoat", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/vehicle/Boat;inputDown:Z", opcode = Opcodes.GETFIELD, ordinal = 0))
+    private boolean pressingBackHook(Boat instance) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
-        if (context == null || !context.hasAllowAccelStacking()) return this.pressingBack;
+        if (context == null || !context.hasAllowAccelStacking()) return this.inputDown;
 
         return false;
     }
 
     //? >= 1.21.5 {
     /*// UNDER_FLOWING_WATER
-    @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 1))
+    @ModifyConstant(method="floatBoat", constant = @Constant(floatValue = 0.9F, ordinal = 1))
     private float velocityDecayHook1(float constant) {
         ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasUnderwaterControl()) {
-            Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
+            Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.WATER));
 
             if (slipperiness != null) return slipperiness;
 
@@ -470,12 +463,12 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     }
 
     // UNDER_WATER
-    @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.45F))
+    @ModifyConstant(method="floatBoat", constant = @Constant(floatValue = 0.45F))
     private float velocityDecayHook2(float constant) {
         ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasUnderwaterControl()) {
-            Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
+            Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.WATER));;
 
             if (slipperiness != null) return slipperiness;
 
@@ -486,12 +479,12 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     }
 
     // IN_WATER
-    @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 0))
+    @ModifyConstant(method="floatBoat", constant = @Constant(floatValue = 0.9F, ordinal = 0))
     private float velocityDecayHook3(float constant) {
         ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasSurfaceWaterControl()) {
-            Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
+            Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.WATER));;
 
             if (slipperiness != null) return slipperiness;
 
@@ -502,54 +495,55 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     }
     *///? } else {
     // UNDER_FLOWING_WATER velocity decay
-    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 2))
-    private void velocityDecayHook1(BoatEntity boat, float orig) {
+    @Redirect(method="floatBoat", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/vehicle/Boat;invFriction:F", opcode = Opcodes.PUTFIELD, ordinal = 2))
+    private void velocityDecayHook1(Boat boat, float orig) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null || !context.hasUnderwaterControl()) {
-            velocityDecay = orig;
+            invFriction = orig;
+
             return;
         }
 
-        Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));
+        Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.WATER));
 
-        velocityDecay = slipperiness != null
+        invFriction = slipperiness != null
                 ? slipperiness
                 : context.getDefaultSlipperiness();
     }
 
 
     // UNDER_WATER velocity decay
-    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 3))
-    private void velocityDecayHook2(BoatEntity boat, float orig) {
+    @Redirect(method="floatBoat", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/vehicle/Boat;invFriction:F", opcode = Opcodes.PUTFIELD, ordinal = 3))
+    private void velocityDecayHook2(Boat boat, float orig) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null || !context.hasUnderwaterControl()) {
-            velocityDecay = orig;
+            invFriction = orig;
             return;
         }
 
-        Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));
+        Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.WATER));
 
-        velocityDecay = slipperiness != null
+        invFriction = slipperiness != null
                 ? slipperiness
                 : context.getDefaultSlipperiness();
     }
 
 
     // IN_WATER velocity decay
-    @Redirect(method="updateVelocity", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;velocityDecay:F", opcode = Opcodes.PUTFIELD, ordinal = 1))
-    private void velocityDecayHook3(BoatEntity boat, float orig) {
+    @Redirect(method="floatBoat", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/vehicle/Boat;invFriction:F", opcode = Opcodes.PUTFIELD, ordinal = 1))
+    private void velocityDecayHook3(Boat boat, float orig) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null || !context.hasSurfaceWaterControl()) {
-            velocityDecay = orig;
+            invFriction = orig;
             return;
         }
 
-        Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));
+        Float slipperiness = context.getBlockSlipperiness(BuiltInRegistries.BLOCK.getKey(Blocks.WATER));
 
-        velocityDecay = slipperiness != null
+        invFriction = slipperiness != null
                 ? slipperiness
                 : context.getDefaultSlipperiness();
     }
@@ -557,8 +551,8 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
 
     // Increase resolution for wall priority by running move() multiple times in smaller increments
-    @Redirect(method = "tick()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/BoatEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))
-    private void moveHook(BoatEntity instance, MovementType movementType, Vec3d vec3d) {
+    @Redirect(method = "tick()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/Boat;move(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V"))
+    private void moveHook(Boat instance, MoverType movementType, Vec3 vec3d) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context == null) {
@@ -573,7 +567,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             return;
         }
 
-        Vec3d subMoveVel = instance.getVelocity().multiply(1d / resolution);
+        Vec3 subMoveVel = instance.getDeltaMovement().scale(1d / resolution);
         for(int i = 0; i < resolution; i++) {
             instance.move(movementType, subMoveVel);
         }
@@ -591,7 +585,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         if (currentScale != openBoatUtils$lastScale) {
             openBoatUtils$lastScale = currentScale;
-            ((BoatEntity) (Object) this).calculateDimensions();
+            ((Boat) (Object) this).refreshDimensions();
         }
     }
 }

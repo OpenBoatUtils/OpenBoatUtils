@@ -4,14 +4,15 @@ import io.netty.buffer.ByteBuf;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import org.jetbrains.annotations.NotNull;
 
-public class PlayByteBufChannel extends ByteBufChannel<ServerPlayerEntity, ServerPlayNetworking.PlayPayloadHandler<ByteBufChannel.BytePayload>, ClientPlayNetworking.PlayPayloadHandler<ByteBufChannel.BytePayload>> {
+public class PlayByteBufChannel extends ByteBufChannel<ServerPlayer, ServerPlayNetworking.PlayPayloadHandler<ByteBufChannel.BytePayload>, ClientPlayNetworking.PlayPayloadHandler<ByteBufChannel.BytePayload>> {
 
-    public PlayByteBufChannel(Identifier identifier) {
+    public PlayByteBufChannel(ResourceLocation identifier) {
         super(identifier);
     }
 
@@ -28,7 +29,7 @@ public class PlayByteBufChannel extends ByteBufChannel<ServerPlayerEntity, Serve
         ClientPlayNetworking.registerGlobalReceiver(id, handler);
     }
 
-    public void sendPacketC2S(PacketByteBuf byteBuf) {
+    public void sendPacketC2S(FriendlyByteBuf byteBuf) {
         ClientPlayNetworking.send(new BytePayload() {
             @Override
             public ByteBuf getData() {
@@ -36,13 +37,11 @@ public class PlayByteBufChannel extends ByteBufChannel<ServerPlayerEntity, Serve
             }
 
             @Override
-            public Id<? extends CustomPayload> getId() {
-                return id;
-            }
+            public @NotNull Type<? extends CustomPacketPayload> type() { return id; }
         });
     }
 
-    public void sendPacketS2C(ServerPlayerEntity player, PacketByteBuf byteBuf) {
+    public void sendPacketS2C(ServerPlayer player, FriendlyByteBuf byteBuf) {
         ServerPlayNetworking.send(player, new BytePayload() {
             @Override
             public ByteBuf getData() {
@@ -50,7 +49,7 @@ public class PlayByteBufChannel extends ByteBufChannel<ServerPlayerEntity, Serve
             }
 
             @Override
-            public Id<? extends CustomPayload> getId() {
+            public @NotNull Type<? extends CustomPacketPayload> type() {
                 return id;
             }
         });
