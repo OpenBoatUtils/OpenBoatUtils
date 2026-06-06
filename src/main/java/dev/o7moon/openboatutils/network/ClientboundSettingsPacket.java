@@ -49,7 +49,8 @@ public enum ClientboundSettingsPacket {
     SET_SCALE,
     SET_STEP_UP_SLIPPERINESS,
     SET_RESET_ON_WORLD_LOAD,
-    SET_FIX_DOUBLE_WATER_ELEVATION;
+    SET_FIX_DOUBLE_WATER_ELEVATION,
+    SET_LATERAL_SLIPPERINESS;
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
@@ -271,6 +272,9 @@ public enum ClientboundSettingsPacket {
             }
             case SET_FIX_DOUBLE_WATER_ELEVATION -> {
                 context.setFixDoubleWaterElevation(buf.readBoolean());
+            }
+            case SET_LATERAL_SLIPPERINESS -> {
+                context.setLateralSlipperiness(buf.readFloat());
             }
         }
     }

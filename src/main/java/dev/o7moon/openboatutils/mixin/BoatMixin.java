@@ -452,11 +452,43 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         return false;
     }
 
+    @Inject(
+            method = "updateVelocity",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/vehicle/BoatEntity;setVelocity(DDD)V",
+                    ordinal = 0,
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void hookSlipperiness(CallbackInfo ci) {
+        BoatEntity boat = (BoatEntity) (Object) this;
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        if (context != null) {
+            Vec3d velocity = boat.getVelocity();
+            float grip = 1 - openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.LATERAL_SLIPPERINESS);
+            float yaw = boat.getYaw();
+            double yawRad = Math.toRadians(yaw);
+            Vec3d forward = new Vec3d(-Math.sin(yawRad), 0, Math.cos(yawRad));
+            Vec3d velocityXZ = new Vec3d(velocity.x, 0, velocity.z);
+            Vec3d alongForward = forward.multiply(velocityXZ.dotProduct(forward));
+            Vec3d lateralSlip = velocityXZ.subtract(alongForward);
+
+            Vec3d gripForce = lateralSlip.multiply(grip);
+
+            boat.setVelocity(
+                    velocity.x - gripForce.x,
+                    velocity.y,
+                    velocity.z - gripForce.z
+            );
+        }
+    }
+
     //? >= 1.21.5 {
     /*// UNDER_FLOWING_WATER
     @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 1))
     private float velocityDecayHook1(float constant) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasUnderwaterControl()) {
             Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
@@ -472,7 +504,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     // UNDER_WATER
     @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.45F))
     private float velocityDecayHook2(float constant) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasUnderwaterControl()) {
             Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
@@ -488,7 +520,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     // IN_WATER
     @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 0))
     private float velocityDecayHook3(float constant) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasSurfaceWaterControl()) {
             Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
