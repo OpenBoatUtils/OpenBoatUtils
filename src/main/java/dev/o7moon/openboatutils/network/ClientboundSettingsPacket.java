@@ -48,7 +48,8 @@ public enum ClientboundSettingsPacket {
     SET_JUMPS,
     SET_SCALE,
     SET_STEP_UP_SLIPPERINESS,
-    SET_RESET_ON_WORLD_LOAD;
+    SET_RESET_ON_WORLD_LOAD,
+    SET_FIX_DOUBLE_WATER_ELEVATION;
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
