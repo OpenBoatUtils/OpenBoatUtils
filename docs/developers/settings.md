@@ -424,3 +424,14 @@ This is handled completely separately to contexts, a reset packet won't clear th
 ::: details
 The process used by server proxies (Velocity, etc..) to switch a player between servers is indistinguishable from a dimension change. We treat all world loads as a "new server" entirely, because it very much could be.
 :::
+
+***
+
+### Set Fix Double Water Elevation <Badge type="tip" text="^0.5.1" />
+Controls if the fix for double water elevation is enabled (see issue [#5](https://github.com/OpenBoatUtils/OpenBoatUtils/issues/5))
+
+This is `false` by default to retain compatibility with old records, but it is highly recommended that this is enabled on any track using water elevation going fowards.
+
+| Packet ID    | Enabled (default `false`) |
+|--------------|---------------------------|
+| 39 (`short`) | `boolean`                 |

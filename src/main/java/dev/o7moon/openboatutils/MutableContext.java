@@ -34,6 +34,7 @@ public abstract class MutableContext implements ISettingContext {
     private int jumps;
     private float scale;
     private float stepUpSlipperiness;
+    private boolean fixDoubleWaterElevation;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
@@ -77,6 +78,7 @@ public abstract class MutableContext implements ISettingContext {
     @Override public int getJumps() { return jumps; }
     @Override public float getScale() { return scale; }
     @Override public float getStepUpSlipperiness() { return stepUpSlipperiness; }
+    @Override public boolean getFixDoubleWaterElevation() { return fixDoubleWaterElevation; }
 
     @Override
     public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
@@ -108,6 +110,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setJumps(int v) { this.jumps = v; return this; }
     public MutableContext setScale(float v) { this.scale = v; return this; }
     public MutableContext setStepUpSlipperiness(float v) { this.stepUpSlipperiness = v; return this; }
+    public MutableContext setFixDoubleWaterElevation(boolean v) { this.fixDoubleWaterElevation = v; return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -169,6 +172,7 @@ public abstract class MutableContext implements ISettingContext {
         this.jumps = other.getJumps();
         this.scale = other.getScale();
         this.stepUpSlipperiness = other.getStepUpSlipperiness();
+        this.fixDoubleWaterElevation = other.getFixDoubleWaterElevation();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
         this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());

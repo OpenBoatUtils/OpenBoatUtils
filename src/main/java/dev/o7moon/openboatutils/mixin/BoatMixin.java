@@ -293,7 +293,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         mixedInstance.openboatutils$setStepHeight(context.getStepSize());
 
         if (loc == BoatEntity.Location.UNDER_WATER || loc == BoatEntity.Location.UNDER_FLOWING_WATER) {
-            if (context.hasWaterElevation()) {
+            if (context.hasWaterElevation() && (is_tick || !context.getFixDoubleWaterElevation())) {
                 instance.setPosition(instance.getX(), this.waterLevel += 1.0, instance.getZ());
                 Vec3d velocity = instance.getVelocity();
                 instance.setVelocity(velocity.x, 0f, velocity.z);// parity with old boatutils, but maybe in the future
@@ -304,7 +304,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         }
 
         if (this.checkBoatInWater()) {
-            if (context.hasWaterElevation()) {
+            if (context.hasWaterElevation() && (is_tick || !context.getFixDoubleWaterElevation())) {
                 Vec3d velocity = instance.getVelocity();
                 instance.setVelocity(velocity.x, 0.0, velocity.z);
             }
