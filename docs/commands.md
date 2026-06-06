@@ -277,6 +277,13 @@ Sets the slipperiness when stepping up, your velocity will be multiplied by this
 
 Example: `/setstepupslipperiness 10`
 
+## `/setresetonworldload <enabled>` <Badge type="tip" text="^0.5.0" />
+Controls if openboatutils is fully reset upon a world load.
+
+- `<enabled>` - boolean
+
+Example: `/setresetonworldload false`
+
 ## `/switchcontext <context>` <Badge type="tip" text="^0.5.0" />
 Switches to the specified settings context, creating it if it does not exist. Each context holds its own independent set of settings.
 
