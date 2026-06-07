@@ -447,7 +447,14 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     private boolean pressingBackHook(BoatEntity instance) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
-        if (context == null || !context.hasAllowAccelStacking()) return this.pressingBack;
+        if (context != null) {
+            float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.BRAKE_SLIPPERINESS);
+            if (brakeSlipperiness != 1f) {
+                return false;
+            }
+        }
+
+        if (context == null || !context.hasAllowAccelStacking()) return ((BoatAccessor) instance).getPressingBack();
 
         return false;
     }
@@ -473,20 +480,6 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
                 if (brakeSlipperiness != 1f) openboatutils$applyBrakeSlipperiness(boat, brakeSlipperiness);
             }
         }
-    }
-
-    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingBack:Z", opcode = Opcodes.GETFIELD))
-    private boolean hookPressingBackwards(BoatEntity instance) {
-        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
-
-        if (context != null) {
-            float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.BRAKE_SLIPPERINESS);
-            if (brakeSlipperiness != 1f) {
-                return false;
-            }
-        }
-
-        return ((BoatAccessor) instance).getPressingBack();
     }
 
     @Unique

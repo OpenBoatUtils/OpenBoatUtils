@@ -620,6 +620,56 @@ public class SingleplayerCommands {
                         return 1;
                     }))
             );
+
+            dispatcher.register(
+                    literal("applyimpulse").then(argument("x", DoubleArgumentType.doubleArg())
+                            .then(argument("y", DoubleArgumentType.doubleArg())
+                                    .then(argument("z", DoubleArgumentType.doubleArg())
+                                            .executes(ctx -> {
+                                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                                if (player == null) return 0;
+
+                                                double x = DoubleArgumentType.getDouble(ctx, "x");
+                                                double y = DoubleArgumentType.getDouble(ctx, "y");
+                                                double z = DoubleArgumentType.getDouble(ctx, "z");
+
+                                                PacketByteBuf packet = PacketByteBufs.create();
+                                                packet.writeShort(ClientboundSettingsPacket.APPLY_IMPULSE.ordinal());
+                                                packet.writeDouble(x);
+                                                packet.writeDouble(y);
+                                                packet.writeDouble(z);
+
+                                                OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                                                return 1;
+                                            })
+                                    )
+                            ))
+            );
+
+            dispatcher.register(
+                    literal("applyimpulserelative").then(argument("x", DoubleArgumentType.doubleArg())
+                            .then(argument("y", DoubleArgumentType.doubleArg())
+                                    .then(argument("z", DoubleArgumentType.doubleArg())
+                                            .executes(ctx -> {
+                                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                                if (player == null) return 0;
+
+                                                double x = DoubleArgumentType.getDouble(ctx, "x");
+                                                double y = DoubleArgumentType.getDouble(ctx, "y");
+                                                double z = DoubleArgumentType.getDouble(ctx, "z");
+
+                                                PacketByteBuf packet = PacketByteBufs.create();
+                                                packet.writeShort(ClientboundSettingsPacket.APPLY_IMPULSE_RELATIVE.ordinal());
+                                                packet.writeDouble(x);
+                                                packet.writeDouble(y);
+                                                packet.writeDouble(z);
+
+                                                OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                                                return 1;
+                                            })
+                                    )
+                            ))
+            );
         });
     }
 }

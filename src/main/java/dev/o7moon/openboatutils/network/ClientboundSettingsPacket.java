@@ -2,6 +2,7 @@ package dev.o7moon.openboatutils.network;
 
 import dev.o7moon.openboatutils.*;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +40,7 @@ public enum ClientboundSettingsPacket {
     SET_PER_BLOCK,
     SET_COLLISION_MODE,
     SET_STEP_WHILE_FALLING,
-    SET_INTERPOLATION_COMPAT,
+    SET_INTERPOLATION_COMPAT(false),
     SET_COLLISION_RESOLUTION,
     ADD_COLLISION_ENTITYTYPE_FILTER,
     CLEAR_COLLISION_ENTITYTYPE_FILTER,
@@ -48,10 +49,25 @@ public enum ClientboundSettingsPacket {
     SET_JUMPS,
     SET_SCALE,
     SET_STEP_UP_SLIPPERINESS,
-    SET_RESET_ON_WORLD_LOAD,
+    SET_RESET_ON_WORLD_LOAD(false),
     SET_FIX_DOUBLE_WATER_ELEVATION,
     SET_LATERAL_SLIPPERINESS,
-    SET_BRAKE_SLIPPERINESS;
+    SET_BRAKE_SLIPPERINESS,
+    APPLY_IMPULSE(false),
+    APPLY_IMPULSE_RELATIVE(false);
+
+    private final boolean isContext;
+
+    ClientboundSettingsPacket() {
+        this(true);
+    }
+    ClientboundSettingsPacket(boolean isContext) {
+        this.isContext = isContext;
+    }
+
+    public boolean isNonContext() {
+        return !isContext;
+    }
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
@@ -100,12 +116,37 @@ public enum ClientboundSettingsPacket {
 
         // Both of these are non-context settings, they are handled seperately.
         // Almost certainly should be out of this channel but backwards compatibility!!
-        if (packet == ClientboundSettingsPacket.SET_INTERPOLATION_COMPAT) {
-            OpenBoatUtils.instance.setInterpolationCompatibility(buf.readBoolean());
+        if (packet.isNonContext()) {
+            switch (packet) {
+                case SET_INTERPOLATION_COMPAT -> OpenBoatUtils.instance.setInterpolationCompatibility(buf.readBoolean());
+                case SET_RESET_ON_WORLD_LOAD -> OpenBoatUtils.instance.setResetOnWorldLoad(buf.readBoolean());
+                case APPLY_IMPULSE -> {
 
-            return;
-        } else if (packet == ClientboundSettingsPacket.SET_RESET_ON_WORLD_LOAD) {
-            OpenBoatUtils.instance.setResetOnWorldLoad(buf.readBoolean());
+                    double x = buf.readDouble();
+                    double y = buf.readDouble();
+                    double z = buf.readDouble();
+
+                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof BoatEntity boat) {
+                        boat.setVelocity(boat.getVelocity().add(x, y, z));
+                    }
+                }
+                case APPLY_IMPULSE_RELATIVE -> {
+                    double localX = buf.readDouble();
+                    double localY = buf.readDouble();
+                    double localZ = buf.readDouble();
+
+                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof BoatEntity boat) {
+                        double yaw = Math.toRadians(-boat.getYaw());
+
+                        double worldX = localX * Math.cos(yaw) - localZ * Math.sin(yaw);
+                        double worldZ = localX * Math.sin(yaw) + localZ * Math.cos(yaw);
+
+                        boat.setVelocity(
+                                boat.getVelocity().add(worldX, localY, worldZ)
+                        );
+                    }
+                }
+            }
 
             return;
         }
