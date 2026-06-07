@@ -670,6 +670,19 @@ public class SingleplayerCommands {
                                     )
                             ))
             );
+
+            dispatcher.register(
+                    literal("setmultistepping").then(argument("enabled", BoolArgumentType.bool()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        boolean enabled = BoolArgumentType.getBool(ctx,"enabled");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_MULTI_STEPPING.ordinal());
+                        packet.writeBoolean(enabled);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
         });
     }
 }

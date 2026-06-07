@@ -45,6 +45,7 @@ public interface ISettingContext {
     boolean getFixDoubleWaterElevation();
     float getLateralSlipperiness();
     float getBrakeSlipperiness();
+    boolean hasMultiStepping();
 
     Set<Identifier> getBlocksWithSettings();
     boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
@@ -96,6 +97,7 @@ public interface ISettingContext {
             @Override public boolean getFixDoubleWaterElevation() { return false; }
             @Override public float getLateralSlipperiness() { return 1; }
             @Override public float getBrakeSlipperiness() { return 1; }
+            @Override public boolean hasMultiStepping() { return false; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
 

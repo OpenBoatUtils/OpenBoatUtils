@@ -37,6 +37,7 @@ public abstract class MutableContext implements ISettingContext {
     private boolean fixDoubleWaterElevation;
     private float lateralSlipperiness;
     private float brakeSlipperiness;
+    private boolean hasMultiStepping;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
@@ -83,6 +84,7 @@ public abstract class MutableContext implements ISettingContext {
     @Override public boolean getFixDoubleWaterElevation() { return fixDoubleWaterElevation; }
     @Override public float getLateralSlipperiness() { return lateralSlipperiness; }
     @Override public float getBrakeSlipperiness() { return brakeSlipperiness; }
+    @Override public boolean hasMultiStepping() { return hasMultiStepping; }
 
     @Override
     public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
@@ -117,6 +119,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setFixDoubleWaterElevation(boolean v) { this.fixDoubleWaterElevation = v; return this; }
     public MutableContext setLateralSlipperiness(float v) { this.lateralSlipperiness = v; return this; }
     public MutableContext setBrakeSlipperiness(float v) { this.brakeSlipperiness = v; return this; }
+    public MutableContext setHasMultiStepping(boolean v) { this.hasMultiStepping = v; return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -181,6 +184,7 @@ public abstract class MutableContext implements ISettingContext {
         this.fixDoubleWaterElevation = other.getFixDoubleWaterElevation();
         this.lateralSlipperiness = other.getLateralSlipperiness();
         this.brakeSlipperiness = other.getBrakeSlipperiness();
+        this.hasMultiStepping = other.hasMultiStepping();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
         this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());

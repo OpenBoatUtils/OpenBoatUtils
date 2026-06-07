@@ -54,7 +54,8 @@ public enum ClientboundSettingsPacket {
     SET_LATERAL_SLIPPERINESS,
     SET_BRAKE_SLIPPERINESS,
     APPLY_IMPULSE(false),
-    APPLY_IMPULSE_RELATIVE(false);
+    APPLY_IMPULSE_RELATIVE(false),
+    SET_MULTI_STEPPING;
 
     private final boolean isContext;
 
@@ -320,6 +321,9 @@ public enum ClientboundSettingsPacket {
             }
             case SET_BRAKE_SLIPPERINESS -> {
                 context.setBrakeSlipperiness(buf.readFloat());
+            }
+            case SET_MULTI_STEPPING -> {
+                context.setHasMultiStepping(buf.readBoolean());
             }
         }
     }
