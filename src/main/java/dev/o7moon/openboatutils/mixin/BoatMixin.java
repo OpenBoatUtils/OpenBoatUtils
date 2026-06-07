@@ -465,23 +465,60 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         BoatEntity boat = (BoatEntity) (Object) this;
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
         if (context != null) {
-            Vec3d velocity = boat.getVelocity();
-            float grip = 1 - openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.LATERAL_SLIPPERINESS);
-            float yaw = boat.getYaw();
-            double yawRad = Math.toRadians(yaw);
-            Vec3d forward = new Vec3d(-Math.sin(yawRad), 0, Math.cos(yawRad));
-            Vec3d velocityXZ = new Vec3d(velocity.x, 0, velocity.z);
-            Vec3d alongForward = forward.multiply(velocityXZ.dotProduct(forward));
-            Vec3d lateralSlip = velocityXZ.subtract(alongForward);
+            float lateralSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.LATERAL_SLIPPERINESS);
+            if (lateralSlipperiness != 1f) openboatutils$applyLateralSlipperiness(boat, lateralSlipperiness);
 
-            Vec3d gripForce = lateralSlip.multiply(grip);
-
-            boat.setVelocity(
-                    velocity.x - gripForce.x,
-                    velocity.y,
-                    velocity.z - gripForce.z
-            );
+            if (pressingBack) {
+                float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.BRAKE_SLIPPERINESS);
+                if (brakeSlipperiness != 1f) openboatutils$applyBrakeSlipperiness(boat, brakeSlipperiness);
+            }
         }
+    }
+
+    @Redirect(method = "updatePaddles", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/vehicle/BoatEntity;pressingBack:Z", opcode = Opcodes.GETFIELD))
+    private boolean hookPressingBackwards(BoatEntity instance) {
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+
+        if (context != null) {
+            float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.BRAKE_SLIPPERINESS);
+            if (brakeSlipperiness != 1f) {
+                return false;
+            }
+        }
+
+        return ((BoatAccessor) instance).getPressingBack();
+    }
+
+    @Unique
+    private void openboatutils$applyLateralSlipperiness(BoatEntity boat, float slipperiness) {
+        Vec3d velocity = boat.getVelocity();
+
+        float grip = 1 - slipperiness;
+        double yaw = Math.toRadians(boat.getYaw());
+
+        Vec3d forward = new Vec3d(-Math.sin(yaw), 0, Math.cos(yaw));
+        Vec3d velocityXZ = new Vec3d(velocity.x, 0, velocity.z);
+        Vec3d alongForward = forward.multiply(velocityXZ.dotProduct(forward));
+        Vec3d lateralSlip = velocityXZ.subtract(alongForward);
+
+        Vec3d gripForce = lateralSlip.multiply(grip);
+
+        boat.setVelocity(
+                velocity.x - gripForce.x,
+                velocity.y,
+                velocity.z - gripForce.z
+        );
+    }
+
+    @Unique
+    private void openboatutils$applyBrakeSlipperiness(BoatEntity boat, float slipperiness) {
+        Vec3d velocity = boat.getVelocity();
+
+        boat.setVelocity(
+                velocity.x * slipperiness,
+                velocity.y,
+                velocity.z * slipperiness
+        );
     }
 
     //? >= 1.21.5 {

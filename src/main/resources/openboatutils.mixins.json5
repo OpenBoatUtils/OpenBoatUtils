@@ -9,6 +9,7 @@
   ],
   "client": [
     "BoatMixin",
+    "BoatAccessor",
     "ClientWorldMixin",
     "EntityMixin",
     "BoatRendererMixin"

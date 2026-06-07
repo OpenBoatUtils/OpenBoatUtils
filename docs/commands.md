@@ -289,7 +289,7 @@ Controls if the fix for double water elevation is enabled (see issue [#5](https:
 
 - `<enabled>` - boolean
 
-Example: `/setresetonworldload false`
+Example: `/fixdoublewaterelevation false`
 
 ## `/switchcontext <context>` <Badge type="tip" text="^0.5.0" />
 Switches to the specified settings context, creating it if it does not exist. Each context holds its own independent set of settings.

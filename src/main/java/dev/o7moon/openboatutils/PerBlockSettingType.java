@@ -10,7 +10,8 @@ public enum PerBlockSettingType {
     JUMPS,
     COYOTE_TIME,
     STEP_UP_SLIPPERINESS,
-    LATERAL_SLIPPERINESS;
+    LATERAL_SLIPPERINESS,
+    BRAKE_SLIPPERINESS;
 
     public float fromContext(ISettingContext context) {
         return switch (this) {
@@ -24,6 +25,7 @@ public enum PerBlockSettingType {
             case COYOTE_TIME -> context.getCoyoteTime();
             case STEP_UP_SLIPPERINESS -> context.getStepUpSlipperiness();
             case LATERAL_SLIPPERINESS -> context.getLateralSlipperiness();
+            case BRAKE_SLIPPERINESS -> context.getBrakeSlipperiness();
         };
     }
 }
