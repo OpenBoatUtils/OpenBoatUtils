@@ -475,6 +475,11 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             float lateralSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.LATERAL_SLIPPERINESS);
             if (lateralSlipperiness != 1f) openboatutils$applyLateralSlipperiness(boat, lateralSlipperiness);
 
+            float maxSpeed = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED);
+            float maxSpeedResistance = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED_RESISTANCE);
+
+            if (maxSpeed > 0) openboatutils$applyMaxSpeedResistance(boat, maxSpeed, maxSpeedResistance);
+
             if (pressingBack) {
                 float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.BRAKE_SLIPPERINESS);
                 if (brakeSlipperiness != 1f) openboatutils$applyBrakeSlipperiness(boat, brakeSlipperiness);
@@ -512,6 +517,26 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
                 velocity.y,
                 velocity.z * slipperiness
         );
+    }
+
+    @Unique
+    private void openboatutils$applyMaxSpeedResistance(BoatEntity boat, float maxSpeed, float maxSpeedResistance) {
+        Vec3d velocity = boat.getVelocity();
+
+        double horizonalSpeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+
+        // it's a little goofy because all per block settings are floats, but it doesn't matter
+        float extraSpeed = (float) Math.max(0, horizonalSpeed - maxSpeed);
+
+        if (extraSpeed > 0) {
+            float multiplier = 1f - (extraSpeed * maxSpeedResistance);
+
+            boat.setVelocity(
+                    velocity.x * multiplier,
+                    velocity.y,
+                    velocity.z * multiplier
+            );
+        }
     }
 
     //? >= 1.21.5 {

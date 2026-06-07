@@ -55,7 +55,9 @@ public enum ClientboundSettingsPacket {
     SET_BRAKE_SLIPPERINESS,
     APPLY_IMPULSE(false),
     APPLY_IMPULSE_RELATIVE(false),
-    SET_MULTI_STEPPING;
+    SET_MULTI_STEPPING,
+    SET_MAX_SPEED,
+    SET_MAX_SPEED_RESISTANCE;
 
     private final boolean isContext;
 
@@ -324,6 +326,12 @@ public enum ClientboundSettingsPacket {
             }
             case SET_MULTI_STEPPING -> {
                 context.setHasMultiStepping(buf.readBoolean());
+            }
+            case SET_MAX_SPEED -> {
+                context.setMaxSpeed(buf.readFloat());
+            }
+            case SET_MAX_SPEED_RESISTANCE -> {
+                context.setMaxSpeedResistance(buf.readFloat());
             }
         }
     }

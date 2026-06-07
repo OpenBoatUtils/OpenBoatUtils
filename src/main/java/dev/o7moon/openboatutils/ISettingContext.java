@@ -46,6 +46,8 @@ public interface ISettingContext {
     float getLateralSlipperiness();
     float getBrakeSlipperiness();
     boolean hasMultiStepping();
+    float getMaxSpeed();
+    float getMaxSpeedResistance();
 
     Set<Identifier> getBlocksWithSettings();
     boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
@@ -98,6 +100,8 @@ public interface ISettingContext {
             @Override public float getLateralSlipperiness() { return 1; }
             @Override public float getBrakeSlipperiness() { return 1; }
             @Override public boolean hasMultiStepping() { return false; }
+            @Override public float getMaxSpeed() { return -1; }
+            @Override public float getMaxSpeedResistance() { return 0; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
 
