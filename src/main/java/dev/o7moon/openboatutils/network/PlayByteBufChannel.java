@@ -28,6 +28,11 @@ public class PlayByteBufChannel extends ByteBufChannel<ServerPlayerEntity, Serve
         ClientPlayNetworking.registerGlobalReceiver(id, handler);
     }
 
+    /** Whether the connected server has declared this channel, so a C2S send won't be rejected. */
+    public boolean canSendC2S() {
+        return ClientPlayNetworking.canSend(id);
+    }
+
     public void sendPacketC2S(PacketByteBuf byteBuf) {
         ClientPlayNetworking.send(new BytePayload() {
             @Override

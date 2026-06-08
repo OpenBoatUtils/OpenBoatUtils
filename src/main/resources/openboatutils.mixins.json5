@@ -11,10 +11,13 @@
     "BoatMixin",
     "ClientWorldMixin",
     "EntityMixin",
-    "BoatRendererMixin"
+    "BoatRendererMixin",
+    "GameOptionsAccessor",
+    "KeyBindingAccessor",
+    "TranslationStorageMixin"
     //? >=1.21.3 {
-    /*,"BoatRenderStateMixin"
-    *///? }
+    ,"BoatRenderStateMixin"
+    //? }
     //? >=1.21.5 {
     /*,"PositionInterpolatorAccessor"
     *///?}

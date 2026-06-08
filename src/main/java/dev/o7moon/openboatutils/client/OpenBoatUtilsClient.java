@@ -2,10 +2,12 @@ package dev.o7moon.openboatutils.client;
 
 import dev.o7moon.openboatutils.OpenBoatUtils;
 import dev.o7moon.openboatutils.network.ClientboundContextPacket;
+import dev.o7moon.openboatutils.network.ClientboundKeybindPacket;
 import dev.o7moon.openboatutils.network.ClientboundSettingsPacket;
 import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -33,6 +35,16 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
             });
         });
 
+        KEYBIND_CHANNEL.registerClientHandler((bytePayload, context) -> {
+            PacketByteBuf buf = new PacketByteBuf(Unpooled.wrappedBuffer(bytePayload.getData()));
+            context.client().execute(() -> {
+                ClientboundKeybindPacket.handlePacket(buf);
+                buf.release();
+            });
+        });
+
+        ClientTickEvents.END_CLIENT_TICK.register(Keybinds::tick);
+
         ClientConfigurationConnectionEvents.START.register((handler, client) -> {
             PacketByteBuf buf = PacketByteBufs.create();
 
@@ -45,7 +57,10 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             OpenBoatUtils.instance.resetAll();
+            Keybinds.clear();
             OpenBoatUtils.sendVersionPacket();
         });
+
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> Keybinds.clear());
     }
 }
