@@ -40,6 +40,7 @@ public abstract class MutableContext implements ISettingContext {
     private boolean hasMultiStepping;
     private float maxSpeed;
     private float maxSpeedResistance;
+    private boolean hasHoneyCompatibility;
 
     private final Map<Identifier, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<PerBlockSettingType, Map<Identifier, Float>> blockSettings = new HashMap<>();
@@ -89,6 +90,7 @@ public abstract class MutableContext implements ISettingContext {
     @Override public boolean hasMultiStepping() { return hasMultiStepping; }
     @Override public float getMaxSpeed() { return maxSpeed; }
     @Override public float getMaxSpeedResistance() { return maxSpeedResistance; }
+    @Override public boolean hasHoneyCompatibility() { return hasHoneyCompatibility; }
 
     @Override
     public Set<Identifier> getBlocksWithSettings() { return blocksWithSettings; }
@@ -126,6 +128,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setHasMultiStepping(boolean v) { this.hasMultiStepping = v; return this; }
     public MutableContext setMaxSpeed(float v) { this.maxSpeed = v; return this; }
     public MutableContext setMaxSpeedResistance(float v) { this.maxSpeedResistance = v; return this; }
+    public MutableContext setHasHoneyCompatibility(boolean v) { this.hasHoneyCompatibility = v; return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -191,6 +194,7 @@ public abstract class MutableContext implements ISettingContext {
         this.lateralSlipperiness = other.getLateralSlipperiness();
         this.brakeSlipperiness = other.getBrakeSlipperiness();
         this.hasMultiStepping = other.hasMultiStepping();
+        this.hasHoneyCompatibility = other.hasHoneyCompatibility();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
         this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());

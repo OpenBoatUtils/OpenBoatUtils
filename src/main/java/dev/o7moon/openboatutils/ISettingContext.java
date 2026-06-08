@@ -48,6 +48,7 @@ public interface ISettingContext {
     boolean hasMultiStepping();
     float getMaxSpeed();
     float getMaxSpeedResistance();
+    boolean hasHoneyCompatibility();
 
     Set<Identifier> getBlocksWithSettings();
     boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
@@ -102,6 +103,7 @@ public interface ISettingContext {
             @Override public boolean hasMultiStepping() { return false; }
             @Override public float getMaxSpeed() { return -1; }
             @Override public float getMaxSpeedResistance() { return 0; }
+            @Override public boolean hasHoneyCompatibility() { return false; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
 

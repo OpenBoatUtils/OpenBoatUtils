@@ -96,4 +96,12 @@ stonecutter {
     ) {
         replace 'BoatEntity', 'AbstractBoatEntity'
     }
+
+    replacements.string(
+            current.parsed.matches('>=1.21.9'),
+            "!honey_mapping"
+    ) {
+        replace 'method_65067', 'getOldVelocityY'
+        replace 'method_65068', 'getNewVelocityY'
+    }
 }

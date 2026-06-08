@@ -12,7 +12,8 @@
     "BoatAccessor",
     "ClientWorldMixin",
     "EntityMixin",
-    "BoatRendererMixin"
+    "BoatRendererMixin",
+    "HoneyBlockMixin",
     //? >=1.21.3 {
     /*,"BoatRenderStateMixin"
     *///? }

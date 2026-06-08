@@ -58,7 +58,8 @@ public enum ClientboundSettingsPacket {
     APPLY_IMPULSE_RELATIVE(false),
     SET_MULTI_STEPPING,
     SET_MAX_SPEED,
-    SET_MAX_SPEED_RESISTANCE;
+    SET_MAX_SPEED_RESISTANCE,
+    SET_HONEY_COMPATIBILITY;
 
     private final boolean isContext;
 
@@ -348,6 +349,9 @@ public enum ClientboundSettingsPacket {
             }
             case SET_MAX_SPEED_RESISTANCE -> {
                 context.setMaxSpeedResistance(buf.readFloat());
+            }
+            case SET_HONEY_COMPATIBILITY -> {
+                context.setHasHoneyCompatibility(buf.readBoolean());
             }
         }
     }
