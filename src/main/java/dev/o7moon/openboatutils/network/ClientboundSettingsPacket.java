@@ -1,6 +1,7 @@
 package dev.o7moon.openboatutils.network;
 
 import dev.o7moon.openboatutils.*;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
@@ -44,7 +45,7 @@ public enum ClientboundSettingsPacket {
     SET_COLLISION_RESOLUTION,
     ADD_COLLISION_ENTITYTYPE_FILTER,
     CLEAR_COLLISION_ENTITYTYPE_FILTER,
-    TRANSACTION,
+    COMPOUND,
     SET_WALLTAP_MULTIPLIER,
     SET_JUMPS,
     SET_SCALE,
@@ -76,6 +77,21 @@ public enum ClientboundSettingsPacket {
         try {
             short packetID = buf.readShort();
 
+            // Transaction Wrapper
+            if (packetID == Short.MAX_VALUE) {
+                int transactionId = buf.readInt();
+
+                handlePacket(buf);
+
+                PacketByteBuf packet = PacketByteBufs.create();
+                packet.writeShort(ServerboundSettingsPacket.TRANSACTION_COMPLETE.ordinal());
+                packet.writeInt(transactionId);
+
+                OpenBoatUtils.SETTING_CHANNEL.sendPacketC2S(packet);
+
+                return;
+            }
+
             ClientboundSettingsPacket[] packets = ClientboundSettingsPacket.values();
 
             if (packetID >= packets.length) return;
@@ -92,7 +108,7 @@ public enum ClientboundSettingsPacket {
 
             if (!(mutable instanceof final MutableContext context)) return;
 
-            handlePacket(context, buf, packet, false);
+            handleContextPacketPayload(context, buf, packet, false);
         } catch (Exception E) {
             OpenBoatUtils.LOG.error("Error when handling clientbound openboatutils packet: ");
             for (StackTraceElement e : E.getStackTrace()){
@@ -101,7 +117,7 @@ public enum ClientboundSettingsPacket {
         }
     }
 
-    public static void handlePacket(MutableContext context, PacketByteBuf buf, boolean isTransaction) {
+    public static void handleContextPacket(MutableContext context, PacketByteBuf buf, boolean isCompound) {
         short packetID = buf.readShort();
 
         ClientboundSettingsPacket[] packets = ClientboundSettingsPacket.values();
@@ -112,12 +128,12 @@ public enum ClientboundSettingsPacket {
 
         System.out.println(packet.toString());
 
-        handlePacket(context, buf, packet, isTransaction);
+        handleContextPacketPayload(context, buf, packet, isCompound);
     }
 
-    public static void handlePacket(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet, boolean isTransaction) {
+    public static void handleContextPacketPayload(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet, boolean isCompound) {
 
-        // Both of these are non-context settings, they are handled seperately.
+        // All of these are non-context settings, they are handled seperately.
         // Almost certainly should be out of this channel but backwards compatibility!!
         if (packet.isNonContext()) {
             switch (packet) {
@@ -162,7 +178,7 @@ public enum ClientboundSettingsPacket {
                 // Special full disable (null context) if we are in the default context,
                 // this should be a catchall for potential any mistakes in the default values
                 // or similar as the mixin(s) does pretty much nothing if the context is null
-                if (context == OpenBoatUtils.instance && !isTransaction) {
+                if (context == OpenBoatUtils.instance && !isCompound) {
                     OpenBoatUtils.instance.setActiveContext(null);
                 }
             }
@@ -296,11 +312,11 @@ public enum ClientboundSettingsPacket {
             case CLEAR_COLLISION_ENTITYTYPE_FILTER -> {
                 context.clearCollisionFilter();
             }
-            case TRANSACTION -> {
+            case COMPOUND -> {
                 int size = buf.readInt();
 
                 for (int i = 0; i < size; i++) {
-                    handlePacket(context, buf, true);
+                    handleContextPacket(context, buf, true);
                 }
             }
             case SET_WALLTAP_MULTIPLIER -> {
