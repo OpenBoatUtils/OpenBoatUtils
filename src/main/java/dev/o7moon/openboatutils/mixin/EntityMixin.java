@@ -241,13 +241,16 @@ public abstract class EntityMixin {
             @Local(ordinal = 1) Vec3d vec3d
     ) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
-
         Entity entity = (Entity) (Object) this;
-
         if (context != null && entity instanceof BoatEntity boat && context.hasMultiStepping()) {
             Vec3d result = openboatutils$attemptStep(boat, velocity, aABB2, colliders, vec3d, 0, 100);
             double d = aABB.minY - aABB2.minY;
-            cir.setReturnValue(result.add(0.0, -d, 0.0));
+
+            double correctedY = Math.abs(result.y - vec3d.y) > 1.0E-7
+                    ? result.y - d
+                    : vec3d.y;
+
+            cir.setReturnValue(new Vec3d(result.x, correctedY, result.z));
         }
     }
 
