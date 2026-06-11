@@ -272,16 +272,22 @@ When the boat is not on the ground, the value for `minecraft:air` is used, and t
 |--------------|-----------------|---------|------------------------------------------------------------|
 | 26 (`short`) | `short`         | `float` | `string` (comma seperated list of `namespaced:identifier`) |
 
-| Setting               | Ordinal |
-|-----------------------|:-------:|
-| `JUMP_FORCE`          |    0    |
-| `FORWARDS_ACCEL`      |    1    |
-| `BACKWARDS_ACCEL`     |    2    |
-| `YAW_ACCEL`           |    3    |
-| `TURN_FORWARDS_ACCEL` |    4    |
-| `WALLTAP_MULTIPLIER`  |    5    |
-| `JUMPS`               |    6    |
-| `COYOTE_TIME`         |    7    |
+| Setting                | Ordinal |
+|------------------------|:-------:|
+| `JUMP_FORCE`           |    0    |
+| `FORWARDS_ACCEL`       |    1    |
+| `BACKWARDS_ACCEL`      |    2    |
+| `YAW_ACCEL`            |    3    |
+| `TURN_FORWARDS_ACCEL`  |    4    |
+| `WALLTAP_MULTIPLIER`   |    5    |
+| `JUMPS`                |    6    |
+| `COYOTE_TIME`          |    7    |
+| `STEP_UP_SLIPPERINESS` |    8    |
+| `LATERAL_SLIPPERINESS` |    9    |
+| `BRAKE_SLIPPERINESS`   |   10    |
+| `MAX_SPEED`            |   11    |
+| `MAX_SPEED_RESISTANCE` |   12    |
+
 
 ***
 
