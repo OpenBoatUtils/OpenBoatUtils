@@ -6,7 +6,7 @@ OpenBoatUtils uses three plugin channels:
 - [`openboatutils:context`](/developers/context) for context operations (introduced in `0.5.0`)
 - [`openboatutils:configuration`](/developers/configuration) for configuration phase versioning.
 
-The context api is optional, ignoring it will produce identical behaviour to before the introduction.
+The context api is optional, ignoring it will produce identical behavior to before the introduction.
 
 ::: info A Note on Strings
 OpenBoatUtils writes all it's packets with a class in Minecraft called `PacketByteBuf`.
@@ -65,3 +65,5 @@ public class PacketByteBuf {
 
 ```
 :::
+
+## Transactions

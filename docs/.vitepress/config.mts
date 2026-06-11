@@ -23,10 +23,11 @@ export default defineConfig({
         text: "Developers",
         items: [
          { text: 'Protocol', link: '/developers/protocol' },
+         { text: 'Transactions', link: '/developers/transactions' },
          { text: 'Versions', link: '/developers/versions' },
          { text: 'Settings', link: '/developers/settings' },
          { text: 'Context', link: '/developers/context' },
-          { text: 'Configuration', link: '/developers/configuration' },
+         { text: 'Configuration', link: '/developers/configuration' },
         ]
      }
     ],

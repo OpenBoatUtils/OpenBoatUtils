@@ -21,6 +21,8 @@ Take care to only read the unstable flag when the version id is `>= 19` (0.5.0).
 |-----------|--------------------------------------------|------------------------|
 | 0 (`short`) | [Version ID](/developers/versions) (`int`) | `boolean` |
 
+***
+
 ## Clientbound
 
 ### Reset
@@ -87,7 +89,7 @@ If true, the boat will control in the air like it does on the ground. it's slipp
 ***
 
 ### Set Boat Jump Force
-If this is greater than `0f` (the default), the player will be able to jump while in the boat, and their y velocity will be set to this value when jumping. `0.36f` is a good value for 1 block tall jumps with a bit of leniency.
+If this is not `0f` (the default), the player will be able to jump while in the boat, and their y velocity will be set to this value when jumping. `0.36f` is a good value for 1 block tall jumps with a bit of leniency.
 
 | Packet ID   | Jump Force (default `0f`) |
 |-------------|---------------------------|
@@ -96,7 +98,7 @@ If this is greater than `0f` (the default), the player will be able to jump whil
 ***
 
 ### Set Mode
-Modes are like setting presets. upon receiving this packet the client will set it's settings to those of the mode.
+Modes are like setting presets. upon receiving this packet the client will set its settings to those of the mode.
 
 There is a list of modes and more information [here](/modes).
 
@@ -360,9 +362,11 @@ Removes all entity types currently filtered out when using filtered [collision m
 
 ***
 
-### Transaction <Badge type="tip" text="^0.5.0" />
+### Compound <Badge type="tip" text="^0.5.0" />
 Sends multiple setting packets bundled together as a single atomic update. Each inner packet is a full settings packet including its own packet ID short.
 The payload for this packet is also used for the [store context packet](/developers/context#store-context).
+
+Renamed from Transaction to Compound in `0.5.1`
 
 | Packet ID | Count | Packets |
 |-----------|-------|---------|
@@ -430,8 +434,104 @@ The process used by server proxies (Velocity, etc..) to switch a player between 
 ### Set Fix Double Water Elevation <Badge type="tip" text="^0.5.1" />
 Controls if the fix for double water elevation is enabled (see issue [#5](https://github.com/OpenBoatUtils/OpenBoatUtils/issues/5))
 
-This is `false` by default to retain compatibility with old records, but it is highly recommended that this is enabled on any track using water elevation going fowards.
+This is `false` by default to retain compatibility with old records, but it is highly recommended that this is enabled on any track using water elevation going forwards.
 
 | Packet ID    | Enabled (default `false`) |
 |--------------|---------------------------|
 | 39 (`short`) | `boolean`                 |
+
+***
+
+### Set Lateral Slipperiness <Badge type="tip" text="^0.5.1" />
+When this value isn't `1f` an extra "grip" force is applied opposing the current slip. A Value of `0f` will ensure that a boat will only travel in the direction it is currently facing.
+
+<img src="/lateral_slip.svg">
+
+| Packet ID    | Slipperiness (default `1f`) |
+|--------------|-----------------------------|
+| 40 (`short`) | `float`                     |
+
+***
+
+### Set Brake Slipperiness <Badge type="tip" text="^0.5.1" />
+When this value isn't `1` the behaviour of the S key changes, instead of accelerating backwards the current velocity is scaled by the slipperiness here.
+
+A value of `0.8` will reduce the velocity of the boat by 20% each tick.
+
+| Packet ID    | Slipperiness (default `1f`) |
+|--------------|-----------------------------|
+| 41 (`short`) | `float`                     |
+
+***
+
+### Apply Impulse <Badge type="tip" text="^0.5.1" /> <Badge type="warning" text="Non-Context" />
+Applies an impulse to the current boat's velocity relative to the world.
+
+| Packet ID    | X        | Y        | Z        |
+|--------------|----------|----------|----------|
+| 42 (`short`) | `double` | `double` | `double` | 
+
+::: warning
+This is handled completely separately to contexts, it only applies to the boat the player is actively controlling and has no lasting effect.
+:::
+
+***
+
+### Apply Impulse Relative <Badge type="tip" text="^0.5.1" /> <Badge type="warning" text="Non-Context" />
+Applies an impulse to the current boat's velocity relative to the boat.
+
+<img src="/impulse_relative.svg">
+
+| Packet ID    | X        | Y        | Z        |
+|--------------|----------|----------|----------|
+| 43 (`short`) | `double` | `double` | `double` | 
+
+::: warning
+This is handled completely separately to contexts, it only applies to the boat the player is actively controlling and has no lasting effect.
+:::
+
+***
+
+### Set Multi Stepping <Badge type="tip" text="^0.5.1" />
+Enables a rewritten stepping implementation that allows for multiple step ups per tick. Vanilla stepping can only step once per tick and will also get stuck if it can't step everything in one go.
+
+The implementation is based on a patch by [Moulberry](https://github.com/Moulberry/MC276641Fix).
+
+| Packet ID    | Enabled (default `false`) |
+|--------------|---------------------------|
+| 44 (`short`) | `boolean`                 |
+
+***
+
+### Set Max Speed <Badge type="tip" text="^0.5.1" />
+Sets the threshold for where max speed is punished by [Max Speed Slipperiness](#set-max-speed-resistance).
+
+Any negative values will disable this.
+
+| Packet ID    | Max Speed (default `-1`) |
+|--------------|--------------------------|
+| 45 (`short`) | `float`                  |
+
+***
+
+### Set Max Speed Resistance <Badge type="tip" text="^0.5.1" />
+Provides the scale multiplier applied to a player's velocity above the [Max Speed](#set-max-speed).
+
+Given Max speed of `10b/t` and a player is traveling at `12b/t` the additional `2b/t` will be scaled by max speed resistance and applied against the velocity.
+
+A Value of `1f` makes it impossible to travel faster than the max speed. 
+
+| Packet ID    | Enabled (default `0`) |
+|--------------|-----------------------|
+| 46 (`short`) | `float`               |
+
+***
+
+***
+
+### Set Honey Compatibility <Badge type="tip" text="^0.5.1" />
+Reverts the behavior of honey in versions `1.21.3+` to behavior in `1.21.1`. Notably reducing the speed at which the boat slides down.
+
+| Packet ID    | Enabled (default `false`) |
+|--------------|---------------------------|
+| 47 (`short`) | `boolean`                 |
