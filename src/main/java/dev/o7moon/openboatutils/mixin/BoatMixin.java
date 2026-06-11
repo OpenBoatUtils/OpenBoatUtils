@@ -478,7 +478,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             float maxSpeed = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED);
             float maxSpeedResistance = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED_RESISTANCE);
 
-            if (maxSpeed > 0) openboatutils$applyMaxSpeedResistance(boat, maxSpeed, maxSpeedResistance);
+            if (maxSpeed >= 0) openboatutils$applyMaxSpeedResistance(boat, maxSpeed, maxSpeedResistance);
 
             if (pressingBack) {
                 float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.BRAKE_SLIPPERINESS);
