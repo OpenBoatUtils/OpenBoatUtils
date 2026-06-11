@@ -85,7 +85,7 @@ public enum ClientboundSettingsPacket {
                 handlePacket(buf);
 
                 PacketByteBuf packet = PacketByteBufs.create();
-                packet.writeShort(ServerboundSettingsPacket.TRANSACTION_COMPLETE.ordinal());
+                packet.writeShort(Short.MAX_VALUE);
                 packet.writeInt(transactionId);
 
                 OpenBoatUtils.SETTING_CHANNEL.sendPacketC2S(packet);

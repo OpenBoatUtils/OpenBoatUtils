@@ -4,8 +4,7 @@ import dev.o7moon.openboatutils.OpenBoatUtils;
 import io.netty.buffer.ByteBuf;
 
 public enum ServerboundSettingsPacket {
-    VERSION,
-    TRANSACTION_COMPLETE;
+    VERSION;
 
     public static void handlePacket(ByteBuf buf) {
         try {

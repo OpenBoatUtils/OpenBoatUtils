@@ -29,7 +29,7 @@ public enum ClientboundContextPacket {
                 handlePacket(buf);
 
                 PacketByteBuf packet = PacketByteBufs.create();
-                packet.writeShort(ServerboundContextPacket.TRANSACTION_COMPLETE.ordinal());
+                packet.writeShort(Short.MAX_VALUE);
                 packet.writeInt(transactionId);
 
                 OpenBoatUtils.CONTEXT_CHANNEL.sendPacketC2S(packet);
