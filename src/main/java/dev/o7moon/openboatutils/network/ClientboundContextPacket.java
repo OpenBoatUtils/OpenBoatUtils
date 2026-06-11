@@ -43,7 +43,7 @@ public enum ClientboundContextPacket {
 
             ClientboundContextPacket packet = packets[packetID];
 
-
+            handlePacket(buf, packet);
         } catch (Exception E) {
             OpenBoatUtils.LOG.error("Error when handling clientbound openboatutils packet: ");
             for (StackTraceElement e : E.getStackTrace()){
