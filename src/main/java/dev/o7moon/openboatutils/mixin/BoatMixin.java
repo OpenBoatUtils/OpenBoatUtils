@@ -215,7 +215,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         if (!jumping) openboatutils$debounce = false;
 
-        if (openboatutils$remaining_jumps > 0 && jumpForce > 0f && jumping && !openboatutils$debounce) {
+        if (openboatutils$remaining_jumps > 0 && jumpForce != 0f && jumping && !openboatutils$debounce) {
             Vec3d velocity = instance.getVelocity();
             instance.setVelocity(velocity.x, jumpForce, velocity.z);
 
@@ -293,7 +293,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         mixedInstance.openboatutils$setStepHeight(context.getStepSize());
 
         if (loc == BoatEntity.Location.UNDER_WATER || loc == BoatEntity.Location.UNDER_FLOWING_WATER) {
-            if (context.hasWaterElevation()) {
+            if (context.hasWaterElevation() && (is_tick || !context.getFixDoubleWaterElevation())) {
                 instance.setPosition(instance.getX(), this.waterLevel += 1.0, instance.getZ());
                 Vec3d velocity = instance.getVelocity();
                 instance.setVelocity(velocity.x, 0f, velocity.z);// parity with old boatutils, but maybe in the future
@@ -304,7 +304,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         }
 
         if (this.checkBoatInWater()) {
-            if (context.hasWaterElevation()) {
+            if (context.hasWaterElevation() && (is_tick || !context.getFixDoubleWaterElevation())) {
                 Vec3d velocity = instance.getVelocity();
                 instance.setVelocity(velocity.x, 0.0, velocity.z);
             }
@@ -447,16 +447,103 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     private boolean pressingBackHook(BoatEntity instance) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
-        if (context == null || !context.hasAllowAccelStacking()) return this.pressingBack;
+        if (context != null) {
+            float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.BRAKE_SLIPPERINESS);
+            if (brakeSlipperiness != 1f) {
+                return false;
+            }
+        }
+
+        if (context == null || !context.hasAllowAccelStacking()) return ((BoatAccessor) instance).getPressingBack();
 
         return false;
+    }
+
+    @Inject(
+            method = "updateVelocity",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/vehicle/BoatEntity;setVelocity(DDD)V",
+                    ordinal = 0,
+                    shift = At.Shift.AFTER
+            )
+    )
+    private void hookSlipperiness(CallbackInfo ci) {
+        BoatEntity boat = (BoatEntity) (Object) this;
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        if (context != null) {
+            float lateralSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.LATERAL_SLIPPERINESS);
+            if (lateralSlipperiness != 1f) openboatutils$applyLateralSlipperiness(boat, lateralSlipperiness);
+
+            float maxSpeed = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED);
+            float maxSpeedResistance = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED_RESISTANCE);
+
+            if (maxSpeed >= 0) openboatutils$applyMaxSpeedResistance(boat, maxSpeed, maxSpeedResistance);
+
+            if (pressingBack) {
+                float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.BRAKE_SLIPPERINESS);
+                if (brakeSlipperiness != 1f) openboatutils$applyBrakeSlipperiness(boat, brakeSlipperiness);
+            }
+        }
+    }
+
+    @Unique
+    private void openboatutils$applyLateralSlipperiness(BoatEntity boat, float slipperiness) {
+        Vec3d velocity = boat.getVelocity();
+
+        float grip = 1 - slipperiness;
+        double yaw = Math.toRadians(boat.getYaw());
+
+        Vec3d forward = new Vec3d(-Math.sin(yaw), 0, Math.cos(yaw));
+        Vec3d velocityXZ = new Vec3d(velocity.x, 0, velocity.z);
+        Vec3d alongForward = forward.multiply(velocityXZ.dotProduct(forward));
+        Vec3d lateralSlip = velocityXZ.subtract(alongForward);
+
+        Vec3d gripForce = lateralSlip.multiply(grip);
+
+        boat.setVelocity(
+                velocity.x - gripForce.x,
+                velocity.y,
+                velocity.z - gripForce.z
+        );
+    }
+
+    @Unique
+    private void openboatutils$applyBrakeSlipperiness(BoatEntity boat, float slipperiness) {
+        Vec3d velocity = boat.getVelocity();
+
+        boat.setVelocity(
+                velocity.x * slipperiness,
+                velocity.y,
+                velocity.z * slipperiness
+        );
+    }
+
+    @Unique
+    private void openboatutils$applyMaxSpeedResistance(BoatEntity boat, float maxSpeed, float maxSpeedResistance) {
+        Vec3d velocity = boat.getVelocity();
+
+        double horizonalSpeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+
+        // it's a little goofy because all per block settings are floats, but it doesn't matter
+        float extraSpeed = (float) Math.max(0, horizonalSpeed - maxSpeed);
+
+        if (extraSpeed > 0) {
+            float multiplier = 1f - (extraSpeed * maxSpeedResistance);
+
+            boat.setVelocity(
+                    velocity.x * multiplier,
+                    velocity.y,
+                    velocity.z * multiplier
+            );
+        }
     }
 
     //? >= 1.21.5 {
     /*// UNDER_FLOWING_WATER
     @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 1))
     private float velocityDecayHook1(float constant) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasUnderwaterControl()) {
             Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
@@ -472,7 +559,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     // UNDER_WATER
     @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.45F))
     private float velocityDecayHook2(float constant) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasUnderwaterControl()) {
             Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;
@@ -488,7 +575,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     // IN_WATER
     @ModifyConstant(method="updateVelocity", constant = @Constant(floatValue = 0.9F, ordinal = 0))
     private float velocityDecayHook3(float constant) {
-        ISettingContext context = OpenBoatUtils.instance.getActiveContext();
+        @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null && context.hasSurfaceWaterControl()) {
             Float slipperiness = context.getBlockSlipperiness(Registries.BLOCK.getId(Blocks.WATER));;

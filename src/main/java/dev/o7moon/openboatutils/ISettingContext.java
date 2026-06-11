@@ -42,6 +42,13 @@ public interface ISettingContext {
     int getJumps();
     float getScale();
     float getStepUpSlipperiness();
+    boolean getFixDoubleWaterElevation();
+    float getLateralSlipperiness();
+    float getBrakeSlipperiness();
+    boolean hasMultiStepping();
+    float getMaxSpeed();
+    float getMaxSpeedResistance();
+    boolean hasHoneyCompatibility();
 
     Set<Identifier> getBlocksWithSettings();
     boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
@@ -90,6 +97,13 @@ public interface ISettingContext {
             @Override public int getJumps() { return 1; }
             @Override public float getScale() { return 1; }
             @Override public float getStepUpSlipperiness() { return 1; }
+            @Override public boolean getFixDoubleWaterElevation() { return false; }
+            @Override public float getLateralSlipperiness() { return 1; }
+            @Override public float getBrakeSlipperiness() { return 1; }
+            @Override public boolean hasMultiStepping() { return false; }
+            @Override public float getMaxSpeed() { return -1; }
+            @Override public float getMaxSpeedResistance() { return 0; }
+            @Override public boolean hasHoneyCompatibility() { return false; }
 
             @Override public Set<Identifier> getBlocksWithSettings() { return Set.of(); }
 

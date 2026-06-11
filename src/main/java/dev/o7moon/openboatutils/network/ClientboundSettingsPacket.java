@@ -1,7 +1,9 @@
 package dev.o7moon.openboatutils.network;
 
 import dev.o7moon.openboatutils.*;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -39,20 +41,57 @@ public enum ClientboundSettingsPacket {
     SET_PER_BLOCK,
     SET_COLLISION_MODE,
     SET_STEP_WHILE_FALLING,
-    SET_INTERPOLATION_COMPAT,
+    SET_INTERPOLATION_COMPAT(false),
     SET_COLLISION_RESOLUTION,
     ADD_COLLISION_ENTITYTYPE_FILTER,
     CLEAR_COLLISION_ENTITYTYPE_FILTER,
-    TRANSACTION,
+    COMPOUND,
     SET_WALLTAP_MULTIPLIER,
     SET_JUMPS,
     SET_SCALE,
     SET_STEP_UP_SLIPPERINESS,
-    SET_RESET_ON_WORLD_LOAD;
+    SET_RESET_ON_WORLD_LOAD(false),
+    SET_FIX_DOUBLE_WATER_ELEVATION,
+    SET_LATERAL_SLIPPERINESS,
+    SET_BRAKE_SLIPPERINESS,
+    APPLY_IMPULSE(false),
+    APPLY_IMPULSE_RELATIVE(false),
+    SET_MULTI_STEPPING,
+    SET_MAX_SPEED,
+    SET_MAX_SPEED_RESISTANCE,
+    SET_HONEY_COMPATIBILITY;
+
+    private final boolean isContext;
+
+    ClientboundSettingsPacket() {
+        this(true);
+    }
+    ClientboundSettingsPacket(boolean isContext) {
+        this.isContext = isContext;
+    }
+
+    public boolean isNonContext() {
+        return !isContext;
+    }
 
     public static void handlePacket(PacketByteBuf buf) {
         try {
             short packetID = buf.readShort();
+
+            // Transaction Wrapper
+            if (packetID == Short.MAX_VALUE) {
+                int transactionId = buf.readInt();
+
+                handlePacket(buf);
+
+                PacketByteBuf packet = PacketByteBufs.create();
+                packet.writeShort(Short.MAX_VALUE);
+                packet.writeInt(transactionId);
+
+                OpenBoatUtils.SETTING_CHANNEL.sendPacketC2S(packet);
+
+                return;
+            }
 
             ClientboundSettingsPacket[] packets = ClientboundSettingsPacket.values();
 
@@ -70,7 +109,7 @@ public enum ClientboundSettingsPacket {
 
             if (!(mutable instanceof final MutableContext context)) return;
 
-            handlePacket(context, buf, packet, false);
+            handleContextPacketPayload(context, buf, packet, false);
         } catch (Exception E) {
             OpenBoatUtils.LOG.error("Error when handling clientbound openboatutils packet: ");
             for (StackTraceElement e : E.getStackTrace()){
@@ -79,7 +118,7 @@ public enum ClientboundSettingsPacket {
         }
     }
 
-    public static void handlePacket(MutableContext context, PacketByteBuf buf, boolean isTransaction) {
+    public static void handleContextPacket(MutableContext context, PacketByteBuf buf, boolean isCompound) {
         short packetID = buf.readShort();
 
         ClientboundSettingsPacket[] packets = ClientboundSettingsPacket.values();
@@ -90,19 +129,44 @@ public enum ClientboundSettingsPacket {
 
         System.out.println(packet.toString());
 
-        handlePacket(context, buf, packet, isTransaction);
+        handleContextPacketPayload(context, buf, packet, isCompound);
     }
 
-    public static void handlePacket(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet, boolean isTransaction) {
+    public static void handleContextPacketPayload(MutableContext context, PacketByteBuf buf, ClientboundSettingsPacket packet, boolean isCompound) {
 
-        // Both of these are non-context settings, they are handled seperately.
+        // All of these are non-context settings, they are handled seperately.
         // Almost certainly should be out of this channel but backwards compatibility!!
-        if (packet == ClientboundSettingsPacket.SET_INTERPOLATION_COMPAT) {
-            OpenBoatUtils.instance.setInterpolationCompatibility(buf.readBoolean());
+        if (packet.isNonContext()) {
+            switch (packet) {
+                case SET_INTERPOLATION_COMPAT -> OpenBoatUtils.instance.setInterpolationCompatibility(buf.readBoolean());
+                case SET_RESET_ON_WORLD_LOAD -> OpenBoatUtils.instance.setResetOnWorldLoad(buf.readBoolean());
+                case APPLY_IMPULSE -> {
 
-            return;
-        } else if (packet == ClientboundSettingsPacket.SET_RESET_ON_WORLD_LOAD) {
-            OpenBoatUtils.instance.setResetOnWorldLoad(buf.readBoolean());
+                    double x = buf.readDouble();
+                    double y = buf.readDouble();
+                    double z = buf.readDouble();
+
+                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof BoatEntity boat) {
+                        boat.setVelocity(boat.getVelocity().add(x, y, z));
+                    }
+                }
+                case APPLY_IMPULSE_RELATIVE -> {
+                    double localX = buf.readDouble();
+                    double localY = buf.readDouble();
+                    double localZ = buf.readDouble();
+
+                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof BoatEntity boat) {
+                        double yaw = Math.toRadians(-boat.getYaw());
+
+                        double worldX = localX * Math.cos(yaw) - localZ * Math.sin(yaw);
+                        double worldZ = localX * Math.sin(yaw) + localZ * Math.cos(yaw);
+
+                        boat.setVelocity(
+                                boat.getVelocity().add(worldX, localY, worldZ)
+                        );
+                    }
+                }
+            }
 
             return;
         }
@@ -115,7 +179,7 @@ public enum ClientboundSettingsPacket {
                 // Special full disable (null context) if we are in the default context,
                 // this should be a catchall for potential any mistakes in the default values
                 // or similar as the mixin(s) does pretty much nothing if the context is null
-                if (context == OpenBoatUtils.instance && !isTransaction) {
+                if (context == OpenBoatUtils.instance && !isCompound) {
                     OpenBoatUtils.instance.setActiveContext(null);
                 }
             }
@@ -249,11 +313,11 @@ public enum ClientboundSettingsPacket {
             case CLEAR_COLLISION_ENTITYTYPE_FILTER -> {
                 context.clearCollisionFilter();
             }
-            case TRANSACTION -> {
+            case COMPOUND -> {
                 int size = buf.readInt();
 
                 for (int i = 0; i < size; i++) {
-                    handlePacket(context, buf, true);
+                    handleContextPacket(context, buf, true);
                 }
             }
             case SET_WALLTAP_MULTIPLIER -> {
@@ -267,6 +331,27 @@ public enum ClientboundSettingsPacket {
             }
             case SET_STEP_UP_SLIPPERINESS -> {
                 context.setStepUpSlipperiness(buf.readFloat());
+            }
+            case SET_FIX_DOUBLE_WATER_ELEVATION -> {
+                context.setFixDoubleWaterElevation(buf.readBoolean());
+            }
+            case SET_LATERAL_SLIPPERINESS -> {
+                context.setLateralSlipperiness(buf.readFloat());
+            }
+            case SET_BRAKE_SLIPPERINESS -> {
+                context.setBrakeSlipperiness(buf.readFloat());
+            }
+            case SET_MULTI_STEPPING -> {
+                context.setHasMultiStepping(buf.readBoolean());
+            }
+            case SET_MAX_SPEED -> {
+                context.setMaxSpeed(buf.readFloat());
+            }
+            case SET_MAX_SPEED_RESISTANCE -> {
+                context.setMaxSpeedResistance(buf.readFloat());
+            }
+            case SET_HONEY_COMPATIBILITY -> {
+                context.setHasHoneyCompatibility(buf.readBoolean());
             }
         }
     }

@@ -9,9 +9,11 @@
   ],
   "client": [
     "BoatMixin",
+    "BoatAccessor",
     "ClientWorldMixin",
     "EntityMixin",
-    "BoatRendererMixin"
+    "BoatRendererMixin",
+    "HoneyBlockMixin",
     //? >=1.21.3 {
     /*,"BoatRenderStateMixin"
     *///? }
@@ -20,6 +22,7 @@
     *///?}
   ],
   "injectors": {
-    "defaultRequire": 1
+    "defaultRequire": 1,
+    "maxShiftBy": 2
   }
 }

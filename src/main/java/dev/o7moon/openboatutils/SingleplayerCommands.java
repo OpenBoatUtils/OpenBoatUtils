@@ -581,6 +581,147 @@ public class SingleplayerCommands {
                         return 1;
                     }))
             );
+
+            dispatcher.register(
+                    literal("fixdoublewaterelevation").then(argument("enabled", BoolArgumentType.bool()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        boolean enabled = BoolArgumentType.getBool(ctx,"enabled");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_FIX_DOUBLE_WATER_ELEVATION.ordinal());
+                        packet.writeBoolean(enabled);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
+
+            dispatcher.register(
+                    literal("setlateralslipperiness").then(argument("slipperiness", FloatArgumentType.floatArg()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        float aFloat = FloatArgumentType.getFloat(ctx,"slipperiness");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_LATERAL_SLIPPERINESS.ordinal());
+                        packet.writeFloat(aFloat);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
+
+            dispatcher.register(
+                    literal("setbrakeslipperiness").then(argument("brakeslipperiness", FloatArgumentType.floatArg()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        float aFloat = FloatArgumentType.getFloat(ctx,"brakeslipperiness");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_BRAKE_SLIPPERINESS.ordinal());
+                        packet.writeFloat(aFloat);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
+
+            dispatcher.register(
+                    literal("applyimpulse").then(argument("x", DoubleArgumentType.doubleArg())
+                            .then(argument("y", DoubleArgumentType.doubleArg())
+                                    .then(argument("z", DoubleArgumentType.doubleArg())
+                                            .executes(ctx -> {
+                                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                                if (player == null) return 0;
+
+                                                double x = DoubleArgumentType.getDouble(ctx, "x");
+                                                double y = DoubleArgumentType.getDouble(ctx, "y");
+                                                double z = DoubleArgumentType.getDouble(ctx, "z");
+
+                                                PacketByteBuf packet = PacketByteBufs.create();
+                                                packet.writeShort(ClientboundSettingsPacket.APPLY_IMPULSE.ordinal());
+                                                packet.writeDouble(x);
+                                                packet.writeDouble(y);
+                                                packet.writeDouble(z);
+
+                                                OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                                                return 1;
+                                            })
+                                    )
+                            ))
+            );
+
+            dispatcher.register(
+                    literal("applyimpulserelative").then(argument("x", DoubleArgumentType.doubleArg())
+                            .then(argument("y", DoubleArgumentType.doubleArg())
+                                    .then(argument("z", DoubleArgumentType.doubleArg())
+                                            .executes(ctx -> {
+                                                ServerPlayerEntity player = ctx.getSource().getPlayer();
+                                                if (player == null) return 0;
+
+                                                double x = DoubleArgumentType.getDouble(ctx, "x");
+                                                double y = DoubleArgumentType.getDouble(ctx, "y");
+                                                double z = DoubleArgumentType.getDouble(ctx, "z");
+
+                                                PacketByteBuf packet = PacketByteBufs.create();
+                                                packet.writeShort(ClientboundSettingsPacket.APPLY_IMPULSE_RELATIVE.ordinal());
+                                                packet.writeDouble(x);
+                                                packet.writeDouble(y);
+                                                packet.writeDouble(z);
+
+                                                OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                                                return 1;
+                                            })
+                                    )
+                            ))
+            );
+
+            dispatcher.register(
+                    literal("setmultistepping").then(argument("enabled", BoolArgumentType.bool()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        boolean enabled = BoolArgumentType.getBool(ctx,"enabled");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_MULTI_STEPPING.ordinal());
+                        packet.writeBoolean(enabled);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
+
+            dispatcher.register(
+                    literal("setmaxspeed").then(argument("maxspeed", FloatArgumentType.floatArg()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        float aFloat = FloatArgumentType.getFloat(ctx,"maxspeed");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_MAX_SPEED.ordinal());
+                        packet.writeFloat(aFloat);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
+
+            dispatcher.register(
+                    literal("setmaxspeedresistance").then(argument("resistance", FloatArgumentType.floatArg()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        float aFloat = FloatArgumentType.getFloat(ctx,"resistance");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_MAX_SPEED_RESISTANCE.ordinal());
+                        packet.writeFloat(aFloat);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
+
+            dispatcher.register(
+                    literal("sethoneycompat").then(argument("enabled", BoolArgumentType.bool()).executes(ctx->{
+                        ServerPlayerEntity player = ctx.getSource().getPlayer();
+                        if (player == null) return 0;
+                        boolean enabled = BoolArgumentType.getBool(ctx,"enabled");
+                        PacketByteBuf packet = PacketByteBufs.create();
+                        packet.writeShort(ClientboundSettingsPacket.SET_HONEY_COMPATIBILITY.ordinal());
+                        packet.writeBoolean(enabled);
+                        OpenBoatUtils.SETTING_CHANNEL.sendPacketS2C(player, packet);
+                        return 1;
+                    }))
+            );
         });
     }
 }

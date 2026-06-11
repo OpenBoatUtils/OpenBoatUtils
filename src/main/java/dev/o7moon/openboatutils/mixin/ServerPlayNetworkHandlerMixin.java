@@ -18,9 +18,9 @@ public class ServerPlayNetworkHandlerMixin {
     // Force the flag that triggers moved wrongly to false
 
     //? <1.21.6 {
-    @ModifyVariable(method = "onVehicleMove", at = @At("STORE"), ordinal = 2)
-    private boolean onVehicleMove_WronglyFlag(boolean original) {
-        return false;
+    @ModifyConstant(method = "onVehicleMove", constant = @Constant(doubleValue = 0.0625, ordinal = 0))
+    private double onVehicleMove_WronglyFlag(double constant) {
+        return Float.MAX_VALUE;
     }
     //?}
 

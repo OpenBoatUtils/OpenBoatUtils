@@ -23,8 +23,8 @@ import java.util.UUID;
 public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     public static final String NAMESPACE = "openboatutils";
-    public static final int VERSION = 19;
-    public static final boolean UNSTABLE = false;
+    public static final int VERSION = 20;
+    public static final boolean UNSTABLE = true;
 
     public static final Logger LOG = LoggerFactory.getLogger("OpenBoatUtils");
 
@@ -35,6 +35,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
     public static final Identifier DEFAULT_CONTEXT = Identifier.of(NAMESPACE, "default");
 
     public static OpenBoatUtils instance;
+    public static MinecraftClient minecraft;
 
     private final Map<Identifier, StoredContext> stored_contexts = new HashMap<>();
     private final Map<UUID, EntityContext> entity_contexts = new HashMap<>();
@@ -46,6 +47,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     public OpenBoatUtils() {
         instance = this;
+        minecraft = MinecraftClient.getInstance();
     }
 
     @Override

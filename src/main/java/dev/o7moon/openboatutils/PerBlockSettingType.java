@@ -9,7 +9,11 @@ public enum PerBlockSettingType {
     WALLTAP_MULTIPLIER,
     JUMPS,
     COYOTE_TIME,
-    STEP_UP_SLIPPERINESS;
+    STEP_UP_SLIPPERINESS,
+    LATERAL_SLIPPERINESS,
+    BRAKE_SLIPPERINESS,
+    MAX_SPEED,
+    MAX_SPEED_RESISTANCE;
 
     public float fromContext(ISettingContext context) {
         return switch (this) {
@@ -22,6 +26,10 @@ public enum PerBlockSettingType {
             case JUMPS -> context.getJumps();
             case COYOTE_TIME -> context.getCoyoteTime();
             case STEP_UP_SLIPPERINESS -> context.getStepUpSlipperiness();
+            case LATERAL_SLIPPERINESS -> context.getLateralSlipperiness();
+            case BRAKE_SLIPPERINESS -> context.getBrakeSlipperiness();
+            case MAX_SPEED -> context.getMaxSpeed();
+            case MAX_SPEED_RESISTANCE -> context.getMaxSpeedResistance();
         };
     }
 }
