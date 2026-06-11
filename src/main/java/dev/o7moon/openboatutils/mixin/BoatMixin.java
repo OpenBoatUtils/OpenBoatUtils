@@ -215,7 +215,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         if (!jumping) openboatutils$debounce = false;
 
-        if (openboatutils$remaining_jumps > 0 && jumpForce > 0f && jumping && !openboatutils$debounce) {
+        if (openboatutils$remaining_jumps > 0 && jumpForce != 0f && jumping && !openboatutils$debounce) {
             Vec3d velocity = instance.getVelocity();
             instance.setVelocity(velocity.x, jumpForce, velocity.z);
 
