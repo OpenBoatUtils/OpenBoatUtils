@@ -194,6 +194,8 @@ public abstract class MutableContext implements ISettingContext {
         this.lateralSlipperiness = other.getLateralSlipperiness();
         this.brakeSlipperiness = other.getBrakeSlipperiness();
         this.hasMultiStepping = other.hasMultiStepping();
+        this.maxSpeed = other.getMaxSpeed();
+        this.maxSpeedResistance = other.getMaxSpeedResistance();
         this.hasHoneyCompatibility = other.hasHoneyCompatibility();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());

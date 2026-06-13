@@ -158,11 +158,11 @@ public enum ClientboundSettingsPacket {
                     if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof BoatEntity boat) {
                         double yaw = Math.toRadians(-boat.getYaw());
 
-                        double worldX = localX * Math.cos(yaw) - localZ * Math.sin(yaw);
-                        double worldZ = localX * Math.sin(yaw) + localZ * Math.cos(yaw);
+                        double worldX = localX * Math.cos(yaw) + localZ * Math.sin(yaw);
+                        double worldZ = localX * Math.sin(yaw) - localZ * Math.cos(yaw);
 
                         boat.setVelocity(
-                                boat.getVelocity().add(worldX, localY, worldZ)
+                                boat.getVelocity().add(worldX, localY, -worldZ)
                         );
                     }
                 }
