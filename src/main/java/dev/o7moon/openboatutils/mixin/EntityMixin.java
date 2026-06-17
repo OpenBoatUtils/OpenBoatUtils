@@ -184,12 +184,12 @@ public abstract class EntityMixin {
 
             if (boatContext != null) {
                 cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(boatContext.getScale())));
-            }
+            } else {
+                @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
-            @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
-
-            if (context != null) {
-                cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(context.getScale())));
+                if (context != null) {
+                    cir.setReturnValue(cir.getReturnValue().scaled(Math.abs(context.getScale())));
+                }
             }
         }
     }
