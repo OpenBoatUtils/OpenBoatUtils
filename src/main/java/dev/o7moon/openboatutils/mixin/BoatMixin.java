@@ -681,4 +681,9 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             ((BoatEntity) (Object) this).calculateDimensions();
         }
     }
+
+    @Inject(method = "setBubbleWobbleTicks", at = @At("HEAD"), cancellable = true)
+    private void hookBubbleTime(int wobbleTicks, CallbackInfo ci) {
+        ci.cancel();
+    }
 }
