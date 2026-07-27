@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.github.openboatutils"
-version = "0.0.4"
+version = "0.0.6"
 
 repositories {
     mavenCentral()

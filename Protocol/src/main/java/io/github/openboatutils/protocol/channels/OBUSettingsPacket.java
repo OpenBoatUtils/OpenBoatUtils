@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 public sealed interface OBUSettingsPacket extends OBUPacket
-        permits OBUSettingsPacket.CollisionFilterAddEntityType, OBUSettingsPacket.AirControl, OBUSettingsPacket.AccelStacking, OBUSettingsPacket.Impulse, OBUSettingsPacket.ImpulseRelative, OBUSettingsPacket.BackwardAccel, OBUSettingsPacket.BlockSlipperiness, OBUSettingsPacket.FallDamage, OBUSettingsPacket.JumpForce, OBUSettingsPacket.WaterElevation, OBUSettingsPacket.CollisionFilterClear, OBUSettingsPacket.ClearSlipperines, OBUSettingsPacket.CollisionMode, OBUSettingsPacket.CollisionResolution, OBUSettingsPacket.Compound, OBUSettingsPacket.CoyoteTime, OBUSettingsPacket.DefaultSlipperiness, OBUSettingsPacket.ExclusiveMode, OBUSettingsPacket.ExclusiveModeSeries, OBUSettingsPacket.ForwardAccel, OBUSettingsPacket.Gravity, OBUSettingsPacket.InterpolationCompatibility, OBUSettingsPacket.Mode, OBUSettingsPacket.ModeSeries, OBUSettingsPacket.PerBlock, OBUSettingsPacket.RemoveBlockSlipperiness, OBUSettingsPacket.ResendVersion, OBUSettingsPacket.Reset, OBUSettingsPacket.BrakeSlipperiness, OBUSettingsPacket.FixDoubleWaterELevation, OBUSettingsPacket.HoneyCompatibility, OBUSettingsPacket.Jumps, OBUSettingsPacket.LateralSlipperiness, OBUSettingsPacket.MaxSpeed, OBUSettingsPacket.MaxSpeedResistance, OBUSettingsPacket.MultiStepping, OBUSettingsPacket.ResetOnWorldLoad, OBUSettingsPacket.Scale, OBUSettingsPacket.StepUpSlipperiness, OBUSettingsPacket.WalltapMultiplier, OBUSettingsPacket.StepSize, OBUSettingsPacket.AirStepping, OBUSettingsPacket.SurfaceWaterControl, OBUSettingsPacket.SwimForce, OBUSettingsPacket.TurnAccel, OBUSettingsPacket.UnderwaterControl, OBUSettingsPacket.WaterJumping, OBUSettingsPacket.YawAccel {
+        permits OBUSettingsPacket.CollisionFilterAddEntityType, OBUSettingsPacket.AirControl, OBUSettingsPacket.AccelStacking, OBUSettingsPacket.Impulse, OBUSettingsPacket.ImpulseRelative, OBUSettingsPacket.BackwardAccel, OBUSettingsPacket.BlockSlipperiness, OBUSettingsPacket.FallDamage, OBUSettingsPacket.JumpForce, OBUSettingsPacket.WaterElevation, OBUSettingsPacket.CollisionFilterClear, OBUSettingsPacket.ClearSlipperines, OBUSettingsPacket.CollisionMode, OBUSettingsPacket.CollisionResolution, OBUSettingsPacket.Compound, OBUSettingsPacket.CoyoteTime, OBUSettingsPacket.DefaultSlipperiness, OBUSettingsPacket.ExclusiveMode, OBUSettingsPacket.ExclusiveModeSeries, OBUSettingsPacket.ForwardAccel, OBUSettingsPacket.Gravity, OBUSettingsPacket.InterpolationCompatibility, OBUSettingsPacket.Mode, OBUSettingsPacket.ModeSeries, OBUSettingsPacket.PerBlock, OBUSettingsPacket.RemoveBlockSlipperiness, OBUSettingsPacket.ResendVersion, OBUSettingsPacket.Reset, OBUSettingsPacket.BrakeSlipperiness, OBUSettingsPacket.FixDoubleWaterElevation, OBUSettingsPacket.HoneyCompatibility, OBUSettingsPacket.Jumps, OBUSettingsPacket.LateralSlipperiness, OBUSettingsPacket.MaxSpeed, OBUSettingsPacket.MaxSpeedResistance, OBUSettingsPacket.MultiStepping, OBUSettingsPacket.ResetOnWorldLoad, OBUSettingsPacket.Scale, OBUSettingsPacket.StepUpSlipperiness, OBUSettingsPacket.WalltapMultiplier, OBUSettingsPacket.StepSize, OBUSettingsPacket.AirStepping, OBUSettingsPacket.SurfaceWaterControl, OBUSettingsPacket.SwimForce, OBUSettingsPacket.TurnAccel, OBUSettingsPacket.UnderwaterControl, OBUSettingsPacket.WaterJumping, OBUSettingsPacket.YawAccel {
 
     @Override default short getPacketId() {
         throw new RuntimeException("Not Implemented");
@@ -612,11 +612,11 @@ public sealed interface OBUSettingsPacket extends OBUPacket
         }
     }
 
-    final class FixDoubleWaterELevation implements OBUSettingsPacket {
+    final class FixDoubleWaterElevation implements OBUSettingsPacket {
         public boolean enabled;
 
-        public FixDoubleWaterELevation() {}
-        public FixDoubleWaterELevation(boolean enabled) { this.enabled = enabled; }
+        public FixDoubleWaterElevation() {}
+        public FixDoubleWaterElevation(boolean enabled) { this.enabled = enabled; }
 
         public short getVersion() { return 22; }
         public short getPacketId() { return 39; }
