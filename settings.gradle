@@ -4,7 +4,7 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
-        maven{
+        maven {
             url = "https://maven.kikugie.dev/releases"
         }
 
@@ -27,3 +27,4 @@ stonecutter {
 
     create rootProject
 }
+include 'Protocol'
