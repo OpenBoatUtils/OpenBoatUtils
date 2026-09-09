@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;import org.spongepow
 @Mixin(BubbleColumnBlock.class)
 public class BubbleColumnBlockMixin {
     //? >= 1.21.3 {
-    /*@ModifyVariable(method = "onEntityCollision", at = @At("STORE"))
+    @ModifyVariable(method = "onEntityCollision", at = @At("STORE"))
     public boolean hookConstantSet(boolean world) {
         return false;
     }
@@ -17,5 +17,5 @@ public class BubbleColumnBlockMixin {
     private Comparable<Boolean> abc(BlockState instance, Property<Boolean> property) {
         return false;
     }
-    *///? }
+    //? }
 }

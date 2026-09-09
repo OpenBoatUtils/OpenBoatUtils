@@ -9,17 +9,17 @@ import net.minecraft.client.render.state.CameraRenderState;
 *///? }
 import net.minecraft.client.render.VertexConsumerProvider;
 //? >= 1.21.3 {
-/*import net.minecraft.client.render.entity.AbstractBoatEntityRenderer;
-*///? } else {
-import net.minecraft.client.render.entity.BoatEntityRenderer;
-//? }
+import net.minecraft.client.render.entity.AbstractBoatEntityRenderer;
+//? } else {
+/*import net.minecraft.client.render.entity.BoatEntityRenderer;
+*///? }
 //? >= 1.21.3 {
-/*import net.minecraft.client.render.entity.state.BoatEntityRenderState;
+import net.minecraft.client.render.entity.state.BoatEntityRenderState;
 import dev.o7moon.openboatutils.ScaledBoatRenderState;
 import net.minecraft.entity.vehicle.AbstractBoatEntity;
-*///? } else {
-import net.minecraft.entity.vehicle.BoatEntity;
-//? }
+//? } else {
+/*import net.minecraft.entity.vehicle.BoatEntity;
+*///? }
 import net.minecraft.client.util.math.MatrixStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,17 +29,17 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //? >= 1.21.3 {
-/*@Mixin(AbstractBoatEntityRenderer.class)
-*///? } else {
-@Mixin(BoatEntityRenderer.class)
-//? }
+@Mixin(AbstractBoatEntityRenderer.class)
+//? } else {
+/*@Mixin(BoatEntityRenderer.class)
+*///? }
 public abstract class BoatRendererMixin {
 
     //? >= 1.21.3 {
-    /*@Unique private float openBoatUtils$getScale(AbstractBoatEntity boat) {
-    *///? } else {
-    @Unique private float openBoatUtils$getScale(BoatEntity boat) {
-    //? }
+    @Unique private float openBoatUtils$getScale(AbstractBoatEntity boat) {
+    //? } else {
+    /*@Unique private float openBoatUtils$getScale(BoatEntity boat) {
+    *///? }
         @Nullable ISettingContext boatContext = OpenBoatUtils.instance.getEntityContext(boat.getUuid());
 
         if (boatContext != null) {
@@ -77,7 +77,7 @@ public abstract class BoatRendererMixin {
         matrices.pop();
     }
     *///? } else if >= 1.21.3 {
-    /*@Inject(method = "render(Lnet/minecraft/client/render/entity/state/BoatEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
+    @Inject(method = "render(Lnet/minecraft/client/render/entity/state/BoatEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
     private void preRender(BoatEntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         float scale = ((ScaledBoatRenderState) state).openBoatUtils$getScale();
         matrices.push();
@@ -93,8 +93,8 @@ public abstract class BoatRendererMixin {
     private void postRender(BoatEntityRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         matrices.pop();
     }
-    *///? } else {
-    @Inject(method = "render(Lnet/minecraft/entity/vehicle/BoatEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
+    //? } else {
+    /*@Inject(method = "render(Lnet/minecraft/entity/vehicle/BoatEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
     private void preRender(BoatEntity boatEntity, float f, float g, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         float scale = openBoatUtils$getScale(boatEntity);
         matrices.push();
@@ -110,10 +110,10 @@ public abstract class BoatRendererMixin {
     private void postRender(BoatEntity boatEntity, float f, float g, MatrixStack matrices, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
         matrices.pop();
     }
-    //? }
+    *///? }
 
     //? >= 1.21.3 {
-    /*@Inject(method = "updateRenderState*", at = @At("RETURN"))
+    @Inject(method = "updateRenderState*", at = @At("RETURN"))
     private void populateScale(AbstractBoatEntity entity, BoatEntityRenderState state,
                                float tickDelta, CallbackInfo ci) {
 
@@ -121,5 +121,5 @@ public abstract class BoatRendererMixin {
                 openBoatUtils$getScale(entity)
         );
     }
-    *///? }
+    //? }
 }

@@ -3,7 +3,7 @@ package dev.o7moon.openboatutils.network;
 import dev.o7moon.openboatutils.*;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.entity.vehicle.AbstractBoatEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -146,7 +146,7 @@ public enum ClientboundSettingsPacket {
                     double y = buf.readDouble();
                     double z = buf.readDouble();
 
-                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof BoatEntity boat) {
+                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof AbstractBoatEntity boat) {
                         boat.setVelocity(boat.getVelocity().add(x, y, z));
                     }
                 }
@@ -155,7 +155,7 @@ public enum ClientboundSettingsPacket {
                     double localY = buf.readDouble();
                     double localZ = buf.readDouble();
 
-                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof BoatEntity boat) {
+                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof AbstractBoatEntity boat) {
                         double yaw = Math.toRadians(-boat.getYaw());
 
                         double worldX = localX * Math.cos(yaw) + localZ * Math.sin(yaw);

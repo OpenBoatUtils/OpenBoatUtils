@@ -6,7 +6,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.vehicle.BoatEntity;
+import net.minecraft.entity.vehicle.AbstractBoatEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -66,7 +66,7 @@ public abstract class EntityMixin {
             )
     )
     private void hookWalltap(Entity instance, double x, double y, double z) {
-        if ((Object) this instanceof BoatEntity) {
+        if ((Object) this instanceof AbstractBoatEntity) {
             ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context != null && (context.getWalltapMultiplier() > 0 ||
@@ -164,7 +164,7 @@ public abstract class EntityMixin {
     @ModifyVariable(method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", at = @At("STORE"), ordinal = 3)
     private boolean hookStepHeightOnGroundCheck(boolean original) {
 
-        if ((Object) this instanceof BoatEntity) {
+        if ((Object) this instanceof AbstractBoatEntity) {
             @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context == null) return original;
@@ -179,7 +179,7 @@ public abstract class EntityMixin {
 
     @Inject(method = "getDimensions", at = @At("RETURN"), cancellable = true)
     public void getDimensions(EntityPose pose, CallbackInfoReturnable<EntityDimensions> cir) {
-        if ((Object) this instanceof BoatEntity) {
+        if ((Object) this instanceof AbstractBoatEntity) {
             @Nullable ISettingContext boatContext = OpenBoatUtils.instance.getEntityContext(this.getUuid());
 
             if (boatContext != null) {
@@ -207,7 +207,7 @@ public abstract class EntityMixin {
             )
     )
     private void hookStepUp(Vec3d movement, CallbackInfoReturnable<Vec3d> cir) {
-        if ((Object) this instanceof BoatEntity boat) {
+        if ((Object) this instanceof AbstractBoatEntity boat) {
             @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context != null) {
@@ -242,7 +242,7 @@ public abstract class EntityMixin {
     ) {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
         Entity entity = (Entity) (Object) this;
-        if (context != null && entity instanceof BoatEntity boat && context.hasMultiStepping()) {
+        if (context != null && entity instanceof AbstractBoatEntity boat && context.hasMultiStepping()) {
             Vec3d result = openboatutils$attemptStep(boat, velocity, aABB2, colliders, vec3d, 0, 100);
             double d = aABB.minY - aABB2.minY;
 
@@ -255,7 +255,7 @@ public abstract class EntityMixin {
     }
 
     @Unique
-    private Vec3d openboatutils$attemptStep(BoatEntity boat, Vec3d velocity, Box box, List<VoxelShape> colliders, Vec3d fallback, int depth, int maxDepth) {
+    private Vec3d openboatutils$attemptStep(AbstractBoatEntity boat, Vec3d velocity, Box box, List<VoxelShape> colliders, Vec3d fallback, int depth, int maxDepth) {
         if (depth >= maxDepth) return fallback;
 
         float f = (float) fallback.y;

@@ -16,8 +16,8 @@
     "HoneyBlockMixin",
     "BubbleColumnBlockMixin"
     //? >=1.21.3 {
-    /*,"BoatRenderStateMixin"
-    *///? }
+    ,"BoatRenderStateMixin"
+    //? }
     //? >=1.21.5 {
     /*,"PositionInterpolatorAccessor"
     *///?}

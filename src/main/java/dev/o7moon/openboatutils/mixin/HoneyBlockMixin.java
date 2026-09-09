@@ -4,7 +4,7 @@ package dev.o7moon.openboatutils.mixin;
 import net.minecraft.block.HoneyBlock;
 import org.spongepowered.asm.mixin.Mixin;
 //? > 1.21.1 {
-/*import dev.o7moon.openboatutils.ISettingContext;
+import dev.o7moon.openboatutils.ISettingContext;
 import dev.o7moon.openboatutils.OpenBoatUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
@@ -14,12 +14,12 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-*///? }
+//? }
 
 @Mixin(HoneyBlock.class)
 public class HoneyBlockMixin {
     //? > 1.21.1 {
-    /*@Shadow
+    @Shadow
     private static double method_65067(double par1) {
         throw new UnsupportedOperationException("Implemented via mixin");
     }
@@ -69,5 +69,5 @@ public class HoneyBlockMixin {
         }
         return method_65067(v);
     }
-    *///? }
+    //? }
 }
