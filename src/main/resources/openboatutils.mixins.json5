@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "OpenBoatUtils-refmap.json",
   "mixins": [
-    "ServerPlayNetworkHandlerMixin"
+    "ServerPlayNetworkHandlerMixin",
+    "PotentSulfurBlockEntityMixin"
   ],
   "client": [
     "BoatMixin",
@@ -14,6 +15,8 @@
     "EntityMixin",
     "BoatRendererMixin",
     "HoneyBlockMixin",
+    "CameraMixin",
+    "MinecraftMixin",
     "BoatRenderStateMixin"
     //? >=1.21.5 {
     /*,"PositionInterpolatorAccessor"

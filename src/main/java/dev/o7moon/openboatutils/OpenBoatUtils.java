@@ -3,8 +3,10 @@ package dev.o7moon.openboatutils;
 import dev.o7moon.openboatutils.network.ConfigurationByteBufChannel;
 import dev.o7moon.openboatutils.network.PlayByteBufChannel;
 import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -42,6 +44,11 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     private boolean interpolationCompatibility = false;
     private boolean resetOnWorldLoad = true;
+    private OBUSettingsPacket.FovMode fovMode = OBUSettingsPacket.FovMode.ADDITIVE;
+    private float fovModifier = 0f;
+    private boolean allowFirstPerson = true;
+    private boolean allowThirdPerson = true;
+    private boolean allowThirdPersonFront = true;
 
     private @Nullable ISettingContext activeContext = null;
 
@@ -65,7 +72,9 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
             });
         });
 
-        SingleplayerCommands.registerCommands();
+        CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> {
+            SingleplayerCommands.register(dispatcher);
+        });
     }
 
     public void resetAll() {
@@ -73,6 +82,11 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
         interpolationCompatibility = false;
         resetOnWorldLoad = true;
+        fovMode = OBUSettingsPacket.FovMode.ADDITIVE;
+        fovModifier = 0f;
+        allowFirstPerson = true;
+        allowThirdPerson = true;
+        allowThirdPersonFront = true;
     }
 
     public static void sendVersionPacket() {
@@ -111,20 +125,6 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         stored_contexts.put(identifier, context);
     }
 
-    public void setInterpolationCompatibility(boolean interpolationCompatibility) {
-        this.interpolationCompatibility = interpolationCompatibility;
-    }
-
-    public boolean getInterpolationCompatibility() {
-        return interpolationCompatibility;
-    }
-
-    public void setResetOnWorldLoad(boolean resetOnWorldLoad) {
-        this.resetOnWorldLoad = resetOnWorldLoad;
-    }
-
-    public boolean getResetOnWorldLoad() { return resetOnWorldLoad; }
-
     public void setActiveContext(@Nullable ISettingContext context) {
         if (context == activeContext && context != this) return;
 
@@ -149,5 +149,62 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
         }
 
         return activeContext;
+    }
+
+    // Non Context
+    public void setInterpolationCompatibility(boolean interpolationCompatibility) {
+        this.interpolationCompatibility = interpolationCompatibility;
+    }
+
+    public boolean getInterpolationCompatibility() {
+        return interpolationCompatibility;
+    }
+
+    public void setResetOnWorldLoad(boolean resetOnWorldLoad) {
+        this.resetOnWorldLoad = resetOnWorldLoad;
+    }
+
+    public boolean getResetOnWorldLoad() {
+        return resetOnWorldLoad;
+    }
+
+    public OBUSettingsPacket.FovMode getFovMode() {
+        return fovMode;
+    }
+
+    public void setFovMode(OBUSettingsPacket.FovMode fovMode) {
+        this.fovMode = fovMode;
+    }
+
+    public float getFovModifier() {
+        return fovModifier;
+    }
+
+    public void setFovModifier(float fovModifier) {
+        this.fovModifier = fovModifier;
+    }
+
+    public boolean getAllowFirstPerson() {
+        return allowFirstPerson;
+    }
+
+    public void setAllowFirstPerson(boolean allowFirstPerson) {
+        this.allowFirstPerson = allowFirstPerson;
+    }
+
+    public boolean getAllowThirdPerson() {
+        return allowThirdPerson;
+    }
+
+    public void setAllowThirdPerson(boolean allowThirdPerson) {
+        this.allowThirdPerson = allowThirdPerson;
+    }
+
+    public boolean getAllowThirdPersonFront() {
+        return allowThirdPersonFront;
+    }
+
+    public void setAllowThirdPersonFront(boolean allowThirdPersonFront) {
+        this.allowThirdPersonFront = allowThirdPersonFront;
     }
 }

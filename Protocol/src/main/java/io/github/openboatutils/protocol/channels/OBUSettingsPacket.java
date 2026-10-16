@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 public sealed interface OBUSettingsPacket extends OBUPacket
-        permits OBUSettingsPacket.CollisionFilterAddEntityType, OBUSettingsPacket.AirControl, OBUSettingsPacket.AccelStacking, OBUSettingsPacket.Impulse, OBUSettingsPacket.ImpulseRelative, OBUSettingsPacket.BackwardAccel, OBUSettingsPacket.BlockSlipperiness, OBUSettingsPacket.FallDamage, OBUSettingsPacket.JumpForce, OBUSettingsPacket.WaterElevation, OBUSettingsPacket.CollisionFilterClear, OBUSettingsPacket.ClearSlipperines, OBUSettingsPacket.CollisionMode, OBUSettingsPacket.CollisionResolution, OBUSettingsPacket.Compound, OBUSettingsPacket.CoyoteTime, OBUSettingsPacket.DefaultSlipperiness, OBUSettingsPacket.ExclusiveMode, OBUSettingsPacket.ExclusiveModeSeries, OBUSettingsPacket.ForwardAccel, OBUSettingsPacket.Gravity, OBUSettingsPacket.InterpolationCompatibility, OBUSettingsPacket.Mode, OBUSettingsPacket.ModeSeries, OBUSettingsPacket.PerBlock, OBUSettingsPacket.RemoveBlockSlipperiness, OBUSettingsPacket.ResendVersion, OBUSettingsPacket.Reset, OBUSettingsPacket.BrakeSlipperiness, OBUSettingsPacket.FixDoubleWaterElevation, OBUSettingsPacket.HoneyCompatibility, OBUSettingsPacket.Jumps, OBUSettingsPacket.LateralSlipperiness, OBUSettingsPacket.MaxSpeed, OBUSettingsPacket.MaxSpeedResistance, OBUSettingsPacket.MultiStepping, OBUSettingsPacket.ResetOnWorldLoad, OBUSettingsPacket.Scale, OBUSettingsPacket.StepUpSlipperiness, OBUSettingsPacket.WalltapMultiplier, OBUSettingsPacket.StepSize, OBUSettingsPacket.AirStepping, OBUSettingsPacket.SurfaceWaterControl, OBUSettingsPacket.SwimForce, OBUSettingsPacket.TurnAccel, OBUSettingsPacket.UnderwaterControl, OBUSettingsPacket.WaterJumping, OBUSettingsPacket.YawAccel {
+        permits OBUSettingsPacket.AccelStacking, OBUSettingsPacket.AirControl, OBUSettingsPacket.AirStepping, OBUSettingsPacket.AllowedPerspective, OBUSettingsPacket.BCollisionMode, OBUSettingsPacket.BackwardAccel, OBUSettingsPacket.BlockSlipperiness, OBUSettingsPacket.BrakeSlipperiness, OBUSettingsPacket.ClearSlipperines, OBUSettingsPacket.CollisionFilterAddEntityType, OBUSettingsPacket.CollisionFilterClear, OBUSettingsPacket.CollisionResolution, OBUSettingsPacket.Compound, OBUSettingsPacket.CoyoteTime, OBUSettingsPacket.DefaultSlipperiness, OBUSettingsPacket.ExclusiveMode, OBUSettingsPacket.ExclusiveModeSeries, OBUSettingsPacket.FallDamage, OBUSettingsPacket.FixDoubleWaterElevation, OBUSettingsPacket.ForwardAccel, OBUSettingsPacket.Fov, OBUSettingsPacket.Gravity, OBUSettingsPacket.HoneyCompatibility, OBUSettingsPacket.Impulse, OBUSettingsPacket.ImpulseRelative, OBUSettingsPacket.InterpolationCompatibility, OBUSettingsPacket.JumpForce, OBUSettingsPacket.Jumps, OBUSettingsPacket.LateralSlipperiness, OBUSettingsPacket.MaxSpeed, OBUSettingsPacket.MaxSpeedResistance, OBUSettingsPacket.Mode, OBUSettingsPacket.ModeSeries, OBUSettingsPacket.MultiStepping, OBUSettingsPacket.PerBlock, OBUSettingsPacket.Perspective, OBUSettingsPacket.RemoveBlockSlipperiness, OBUSettingsPacket.ResendVersion, OBUSettingsPacket.Reset, OBUSettingsPacket.ResetOnWorldLoad, OBUSettingsPacket.Scale, OBUSettingsPacket.SetVelocity, OBUSettingsPacket.StepSize, OBUSettingsPacket.StepUpSlipperiness, OBUSettingsPacket.SurfaceWaterControl, OBUSettingsPacket.SwimForce, OBUSettingsPacket.TurnAccel, OBUSettingsPacket.UnderwaterControl, OBUSettingsPacket.WalltapMultiplier, OBUSettingsPacket.WaterElevation, OBUSettingsPacket.WaterJumping, OBUSettingsPacket.YawAccel {
 
     @Override default short getPacketId() {
         throw new RuntimeException("Not Implemented");
@@ -410,12 +410,12 @@ public sealed interface OBUSettingsPacket extends OBUPacket
     }
 
     final class PerBlock implements OBUSettingsPacket {
-        public PerBlockSettings setting;
+        public PerBlockSetting setting;
         public float value;
         public List<String> block_ids;
 
         public PerBlock() {}
-        public PerBlock(PerBlockSettings setting, float value, List<String> block_ids) {
+        public PerBlock(PerBlockSetting setting, float value, List<String> block_ids) {
             this.setting = setting;
             this.value = value;
             this.block_ids = block_ids;
@@ -431,11 +431,11 @@ public sealed interface OBUSettingsPacket extends OBUPacket
         }
     }
 
-    final class CollisionMode implements OBUSettingsPacket {
-        public CollisionModes mode;
+    final class BCollisionMode implements OBUSettingsPacket {
+        public CollisionMode mode;
 
-        public CollisionMode() {}
-        public CollisionMode(CollisionModes mode) {
+        public BCollisionMode() {}
+        public BCollisionMode(CollisionMode mode) {
             this.mode = mode;
         }
 
@@ -772,6 +772,94 @@ public sealed interface OBUSettingsPacket extends OBUPacket
         }
     }
 
+    final class Fov implements OBUSettingsPacket {
+        public FovMode mode;
+        public float modifier;
+
+        public Fov() {}
+
+        public Fov(FovMode mode, float modifier) {
+            this.mode = mode;
+            this.modifier = modifier;
+        }
+
+        public short getVersion() { return 23; }
+        public short getPacketId() { return 48; }
+
+        @Override
+        public void write(PacketWriter writer) throws IOException {
+            OBUSettingsPacket.super.write(writer);
+            writer.writeShort((short) mode.ordinal());
+            writer.writeFloat(modifier);
+        }
+    }
+
+    final class Perspective implements OBUSettingsPacket {
+        public PerspectiveType type;
+
+        public Perspective() {}
+        public Perspective(PerspectiveType type) {
+            this.type = type;
+        }
+
+        public short getVersion() { return 23; }
+        public short getPacketId() { return 49; }
+
+        @Override
+        public void write(PacketWriter writer) throws IOException {
+            OBUSettingsPacket.super.write(writer);
+            writer.writeShort((short) type.ordinal());
+        }
+    }
+
+    final class AllowedPerspective implements OBUSettingsPacket {
+        public boolean allowFirst;
+        public boolean allowThird;
+        public boolean allowThirdFront;
+
+        public AllowedPerspective() {}
+        public AllowedPerspective(boolean allowFirst, boolean allowThird, boolean allowThirdFront) {
+            this.allowFirst = allowFirst;
+            this.allowThird = allowThird;
+            this.allowThirdFront = allowThirdFront;
+        }
+
+        public short getVersion() { return 23; }
+        public short getPacketId() { return 50; }
+
+        @Override
+        public void write(PacketWriter writer) throws IOException {
+            OBUSettingsPacket.super.write(writer);
+            writer.writeBoolean(allowFirst);
+            writer.writeBoolean(allowThird);
+            writer.writeBoolean(allowThirdFront);
+        }
+    }
+
+    final class SetVelocity implements OBUSettingsPacket {
+        public double x;
+        public double y;
+        public double z;
+
+        public SetVelocity() {}
+        public SetVelocity(double x, double y, double z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public short getVersion() { return 23; }
+        public short getPacketId() { return 51; }
+
+        @Override
+        public void write(PacketWriter writer) throws IOException {
+            OBUSettingsPacket.super.write(writer);
+            writer.writeDouble(x);
+            writer.writeDouble(y);
+            writer.writeDouble(z);
+        }
+    }
+
     class CompoundPayload implements Payload {
         public List<OBUSettingsPacket> packets;
 
@@ -787,19 +875,39 @@ public sealed interface OBUSettingsPacket extends OBUPacket
         }
     }
 
-    enum PerBlockSettings {
+    enum PerBlockSetting {
         JUMP_FORCE,
         FORWARD_ACCEL,
         BACKWARD_ACCEL,
         YAW_ACCEL,
-        TURN_FORWARD_ACCEL
+        TURN_FORWARDS_ACCEL,
+        WALLTAP_MULTIPLIER,
+        JUMPS,
+        COYOTE_TIME,
+        STEP_UP_SLIPPERINESS,
+        LATERAL_SLIPPERINESS,
+        BRAKE_SLIPPERINESS,
+        MAX_SPEED,
+        MAX_SPEED_RESISTANCE;
     }
 
-    enum CollisionModes {
+    enum CollisionMode {
         VANILLA,
-        NO_BOATS_AND_PLAYERS,
+        NO_BOATS_OR_PLAYERS,
         NO_ENTITIES,
         FILTERED,
-        NO_BOATS_AND_PLAYERS_AND_FILTERED
+        NO_BOATS_OR_PLAYERS_OR_FILTERED
+    }
+
+    enum FovMode {
+        ADDITIVE,
+        MULTIPLICATIVE,
+        SET
+    }
+
+    enum PerspectiveType {
+        FIRST,
+        THIRD,
+        THIRD_BACKWARDS
     }
 }

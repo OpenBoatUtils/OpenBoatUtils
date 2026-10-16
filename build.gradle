@@ -18,6 +18,8 @@ repositories {}
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
 
+    implementation(project(":Protocol"))
+
     if (project.loom_plugin == "fabric-loom") {
         mappings(loom.officialMojangMappings())
         modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"

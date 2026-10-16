@@ -1,5 +1,6 @@
 package dev.o7moon.openboatutils;
 
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -27,7 +28,7 @@ public abstract class MutableContext implements ISettingContext {
     private int coyoteTime;
     private boolean waterJumping;
     private float swimForce;
-    private CollisionMode collisionMode;
+    private OBUSettingsPacket.CollisionMode collisionMode;
     private boolean stepWhileFalling;
     private int collisionResolution;
     private float walltapMultiplier;
@@ -43,11 +44,11 @@ public abstract class MutableContext implements ISettingContext {
     private boolean hasHoneyCompatibility;
 
     private final Map<ResourceLocation, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
-    private final Map<PerBlockSettingType, Map<ResourceLocation, Float>> blockSettings = new HashMap<>();
+    private final Map<OBUSettingsPacket.PerBlockSetting, Map<ResourceLocation, Float>> blockSettings = new HashMap<>();
     private final Set<EntityType<?>> collisionFilteredEntities = new HashSet<>();
 
     private Set<ResourceLocation> blocksWithSettings = new HashSet<>();
-    private Set<PerBlockSettingType> settingsInUse = new HashSet<>();
+    private Set<OBUSettingsPacket.PerBlockSetting> settingsInUse = new HashSet<>();
 
     @Override public boolean hasFallDamage() { return hasFallDamage; }
     @Override public boolean hasWaterElevation() { return hasWaterElevation; }
@@ -66,13 +67,13 @@ public abstract class MutableContext implements ISettingContext {
     @Override public int getCoyoteTime() { return coyoteTime; }
     @Override public boolean hasWaterJumping() { return waterJumping; }
     @Override public float getSwimForce() { return swimForce; }
-    @Override public CollisionMode getCollisionMode() { return collisionMode; }
+    @Override public OBUSettingsPacket.CollisionMode getCollisionMode() { return collisionMode; }
     @Override public boolean hasStepWhileFalling() { return stepWhileFalling; }
     @Override public @Nullable Float getBlockSlipperiness(ResourceLocation id) {
         return blockSlipperiness.get(id);
     }
     @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return collisionFilteredEntities.contains(type); }
-    @Override public @Nullable Float getBlockSetting(ResourceLocation id, PerBlockSettingType type) {
+    @Override public @Nullable Float getBlockSetting(ResourceLocation id, OBUSettingsPacket.PerBlockSetting type) {
         if (!blocksWithSettings.contains(id)) return null;
 
         return blockSettings
@@ -96,7 +97,7 @@ public abstract class MutableContext implements ISettingContext {
     public Set<ResourceLocation> getBlocksWithSettings() { return blocksWithSettings; }
 
     @Override
-    public boolean hasAnyBlocksWithSetting(PerBlockSettingType type) { return settingsInUse.contains(type); }
+    public boolean hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting type) { return settingsInUse.contains(type); }
 
     public MutableContext setFallDamage(boolean v) { this.hasFallDamage = v; return this; }
     public MutableContext setWaterElevation(boolean v) { this.hasWaterElevation = v; return this; }
@@ -115,7 +116,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setCoyoteTime(int v) { this.coyoteTime = v; return this; }
     public MutableContext setWaterJumping(boolean v) { this.waterJumping = v; return this; }
     public MutableContext setSwimForce(float v) { this.swimForce = v; return this; }
-    public MutableContext setCollisionMode(CollisionMode v) { this.collisionMode = v; return this; }
+    public MutableContext setCollisionMode(OBUSettingsPacket.CollisionMode v) { this.collisionMode = v; return this; }
     public MutableContext setStepWhileFalling(boolean v) { this.stepWhileFalling = v; return this; }
     public MutableContext setCollisionResolution(int v) { this.collisionResolution = v; return this; }
     public MutableContext setWalltapMultiplier(float v) { this.walltapMultiplier = v; return this; }
@@ -139,7 +140,7 @@ public abstract class MutableContext implements ISettingContext {
         return this;
     }
 
-    public MutableContext setBlockSetting(ResourceLocation id, PerBlockSettingType type, float value) {
+    public MutableContext setBlockSetting(ResourceLocation id, OBUSettingsPacket.PerBlockSetting type, float value) {
         blocksWithSettings.add(id);
         settingsInUse.add(type);
         blockSettings
@@ -199,7 +200,7 @@ public abstract class MutableContext implements ISettingContext {
         this.hasHoneyCompatibility = other.hasHoneyCompatibility();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
-        this.settingsInUse = new HashSet<>(Arrays.stream(PerBlockSettingType.values()).filter(other::hasAnyBlocksWithSetting).toList());
+        this.settingsInUse = new HashSet<>(Arrays.stream(OBUSettingsPacket.PerBlockSetting.values()).filter(other::hasAnyBlocksWithSetting).toList());
 
         this.blockSlipperiness.clear();
         BuiltInRegistries.BLOCK.stream()
@@ -213,7 +214,7 @@ public abstract class MutableContext implements ISettingContext {
 
         this.blockSettings.clear();
         blocksWithSettings.forEach(identifier -> {
-            for (PerBlockSettingType type : PerBlockSettingType.values()) {
+            for (OBUSettingsPacket.PerBlockSetting type : OBUSettingsPacket.PerBlockSetting.values()) {
                 Float setting = other.getBlockSetting(identifier, type);
 
                 if (setting == null) continue;
@@ -229,7 +230,5 @@ public abstract class MutableContext implements ISettingContext {
 
         return this;
     }
-
-
 }
 

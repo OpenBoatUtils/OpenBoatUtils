@@ -1,5 +1,6 @@
 package dev.o7moon.openboatutils;
 
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Blocks;
@@ -149,22 +150,22 @@ public enum Modes {
                     .breakSlimePlease();
 
             case JUMP_BLOCKS -> context
-                    .setBlockSetting(ResourceLocation.withDefaultNamespace("orange_concrete"), PerBlockSettingType.JUMP_FORCE, 0.36f)
-                    .setBlockSetting(ResourceLocation.withDefaultNamespace("black_concrete"), PerBlockSettingType.JUMP_FORCE, 0.0f)
-                    .setBlockSetting(ResourceLocation.withDefaultNamespace("green_concrete"), PerBlockSettingType.JUMP_FORCE, 0.5f)
-                    .setBlockSetting(ResourceLocation.withDefaultNamespace("yellow_concrete"), PerBlockSettingType.JUMP_FORCE, 0.18f);
+                    .setBlockSetting(ResourceLocation.withDefaultNamespace("orange_concrete"), OBUSettingsPacket.PerBlockSetting.JUMP_FORCE, 0.36f)
+                    .setBlockSetting(ResourceLocation.withDefaultNamespace("black_concrete"), OBUSettingsPacket.PerBlockSetting.JUMP_FORCE, 0.0f)
+                    .setBlockSetting(ResourceLocation.withDefaultNamespace("green_concrete"), OBUSettingsPacket.PerBlockSetting.JUMP_FORCE, 0.5f)
+                    .setBlockSetting(ResourceLocation.withDefaultNamespace("yellow_concrete"), OBUSettingsPacket.PerBlockSetting.JUMP_FORCE, 0.18f);
 
             case BOOSTER_BLOCKS -> context
-                    .setBlockSetting(ResourceLocation.withDefaultNamespace("magenta_glazed_terracotta"), PerBlockSettingType.FORWARDS_ACCEL, 0.08f)
-                    .setBlockSetting(ResourceLocation.withDefaultNamespace("light_gray_glazed_terracotta"), PerBlockSettingType.YAW_ACCEL, 0.08f);
+                    .setBlockSetting(ResourceLocation.withDefaultNamespace("magenta_glazed_terracotta"), OBUSettingsPacket.PerBlockSetting.FORWARD_ACCEL, 0.08f)
+                    .setBlockSetting(ResourceLocation.withDefaultNamespace("light_gray_glazed_terracotta"), OBUSettingsPacket.PerBlockSetting.YAW_ACCEL, 0.08f);
 
             case DEFAULT_ICE -> context.setDefaultSlipperiness(0.98f);
 
             case DEFAULT_NINE_EIGHT_FIVE -> context.setDefaultSlipperiness(0.985f);
 
-            case NOCOL_BOATS_AND_PLAYERS -> context.setCollisionMode(CollisionMode.NO_BOATS_OR_PLAYERS);
+            case NOCOL_BOATS_AND_PLAYERS -> context.setCollisionMode(OBUSettingsPacket.CollisionMode.NO_BOATS_OR_PLAYERS);
 
-            case NOCOL_ALL_ENTITIES -> context.setCollisionMode(CollisionMode.NO_ENTITIES);
+            case NOCOL_ALL_ENTITIES -> context.setCollisionMode(OBUSettingsPacket.CollisionMode.NO_ENTITIES);
 
             case BA_JANKLESS -> context
                     .setStepWhileFalling(true)

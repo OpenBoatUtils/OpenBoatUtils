@@ -1,6 +1,7 @@
 package dev.o7moon.openboatutils.mixin;
 
 import dev.o7moon.openboatutils.*;
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 //? >= 1.21.5 {
@@ -88,7 +89,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         openboatutils$stepHeight = f;
     }
 
-    @Unique public float openboatutils$getAverageNearbySetting(ISettingContext context, AbstractBoat instance, PerBlockSettingType setting) {
+    @Unique public float openboatutils$getAverageNearbySetting(ISettingContext context, AbstractBoat instance, OBUSettingsPacket.PerBlockSetting setting) {
         AABB box = instance.getBoundingBox();
         AABB box2 = new AABB(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
         int i = Mth.floor(box2.minX) - 1;
@@ -117,7 +118,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
                     Float value = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(blockState.getBlock()), setting);
 
-                    if (value == null) value = setting.fromContext(context);
+                    if (value == null) value = PerBlockUtil.fromContext(setting, context);
 
                     f += value;
                     ++o;
@@ -128,14 +129,14 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         Float air = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), setting);
 
-        if (air == null) air = setting.fromContext(context);
+        if (air == null) air = PerBlockUtil.fromContext(setting, context);
 
         if (o == 0) return air;
 
         return f / (float) o;
     }
 
-    @Unique public float openboatutils$getMaxNearbySetting(ISettingContext context, AbstractBoat instance, PerBlockSettingType setting) {
+    @Unique public float openboatutils$getMaxNearbySetting(ISettingContext context, AbstractBoat instance, OBUSettingsPacket.PerBlockSetting setting) {
         AABB box = instance.getBoundingBox();
         AABB box2 = new AABB(box.minX, box.minY - 0.001, box.minZ, box.maxX, box.minY, box.maxZ);
         int i = Mth.floor(box2.minX) - 1;
@@ -164,7 +165,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
                     Float value = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(blockState.getBlock()), setting);
 
-                    if (value == null) value = setting.fromContext(context);
+                    if (value == null) value = PerBlockUtil.fromContext(setting, context);
 
                     f = Math.max(f, value);
                     ++o;
@@ -174,7 +175,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         Float air = context.getBlockSetting(BuiltInRegistries.BLOCK.getKey(Blocks.AIR), setting);
 
-        if (air == null) air = setting.fromContext(context);
+        if (air == null) air = PerBlockUtil.fromContext(setting, context);
 
         if (o == 0) return air;
 
@@ -197,12 +198,12 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             openboatutils$remaining_jumps = context.getJumps();
             openboatutils$debounce = false;
 
-            if (context.hasAnyBlocksWithSetting(PerBlockSettingType.COYOTE_TIME)) {
-                openboatutils$coyoteTimer = Math.round(openboatutils$getMaxNearbySetting(context, instance, PerBlockSettingType.COYOTE_TIME));
+            if (context.hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting.COYOTE_TIME)) {
+                openboatutils$coyoteTimer = Math.round(openboatutils$getMaxNearbySetting(context, instance, OBUSettingsPacket.PerBlockSetting.COYOTE_TIME));
             }
 
-            if (context.hasAnyBlocksWithSetting(PerBlockSettingType.JUMPS)) {
-                openboatutils$remaining_jumps = Math.round(openboatutils$getMaxNearbySetting(context, instance, PerBlockSettingType.JUMPS));
+            if (context.hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting.JUMPS)) {
+                openboatutils$remaining_jumps = Math.round(openboatutils$getMaxNearbySetting(context, instance, OBUSettingsPacket.PerBlockSetting.JUMPS));
             }
         } else {
             openboatutils$coyoteTimer--;
@@ -212,7 +213,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             }
         }
 
-        float jumpForce = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.JUMP_FORCE);
+        float jumpForce = openboatutils$getAverageNearbySetting(context, instance, OBUSettingsPacket.PerBlockSetting.JUMP_FORCE);
 
         boolean jumping = minecraft.options.keyJump.isDown();
 
@@ -351,24 +352,24 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         if (context == null) return;
 
-        CollisionMode mode = context.getCollisionMode();
+        OBUSettingsPacket.CollisionMode mode = context.getCollisionMode();
 
         // TODO: investigate this logic
 
-        if (mode == CollisionMode.VANILLA) return;
+        if (mode == OBUSettingsPacket.CollisionMode.VANILLA) return;
 
-        if ((mode == CollisionMode.NO_BOATS_OR_PLAYERS || mode == CollisionMode.NO_BOATS_OR_PLAYERS_PLUS_FILTER) &&
+        if ((mode == OBUSettingsPacket.CollisionMode.NO_BOATS_OR_PLAYERS || mode == OBUSettingsPacket.CollisionMode.NO_BOATS_OR_PLAYERS_OR_FILTERED) &&
                 (other instanceof AbstractBoat || other instanceof Player)) {
             ci.setReturnValue(false);
             ci.cancel();
             return;
         }
-        if (mode == CollisionMode.NO_ENTITIES) {
+        if (mode == OBUSettingsPacket.CollisionMode.NO_ENTITIES) {
             ci.setReturnValue(false);
             ci.cancel();
             return;
         }
-        if ((mode == CollisionMode.ENTITYTYPE_FILTER || mode == CollisionMode.NO_BOATS_OR_PLAYERS_PLUS_FILTER) &&
+        if ((mode == OBUSettingsPacket.CollisionMode.FILTERED || mode == OBUSettingsPacket.CollisionMode.NO_BOATS_OR_PLAYERS_OR_FILTERED) &&
                 (context.isEntityTypeFiltered(other.getType()))) {
             ci.setReturnValue(false);
             ci.cancel();
@@ -412,7 +413,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         // sign isn't needed here because the vanilla acceleration is exactly 1,
         // but I suppose this helps if mojang ever decides to change that value for some reason
 
-        float yaw_accel = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.YAW_ACCEL);
+        float yaw_accel = openboatutils$getAverageNearbySetting(context, instance, OBUSettingsPacket.PerBlockSetting.YAW_ACCEL);
 
         this.deltaRotation += Mth.sign(original_delta) * yaw_accel;
     }
@@ -424,7 +425,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         if (context == null) return original;
 
-        return openboatutils$getAverageNearbySetting(context, (AbstractBoat) (Object) this, PerBlockSettingType.FORWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (AbstractBoat) (Object) this, OBUSettingsPacket.PerBlockSetting.FORWARD_ACCEL);
     }
 
     @ModifyConstant(method = "controlBoat", constant = @Constant(floatValue = 0.005f, ordinal = 0))
@@ -433,7 +434,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         if (context == null) return original;
 
-        return openboatutils$getAverageNearbySetting(context, (AbstractBoat) (Object) this, PerBlockSettingType.TURN_FORWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (AbstractBoat) (Object) this, OBUSettingsPacket.PerBlockSetting.TURN_FORWARDS_ACCEL);
     }
 
     @ModifyConstant(method = "controlBoat", constant = @Constant(floatValue = 0.005f, ordinal = 1))
@@ -442,7 +443,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
 
         if (context == null) return original;
 
-        return openboatutils$getAverageNearbySetting(context, (AbstractBoat) (Object) this, PerBlockSettingType.BACKWARDS_ACCEL);
+        return openboatutils$getAverageNearbySetting(context, (AbstractBoat) (Object) this, OBUSettingsPacket.PerBlockSetting.BACKWARD_ACCEL);
     }
 
     //? >= 1.21.11 {
@@ -467,7 +468,7 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
         if (context != null) {
-            float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, instance, PerBlockSettingType.BRAKE_SLIPPERINESS);
+            float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, instance, OBUSettingsPacket.PerBlockSetting.BRAKE_SLIPPERINESS);
             if (brakeSlipperiness != 1f) {
                 return false;
             }
@@ -499,21 +500,20 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
             )
     )
     //? }
-
     private void hookSlipperiness(CallbackInfo ci) {
         AbstractBoat boat = (AbstractBoat) (Object) this;
         @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
         if (context != null) {
-            float lateralSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.LATERAL_SLIPPERINESS);
+            float lateralSlipperiness = openboatutils$getAverageNearbySetting(context, boat, OBUSettingsPacket.PerBlockSetting.LATERAL_SLIPPERINESS);
             if (lateralSlipperiness != 1f) openboatutils$applyLateralSlipperiness(boat, lateralSlipperiness);
 
-            float maxSpeed = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED);
-            float maxSpeedResistance = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.MAX_SPEED_RESISTANCE);
+            float maxSpeed = openboatutils$getAverageNearbySetting(context, boat, OBUSettingsPacket.PerBlockSetting.MAX_SPEED);
+            float maxSpeedResistance = openboatutils$getAverageNearbySetting(context, boat, OBUSettingsPacket.PerBlockSetting.MAX_SPEED_RESISTANCE);
 
             if (maxSpeed >= 0) openboatutils$applyMaxSpeedResistance(boat, maxSpeed, maxSpeedResistance);
 
             if (inputDown) {
-                float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.BRAKE_SLIPPERINESS);
+                float brakeSlipperiness = openboatutils$getAverageNearbySetting(context, boat, OBUSettingsPacket.PerBlockSetting.BRAKE_SLIPPERINESS);
                 if (brakeSlipperiness != 1f) openboatutils$applyBrakeSlipperiness(boat, brakeSlipperiness);
             }
         }

@@ -1,7 +1,9 @@
 package dev.o7moon.openboatutils.network;
 
 import dev.o7moon.openboatutils.*;
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.CameraType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -11,6 +13,7 @@ import net.minecraft.world.entity.EntityType;
 *///? } else {
 import net.minecraft.world.entity.vehicle.AbstractBoat;
 //? }
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -64,7 +67,11 @@ public enum ClientboundSettingsPacket {
     SET_MULTI_STEPPING,
     SET_MAX_SPEED,
     SET_MAX_SPEED_RESISTANCE,
-    SET_HONEY_COMPATIBILITY;
+    SET_HONEY_COMPATIBILITY,
+    SET_FOV(false),
+    SET_PERSPECTIVE(false),
+    SET_ALLOWED_PERSPECTIVE(false),
+    SET_VELOCITY(false);
 
     private final boolean isContext;
 
@@ -167,6 +174,40 @@ public enum ClientboundSettingsPacket {
                         boat.setDeltaMovement(
                                 boat.getDeltaMovement().add(worldX, localY, -worldZ)
                         );
+                    }
+                }
+                case SET_FOV -> {
+                    short modeId = buf.readShort();
+                    float modifier = buf.readFloat();
+
+                    OBUSettingsPacket.FovMode mode = OBUSettingsPacket.FovMode.values()[modeId];
+
+                    OpenBoatUtils.instance.setFovModifier(modifier);
+                    OpenBoatUtils.instance.setFovMode(mode);
+                }
+                case SET_PERSPECTIVE -> {
+                    short typeId = buf.readShort();
+
+                    OBUSettingsPacket.PerspectiveType type = OBUSettingsPacket.PerspectiveType.values()[typeId];
+
+                    OpenBoatUtils.minecraft.options.setCameraType(switch(type) {
+                        case FIRST -> CameraType.FIRST_PERSON;
+                        case THIRD -> CameraType.THIRD_PERSON_BACK;
+                        case THIRD_BACKWARDS -> CameraType.THIRD_PERSON_FRONT;
+                    });
+                }
+                case SET_ALLOWED_PERSPECTIVE -> {
+                    OpenBoatUtils.instance.setAllowFirstPerson(buf.readBoolean());
+                    OpenBoatUtils.instance.setAllowThirdPerson(buf.readBoolean());
+                    OpenBoatUtils.instance.setAllowThirdPersonFront(buf.readBoolean());
+                }
+                case SET_VELOCITY -> {
+                    double x = buf.readDouble();
+                    double y = buf.readDouble();
+                    double z = buf.readDouble();
+
+                    if (OpenBoatUtils.minecraft.player != null && OpenBoatUtils.minecraft.player.getVehicle() instanceof AbstractBoat boat) {
+                        boat.setDeltaMovement(new Vec3(x, y, z));
                     }
                 }
             }
@@ -282,10 +323,10 @@ public enum ClientboundSettingsPacket {
                 short index = buf.readShort();
                 float value = buf.readFloat();
 
-                PerBlockSettingType[] settingTypes = PerBlockSettingType.values();
+                OBUSettingsPacket.PerBlockSetting[] settingTypes = OBUSettingsPacket.PerBlockSetting.values();
 
                 if (index >= settingTypes.length) return;
-                PerBlockSettingType setting = settingTypes[index];
+                OBUSettingsPacket.PerBlockSetting setting = settingTypes[index];
 
                 Arrays.stream(buf.readUtf().split(","))
                         .map(ResourceLocation::parse)
@@ -294,7 +335,7 @@ public enum ClientboundSettingsPacket {
             case SET_COLLISION_MODE -> {
                 short collisionMode = buf.readShort();
 
-                CollisionMode[] collisionModes = CollisionMode.values();
+                OBUSettingsPacket.CollisionMode[] collisionModes = OBUSettingsPacket.CollisionMode.values();
 
                 if (collisionMode >= collisionModes.length) return;
 

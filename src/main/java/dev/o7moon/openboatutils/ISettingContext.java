@@ -1,5 +1,6 @@
 package dev.o7moon.openboatutils;
 
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -32,11 +33,11 @@ public interface ISettingContext {
     int getCoyoteTime();
     boolean hasWaterJumping();
     float getSwimForce();
-    CollisionMode getCollisionMode();
+    OBUSettingsPacket.CollisionMode getCollisionMode();
     boolean hasStepWhileFalling();
     @Nullable Float getBlockSlipperiness(ResourceLocation id);
     boolean isEntityTypeFiltered(EntityType<?> type);
-    @Nullable Float getBlockSetting(ResourceLocation id, PerBlockSettingType type);
+    @Nullable Float getBlockSetting(ResourceLocation id, OBUSettingsPacket.PerBlockSetting setting);
     int getCollisionResolution();
     float getWalltapMultiplier();
     int getJumps();
@@ -51,7 +52,7 @@ public interface ISettingContext {
     boolean hasHoneyCompatibility();
 
     Set<ResourceLocation> getBlocksWithSettings();
-    boolean hasAnyBlocksWithSetting(PerBlockSettingType type);
+    boolean hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting type);
 
     static Map<ResourceLocation, Float> getVanillaSlipperinessMap() {
         Map<ResourceLocation, Float> map = new HashMap<>();
@@ -87,11 +88,11 @@ public interface ISettingContext {
             @Override public int getCoyoteTime() { return 0; }
             @Override public boolean hasWaterJumping() { return false; }
             @Override public float getSwimForce() { return 0; }
-            @Override public CollisionMode getCollisionMode() { return CollisionMode.VANILLA; }
+            @Override public OBUSettingsPacket.CollisionMode getCollisionMode() { return OBUSettingsPacket.CollisionMode.VANILLA; }
             @Override public boolean hasStepWhileFalling() { return false; }
             @Override public @Nullable Float getBlockSlipperiness(ResourceLocation id) { return VANILLA_SLIPPERINESS.get(id); }
             @Override public boolean isEntityTypeFiltered(EntityType<?> type) { return false; }
-            @Override public @Nullable Float getBlockSetting(ResourceLocation id, PerBlockSettingType type) { return null; }
+            @Override public @Nullable Float getBlockSetting(ResourceLocation id, OBUSettingsPacket.PerBlockSetting type) { return null; }
             @Override public int getCollisionResolution() { return 1; }
             @Override public float getWalltapMultiplier() { return 0; }
             @Override public int getJumps() { return 1; }
@@ -108,7 +109,7 @@ public interface ISettingContext {
             @Override public Set<ResourceLocation> getBlocksWithSettings() { return Set.of(); }
 
             @Override
-            public boolean hasAnyBlocksWithSetting(PerBlockSettingType type) { return false; }
+            public boolean hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting type) { return false; }
         };
     }
 }

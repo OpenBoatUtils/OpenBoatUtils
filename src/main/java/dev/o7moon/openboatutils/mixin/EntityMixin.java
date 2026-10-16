@@ -2,6 +2,7 @@ package dev.o7moon.openboatutils.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import dev.o7moon.openboatutils.*;
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -97,14 +98,14 @@ public abstract class EntityMixin {
             ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context != null && (context.getWalltapMultiplier() > 0 ||
-                    context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER))) {
+                    context.hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting.WALLTAP_MULTIPLIER))) {
 
                 Vec3 before = instance.getDeltaMovement();
                 float multiplier = context.getWalltapMultiplier();
 
                 List<BlockPos> blockPositions = new ArrayList<>();
 
-                if (context.hasAnyBlocksWithSetting(PerBlockSettingType.WALLTAP_MULTIPLIER)) {
+                if (context.hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting.WALLTAP_MULTIPLIER)) {
                     AABB box = instance.getBoundingBox();
                     Vec3 min = box.getMinPosition();
                     Vec3 max = box.getMaxPosition();
@@ -160,7 +161,7 @@ public abstract class EntityMixin {
 
                         Float v = context.getBlockSetting(
                                 BuiltInRegistries.BLOCK.getKey(state.getBlock()),
-                                PerBlockSettingType.WALLTAP_MULTIPLIER
+                                OBUSettingsPacket.PerBlockSetting.WALLTAP_MULTIPLIER
                         );
 
                         if (v != null) {
@@ -234,7 +235,7 @@ public abstract class EntityMixin {
             @Nullable ISettingContext context = OpenBoatUtils.instance.getActiveContext();
 
             if (context != null) {
-                float slipperiness = ((GetNearbySetting) boat).openboatutils$getAverageNearbySetting(context, boat, PerBlockSettingType.STEP_UP_SLIPPERINESS);
+                float slipperiness = ((GetNearbySetting) boat).openboatutils$getAverageNearbySetting(context, boat, OBUSettingsPacket.PerBlockSetting.STEP_UP_SLIPPERINESS);
 
                 if (slipperiness != 1) {
                     boat.setDeltaMovement(boat.getDeltaMovement().scale(slipperiness));

@@ -1,25 +1,13 @@
 package dev.o7moon.openboatutils;
 
-public enum PerBlockSettingType {
-    JUMP_FORCE,
-    FORWARDS_ACCEL,
-    BACKWARDS_ACCEL,
-    YAW_ACCEL,
-    TURN_FORWARDS_ACCEL,
-    WALLTAP_MULTIPLIER,
-    JUMPS,
-    COYOTE_TIME,
-    STEP_UP_SLIPPERINESS,
-    LATERAL_SLIPPERINESS,
-    BRAKE_SLIPPERINESS,
-    MAX_SPEED,
-    MAX_SPEED_RESISTANCE;
+import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 
-    public float fromContext(ISettingContext context) {
-        return switch (this) {
+public interface PerBlockUtil {
+    static float fromContext(OBUSettingsPacket.PerBlockSetting perBlockSetting, ISettingContext context) {
+        return switch (perBlockSetting) {
             case JUMP_FORCE -> context.getJumpForce();
-            case FORWARDS_ACCEL -> context.getForwardAccel();
-            case BACKWARDS_ACCEL -> context.getBackwardAccel();
+            case FORWARD_ACCEL -> context.getForwardAccel();
+            case BACKWARD_ACCEL -> context.getBackwardAccel();
             case YAW_ACCEL -> context.getYawAccel();
             case TURN_FORWARDS_ACCEL -> context.getTurnForwardAccel();
             case WALLTAP_MULTIPLIER -> context.getWalltapMultiplier();
