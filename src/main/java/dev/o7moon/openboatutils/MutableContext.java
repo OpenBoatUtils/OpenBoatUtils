@@ -42,6 +42,7 @@ public abstract class MutableContext implements ISettingContext {
     private float maxSpeed;
     private float maxSpeedResistance;
     private boolean hasHoneyCompatibility;
+    private int boatSyncInterval;
 
     private final Map<ResourceLocation, Float> blockSlipperiness = new HashMap<>(ISettingContext.getVanillaSlipperinessMap());
     private final Map<OBUSettingsPacket.PerBlockSetting, Map<ResourceLocation, Float>> blockSettings = new HashMap<>();
@@ -92,6 +93,7 @@ public abstract class MutableContext implements ISettingContext {
     @Override public float getMaxSpeed() { return maxSpeed; }
     @Override public float getMaxSpeedResistance() { return maxSpeedResistance; }
     @Override public boolean hasHoneyCompatibility() { return hasHoneyCompatibility; }
+    @Override public int getBoatSyncInterval() { return boatSyncInterval; }
 
     @Override
     public Set<ResourceLocation> getBlocksWithSettings() { return blocksWithSettings; }
@@ -130,6 +132,7 @@ public abstract class MutableContext implements ISettingContext {
     public MutableContext setMaxSpeed(float v) { this.maxSpeed = v; return this; }
     public MutableContext setMaxSpeedResistance(float v) { this.maxSpeedResistance = v; return this; }
     public MutableContext setHasHoneyCompatibility(boolean v) { this.hasHoneyCompatibility = v; return this; }
+    public MutableContext setBoatSyncInterval(int v) { this.boatSyncInterval = Math.min(Math.max(v, 0), 4); return this; }
 
     public MutableContext addToCollisionFilter(EntityType<?> type) {
         this.collisionFilteredEntities.add(type);
@@ -198,6 +201,7 @@ public abstract class MutableContext implements ISettingContext {
         this.maxSpeed = other.getMaxSpeed();
         this.maxSpeedResistance = other.getMaxSpeedResistance();
         this.hasHoneyCompatibility = other.hasHoneyCompatibility();
+        this.boatSyncInterval = other.getBoatSyncInterval();
 
         this.blocksWithSettings = new HashSet<>(other.getBlocksWithSettings());
         this.settingsInUse = new HashSet<>(Arrays.stream(OBUSettingsPacket.PerBlockSetting.values()).filter(other::hasAnyBlocksWithSetting).toList());

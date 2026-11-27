@@ -17,6 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 //? >= 1.21.5 {
 /*import java.util.function.Supplier;
 *///? }
+//? >= 26.1 {
+/*import dev.o7moon.openboatutils.sync.BoatSyncClient;
+import dev.o7moon.openboatutils.sync.RemoteBoatTrack;
+import dev.o7moon.openboatutils.sync.SyncPredictor;
+*///? }
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -722,4 +727,80 @@ public abstract class BoatMixin implements GetStepHeight, GetNearbySetting {
     private void hookBubbleTime(int wobbleTicks, CallbackInfo ci) {
         ci.cancel();
     }
+
+    //? >= 26.1 {
+    /*// Boat sync: what the driver's tick did, sent at the end of the tick
+    @Unique private float openboatutils$syncFriction = 1f;
+    @Unique private Vec3 openboatutils$syncVelocityBeforeControl = Vec3.ZERO;
+    @Unique private float openboatutils$syncAx;
+    @Unique private float openboatutils$syncAz;
+    @Unique private float openboatutils$syncYawBeforeControl;
+    @Unique private float openboatutils$syncYawAccel;
+
+    @Inject(method = "floatBoat", at = @At("HEAD"))
+    private void openboatutils$syncResetTick(CallbackInfo ci) {
+        openboatutils$syncFriction = 1f;
+        openboatutils$syncAx = 0f;
+        openboatutils$syncAz = 0f;
+        openboatutils$syncYawAccel = 0f;
+    }
+
+    @ModifyVariable(method = "floatBoat", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/boat/AbstractBoat;setDeltaMovement(DDD)V", ordinal = 0), ordinal = 0)
+    private float openboatutils$syncCaptureFriction(float invFriction) {
+        openboatutils$syncFriction = invFriction;
+        return invFriction;
+    }
+
+    @Inject(method = "controlBoat", at = @At("HEAD"))
+    private void openboatutils$syncBeforeControl(CallbackInfo ci) {
+        openboatutils$syncVelocityBeforeControl = ((AbstractBoat) (Object) this).getDeltaMovement();
+        openboatutils$syncYawBeforeControl = deltaRotation;
+    }
+
+    @Inject(method = "controlBoat", at = @At("TAIL"))
+    private void openboatutils$syncAfterControl(CallbackInfo ci) {
+        Vec3 after = ((AbstractBoat) (Object) this).getDeltaMovement();
+        openboatutils$syncAx = (float) (after.x - openboatutils$syncVelocityBeforeControl.x);
+        openboatutils$syncAz = (float) (after.z - openboatutils$syncVelocityBeforeControl.z);
+        openboatutils$syncYawAccel = deltaRotation - openboatutils$syncYawBeforeControl;
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void openboatutils$syncHoldInterpolation(CallbackInfo ci) {
+        AbstractBoat boat = (AbstractBoat) (Object) this;
+        RemoteBoatTrack track = BoatSyncClient.getTrack(boat);
+
+        // the predicted position replaces vanilla interpolation while it is fresh
+        if (track != null && track.hasFreshState(System.nanoTime(), BoatSyncClient.getHalfRttMs())) {
+            interpolation.cancel();
+        }
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void openboatutils$syncTick(CallbackInfo ci) {
+        AbstractBoat boat = (AbstractBoat) (Object) this;
+
+        if (BoatSyncClient.isLocalDriver(boat)) {
+            BoatSyncClient.sendState(boat, deltaRotation, openboatutils$syncYawAccel, openboatutils$syncFriction, openboatutils$syncAx, openboatutils$syncAz);
+            return;
+        }
+
+        RemoteBoatTrack track = BoatSyncClient.getTrack(boat);
+        if (track == null) return;
+
+        // blocks only, the boat is not moved and other entities are not collided with
+        AABB box = boat.getBoundingBox();
+        Vec3 at = boat.position();
+        SyncPredictor.State shown = track.update(System.nanoTime(), BoatSyncClient.getHalfRttMs(), (x, y, z, dx, dy, dz) -> {
+            Vec3 moved = Entity.collideBoundingBox((Entity) null, new Vec3(dx, dy, dz), box.move(x - at.x, y - at.y, z - at.z), boat.level(), java.util.List.of());
+            return new double[]{moved.x, moved.y, moved.z};
+        }, at.x, at.y, at.z, boat.getYRot());
+
+        if (shown == null) return;
+
+        boat.setPos(shown.x, shown.y, shown.z);
+        boat.setYRot(shown.yaw);
+        boat.setDeltaMovement(shown.vx, shown.vy, shown.vz);
+    }
+    *///? }
 }

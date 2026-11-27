@@ -50,6 +50,7 @@ public interface ISettingContext {
     float getMaxSpeed();
     float getMaxSpeedResistance();
     boolean hasHoneyCompatibility();
+    int getBoatSyncInterval();
 
     Set<ResourceLocation> getBlocksWithSettings();
     boolean hasAnyBlocksWithSetting(OBUSettingsPacket.PerBlockSetting type);
@@ -105,6 +106,7 @@ public interface ISettingContext {
             @Override public float getMaxSpeed() { return -1; }
             @Override public float getMaxSpeedResistance() { return 0; }
             @Override public boolean hasHoneyCompatibility() { return false; }
+            @Override public int getBoatSyncInterval() { return 0; }
 
             @Override public Set<ResourceLocation> getBlocksWithSettings() { return Set.of(); }
 

@@ -541,3 +541,17 @@ Reverts the behavior of honey in versions `1.21.3+` to behavior in `1.21.1`. Not
 | Packet ID    | Enabled (default `false`) |
 |--------------|---------------------------|
 | 47 (`short`) | `boolean`                 |
+
+***
+
+### Set Boat Sync <Badge type="tip" text="^0.5.2" />
+Enables [boat sync](/developers/sync). While enabled, the boat the player is driving sends its state on `openboatutils:sync`,
+and boats driven by other players are shown where they are predicted to be now instead of where they were when the server last heard about them.
+
+The interval is how often the state is sent: `0` is off, `1` is every tick and `N` is one state every `N` ticks. Values above `4` are treated as `4` (5 states a second).
+
+Only does anything on Minecraft `26.1+`, older versions accept and ignore it.
+
+| Packet ID    | Interval (default `0`) |
+|--------------|------------------------|
+| 52 (`short`) | `unsigned byte`        |

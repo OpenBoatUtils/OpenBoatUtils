@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 
 public sealed interface OBUSettingsPacket extends OBUPacket
-        permits OBUSettingsPacket.AccelStacking, OBUSettingsPacket.AirControl, OBUSettingsPacket.AirStepping, OBUSettingsPacket.AllowedPerspective, OBUSettingsPacket.BCollisionMode, OBUSettingsPacket.BackwardAccel, OBUSettingsPacket.BlockSlipperiness, OBUSettingsPacket.BrakeSlipperiness, OBUSettingsPacket.ClearSlipperines, OBUSettingsPacket.CollisionFilterAddEntityType, OBUSettingsPacket.CollisionFilterClear, OBUSettingsPacket.CollisionResolution, OBUSettingsPacket.Compound, OBUSettingsPacket.CoyoteTime, OBUSettingsPacket.DefaultSlipperiness, OBUSettingsPacket.ExclusiveMode, OBUSettingsPacket.ExclusiveModeSeries, OBUSettingsPacket.FallDamage, OBUSettingsPacket.FixDoubleWaterElevation, OBUSettingsPacket.ForwardAccel, OBUSettingsPacket.Fov, OBUSettingsPacket.Gravity, OBUSettingsPacket.HoneyCompatibility, OBUSettingsPacket.Impulse, OBUSettingsPacket.ImpulseRelative, OBUSettingsPacket.InterpolationCompatibility, OBUSettingsPacket.JumpForce, OBUSettingsPacket.Jumps, OBUSettingsPacket.LateralSlipperiness, OBUSettingsPacket.MaxSpeed, OBUSettingsPacket.MaxSpeedResistance, OBUSettingsPacket.Mode, OBUSettingsPacket.ModeSeries, OBUSettingsPacket.MultiStepping, OBUSettingsPacket.PerBlock, OBUSettingsPacket.Perspective, OBUSettingsPacket.RemoveBlockSlipperiness, OBUSettingsPacket.ResendVersion, OBUSettingsPacket.Reset, OBUSettingsPacket.ResetOnWorldLoad, OBUSettingsPacket.Scale, OBUSettingsPacket.SetVelocity, OBUSettingsPacket.StepSize, OBUSettingsPacket.StepUpSlipperiness, OBUSettingsPacket.SurfaceWaterControl, OBUSettingsPacket.SwimForce, OBUSettingsPacket.TurnAccel, OBUSettingsPacket.UnderwaterControl, OBUSettingsPacket.WalltapMultiplier, OBUSettingsPacket.WaterElevation, OBUSettingsPacket.WaterJumping, OBUSettingsPacket.YawAccel {
+        permits OBUSettingsPacket.AccelStacking, OBUSettingsPacket.AirControl, OBUSettingsPacket.AirStepping, OBUSettingsPacket.AllowedPerspective, OBUSettingsPacket.BCollisionMode, OBUSettingsPacket.BoatSync, OBUSettingsPacket.BackwardAccel, OBUSettingsPacket.BlockSlipperiness, OBUSettingsPacket.BrakeSlipperiness, OBUSettingsPacket.ClearSlipperines, OBUSettingsPacket.CollisionFilterAddEntityType, OBUSettingsPacket.CollisionFilterClear, OBUSettingsPacket.CollisionResolution, OBUSettingsPacket.Compound, OBUSettingsPacket.CoyoteTime, OBUSettingsPacket.DefaultSlipperiness, OBUSettingsPacket.ExclusiveMode, OBUSettingsPacket.ExclusiveModeSeries, OBUSettingsPacket.FallDamage, OBUSettingsPacket.FixDoubleWaterElevation, OBUSettingsPacket.ForwardAccel, OBUSettingsPacket.Fov, OBUSettingsPacket.Gravity, OBUSettingsPacket.HoneyCompatibility, OBUSettingsPacket.Impulse, OBUSettingsPacket.ImpulseRelative, OBUSettingsPacket.InterpolationCompatibility, OBUSettingsPacket.JumpForce, OBUSettingsPacket.Jumps, OBUSettingsPacket.LateralSlipperiness, OBUSettingsPacket.MaxSpeed, OBUSettingsPacket.MaxSpeedResistance, OBUSettingsPacket.Mode, OBUSettingsPacket.ModeSeries, OBUSettingsPacket.MultiStepping, OBUSettingsPacket.PerBlock, OBUSettingsPacket.Perspective, OBUSettingsPacket.RemoveBlockSlipperiness, OBUSettingsPacket.ResendVersion, OBUSettingsPacket.Reset, OBUSettingsPacket.ResetOnWorldLoad, OBUSettingsPacket.Scale, OBUSettingsPacket.SetVelocity, OBUSettingsPacket.StepSize, OBUSettingsPacket.StepUpSlipperiness, OBUSettingsPacket.SurfaceWaterControl, OBUSettingsPacket.SwimForce, OBUSettingsPacket.TurnAccel, OBUSettingsPacket.UnderwaterControl, OBUSettingsPacket.WalltapMultiplier, OBUSettingsPacket.WaterElevation, OBUSettingsPacket.WaterJumping, OBUSettingsPacket.YawAccel {
 
     @Override default short getPacketId() {
         throw new RuntimeException("Not Implemented");
@@ -857,6 +857,23 @@ public sealed interface OBUSettingsPacket extends OBUPacket
             writer.writeDouble(x);
             writer.writeDouble(y);
             writer.writeDouble(z);
+        }
+    }
+
+    final class BoatSync implements OBUSettingsPacket {
+        // 0 = off, 1 = every tick, N = every N ticks, above 4 counts as 4
+        public int interval;
+
+        public BoatSync() {}
+        public BoatSync(int interval) { this.interval = interval; }
+
+        public short getVersion() { return 23; }
+        public short getPacketId() { return 52; }
+
+        @Override
+        public void write(PacketWriter writer) throws IOException {
+            OBUSettingsPacket.super.write(writer);
+            writer.writeByte((byte) Math.max(0, Math.min(interval, 4)));
         }
     }
 
