@@ -3,7 +3,8 @@ package io.github.openboatutils.protocol;
 public enum OBUChannel {
     SETTINGS(Phase.PLAY, "openboatutils:settings"),
     CONTEXT(Phase.PLAY, "openboatutils:context"),
-    CONFIGURATION(Phase.CONFIGURATION, "openboatutils:configuration");
+    CONFIGURATION(Phase.CONFIGURATION, "openboatutils:configuration"),
+    SYNC(Phase.PLAY, "openboatutils:sync");
 
     private final Phase phase;
     private final String channel;

@@ -48,10 +48,21 @@ public class PlayByteBufChannel extends ByteBufChannel<ServerPlayer, ServerPlayN
     }
 
     public void sendPacketS2C(ServerPlayer player, FriendlyByteBuf byteBuf) {
+        long created = System.nanoTime();
         ServerPlayNetworking.send(player, new BytePayload() {
             @Override
             public ByteBuf getData() {
                 return byteBuf;
+            }
+
+            @Override
+            public boolean hasReceivedNanos() {
+                return true;
+            }
+
+            @Override
+            public long getReceivedNanos() {
+                return created;
             }
 
             @Override

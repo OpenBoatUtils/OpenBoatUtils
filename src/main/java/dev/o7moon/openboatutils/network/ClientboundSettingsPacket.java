@@ -71,7 +71,8 @@ public enum ClientboundSettingsPacket {
     SET_FOV(false),
     SET_PERSPECTIVE(false),
     SET_ALLOWED_PERSPECTIVE(false),
-    SET_VELOCITY(false);
+    SET_VELOCITY(false),
+    SET_BOAT_SYNC;
 
     private final boolean isContext;
 
@@ -402,6 +403,9 @@ public enum ClientboundSettingsPacket {
             }
             case SET_HONEY_COMPATIBILITY -> {
                 context.setHasHoneyCompatibility(buf.readBoolean());
+            }
+            case SET_BOAT_SYNC -> {
+                context.setBoatSyncInterval(buf.readUnsignedByte());
             }
         }
     }

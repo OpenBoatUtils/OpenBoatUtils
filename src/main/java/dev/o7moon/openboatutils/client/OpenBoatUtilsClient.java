@@ -4,6 +4,10 @@ import dev.o7moon.openboatutils.OpenBoatUtils;
 import dev.o7moon.openboatutils.network.ClientboundContextPacket;
 import dev.o7moon.openboatutils.network.ClientboundSettingsPacket;
 import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
+//? >= 26.1 {
+/*import dev.o7moon.openboatutils.sync.BoatSyncClient;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+*///? }
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationConnectionEvents;
@@ -33,6 +37,19 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
             });
         });
 
+        //? >= 26.1 {
+        /*SYNC_CHANNEL.registerClientHandler((bytePayload, context) -> {
+            try {
+                BoatSyncClient.receive(bytePayload.getData(), bytePayload.hasReceivedNanos() ? bytePayload.getReceivedNanos() : System.nanoTime());
+            } finally {
+                bytePayload.getData().release();
+            }
+        });
+
+        ClientTickEvents.END_CLIENT_TICK.register(BoatSyncClient::tick);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> BoatSyncClient.clear());
+        *///? }
+
         ClientConfigurationConnectionEvents.START.register((handler, client) -> {
             FriendlyByteBuf buf = PacketByteBufs.create();
 
@@ -44,6 +61,9 @@ public class OpenBoatUtilsClient implements ClientModInitializer {
         });
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            //? >= 26.1 {
+            /*BoatSyncClient.clear();
+            *///? }
             OpenBoatUtils.instance.resetAll();
             OpenBoatUtils.sendVersionPacket();
         });

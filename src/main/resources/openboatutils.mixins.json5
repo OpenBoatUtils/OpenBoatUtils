@@ -21,6 +21,9 @@
     //? >=1.21.5 {
     /*,"PositionInterpolatorAccessor"
     *///?}
+    //? >= 26.1 {
+    /*,"ClientPacketListenerSyncMixin"
+    *///?}
   ],
   "injectors": {
     "defaultRequire": 1,

@@ -17,6 +17,13 @@ public abstract class ByteBufChannel<T, S, C> {
 
     public interface BytePayload extends CustomPacketPayload {
         ByteBuf getData();
+
+        // System.nanoTime() when the payload was decoded off the network (or created, for in memory
+        // connections), only meaningful when hasReceivedNanos() (nanoTime can be negative).
+        // The handler runs later, on the next frame.
+        default boolean hasReceivedNanos() { return false; }
+
+        default long getReceivedNanos() { return 0; }
     }
 
     public ByteBufChannel(ResourceLocation identifier) {
@@ -26,6 +33,10 @@ public abstract class ByteBufChannel<T, S, C> {
                 this::encode,
                 this::decode
         );
+    }
+
+    public CustomPacketPayload.Type<BytePayload> getId() {
+        return id;
     }
 
     public abstract void registerCodec();
@@ -43,12 +54,15 @@ public abstract class ByteBufChannel<T, S, C> {
     }
 
     private BytePayload decode(FriendlyByteBuf buf) {
+        long received = System.nanoTime();
         ByteBuf copy = buf.copy();
 
         buf.readerIndex(buf.writerIndex()); // so mc doesn't complain we haven't read all the bytes
 
         return new BytePayload() {
             @Override public ByteBuf getData() { return copy; }
+            @Override public boolean hasReceivedNanos() { return true; }
+            @Override public long getReceivedNanos() { return received; }
             @Override public Type<? extends CustomPacketPayload> type() { return id; }
         };
     }

@@ -3,6 +3,10 @@ package dev.o7moon.openboatutils;
 import dev.o7moon.openboatutils.network.ConfigurationByteBufChannel;
 import dev.o7moon.openboatutils.network.PlayByteBufChannel;
 import dev.o7moon.openboatutils.network.ServerboundSettingsPacket;
+//? >= 26.1 {
+/*import dev.o7moon.openboatutils.sync.SyncRelay;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+*///? }
 import io.github.openboatutils.protocol.channels.OBUSettingsPacket;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
@@ -32,6 +36,7 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
 
     public static final PlayByteBufChannel SETTING_CHANNEL = new PlayByteBufChannel(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "settings"));
     public static final PlayByteBufChannel CONTEXT_CHANNEL = new PlayByteBufChannel(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "context"));
+    public static final PlayByteBufChannel SYNC_CHANNEL = new PlayByteBufChannel(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "sync"));
     public static final ConfigurationByteBufChannel CONFIGURATION_CHANNEL = new ConfigurationByteBufChannel(ResourceLocation.fromNamespaceAndPath(NAMESPACE, "configuration"));
 
     public static final ResourceLocation DEFAULT_CONTEXT = ResourceLocation.fromNamespaceAndPath(NAMESPACE, "default");
@@ -71,6 +76,20 @@ public class OpenBoatUtils extends MutableContext implements ModInitializer {
                 buf.release();
             });
         });
+
+        //? >= 26.1 {
+        /*SYNC_CHANNEL.registerCodec();
+
+        SYNC_CHANNEL.registerServerHandler((bytePayload, context) -> {
+            try {
+                SyncRelay.relay(context.player(), bytePayload.getData());
+            } finally {
+                bytePayload.getData().release();
+            }
+        });
+
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> SyncRelay.forget(handler.player));
+        *///? }
 
         CommandRegistrationCallback.EVENT.register((dispatcher, buildContext, selection) -> {
             SingleplayerCommands.register(dispatcher);
